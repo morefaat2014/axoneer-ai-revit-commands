@@ -1,8 +1,15 @@
 {
   "format": 1,
-  "catalogVersion": "20261108-145003",
-  "generatedUtc": "2026-11-08T14:50:03.467Z",
+  "catalogVersion": "20261108-155809",
+  "generatedUtc": "2026-11-08T15:58:09.537Z",
   "commands": [
+    {
+      "commandId": "tests.read.review_route_check",
+      "file": "approved/tests.read.review_route_check.json",
+      "sha256": "a61e28966773b8afac6f8ddf9c85252b0cfa9fc85b4cf164bc7f19660105171e",
+      "sizeBytes": 1631,
+      "version": "1.0.0"
+    },
     {
       "commandId": "tests.read.review_sheet_check",
       "file": "approved/tests.read.review_sheet_check.json",
