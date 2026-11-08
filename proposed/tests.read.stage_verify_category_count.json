@@ -1,0 +1,58 @@
+{
+  "definition": {
+    "commandId": "tests.read.stage_verify_category_count",
+    "name": "Stage Verify Category Count",
+    "description": "Counts the instances of a category and lists the levels, sheet count and room count. Used to verify the save and reuse workflow.",
+    "aiDescription": "Counts the instances of a category and lists the levels, sheet count and room count. Used to verify the save and reuse workflow.",
+    "examples": [
+      "how many doors are in the model",
+      "count the instances of a category"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "category",
+        "type": "String",
+        "description": "Script argument 'category'. Example: \"OST_Doors\".",
+        "required": false,
+        "default": "OST_Doors"
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Tested",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:tests.read.stage_verify_category_count",
+    "lastModifiedUtc": "2026-11-04T16:20:18.7742234Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "string category = Tama.Args.Get(args, \"category\", \"OST_Doors\");\nBuiltInCategory bic;\nif (!Enum.TryParse(category, out bic)) throw new InvalidOperationException(\"Unknown category \" + category);\nvar count = new FilteredElementCollector(doc).OfCategory(bic).WhereElementIsNotElementType().GetElementCount();\nvar levels = new FilteredElementCollector(doc).OfClass(typeof(Level)).Cast<Level>().Select(l => l.Name).ToList();\nvar sheets = new FilteredElementCollector(doc).OfClass(typeof(ViewSheet)).GetElementCount();\nvar rooms = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Rooms).WhereElementIsNotElementType().GetElementCount();\nreturn new { category, count, levels, sheets, rooms };"
+}
