@@ -1,0 +1,14 @@
+{
+  "format": 1,
+  "catalogVersion": "20261108-114140",
+  "generatedUtc": "2026-11-08T11:41:40.4773968Z",
+  "commands": [
+    {
+      "commandId": "tests.read.stage_verify_category_count",
+      "file": "approved/tests.read.stage_verify_category_count.json",
+      "sha256": "c8d4afdb8745844e78e5198faa99ddb9b1a4a40010aa54109c31d0d5f494ba5a",
+      "sizeBytes": 2583,
+      "version": "1.0.0"
+    }
+  ]
+}

@@ -44,7 +44,7 @@
     "dependencies": [],
     "minRevitVersion": 2021,
     "maxRevitVersion": 0,
-    "status": "Tested",
+    "status": "Approved",
     "version": "1.0.0",
     "author": "mrafaatFK2S3",
     "source": "AiGenerated",
@@ -54,5 +54,7 @@
   },
   "mode": "Query",
   "transactionMode": "auto",
-  "code": "string category = Tama.Args.Get(args, \"category\", \"OST_Doors\");\nBuiltInCategory bic;\nif (!Enum.TryParse(category, out bic)) throw new InvalidOperationException(\"Unknown category \" + category);\nvar count = new FilteredElementCollector(doc).OfCategory(bic).WhereElementIsNotElementType().GetElementCount();\nvar levels = new FilteredElementCollector(doc).OfClass(typeof(Level)).Cast<Level>().Select(l => l.Name).ToList();\nvar sheets = new FilteredElementCollector(doc).OfClass(typeof(ViewSheet)).GetElementCount();\nvar rooms = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Rooms).WhereElementIsNotElementType().GetElementCount();\nreturn new { category, count, levels, sheets, rooms };"
+  "code": "string category = Tama.Args.Get(args, \"category\", \"OST_Doors\");\nBuiltInCategory bic;\nif (!Enum.TryParse(category, out bic)) throw new InvalidOperationException(\"Unknown category \" + category);\nvar count = new FilteredElementCollector(doc).OfCategory(bic).WhereElementIsNotElementType().GetElementCount();\nvar levels = new FilteredElementCollector(doc).OfClass(typeof(Level)).Cast<Level>().Select(l => l.Name).ToList();\nvar sheets = new FilteredElementCollector(doc).OfClass(typeof(ViewSheet)).GetElementCount();\nvar rooms = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Rooms).WhereElementIsNotElementType().GetElementCount();\nreturn new { category, count, levels, sheets, rooms };",
+  "approvedBy": "User-E-MRM",
+  "approvedUtc": "2026-11-08T11:41:40.4773968Z"
 }
