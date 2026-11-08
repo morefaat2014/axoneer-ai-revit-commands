@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "tests.read.review_sheet_check",
+    "name": "Review Sheet Check",
+    "description": "Counts the levels in the model. Sent again by the app's own client.",
+    "aiDescription": "Counts the levels in the model. A harmless test of the review sheet route.",
+    "examples": [
+      "how many levels are there"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:tests.read.review_sheet_check",
+    "lastModifiedUtc": "2026-11-04T16:20:18.7742234Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var n = new FilteredElementCollector(doc).OfClass(typeof(Level)).GetElementCount();\nreturn new { levels = n };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-08T14:50:03.150Z"
+}
