@@ -1,0 +1,73 @@
+{
+  "definition": {
+    "commandId": "areas.read.compare_area_counts_and_param_by_level_name",
+    "name": "Compare Area Counts and Parameter by Level and Name",
+    "description": "Compares area counts and one parameter by level and area name, between the active model and another open model, for an area scheme.",
+    "aiDescription": "Compares area counts and one parameter by level and area name, between the active model and another open model, for an area scheme.",
+    "examples": [
+      "compare the areas of two open models by level and name"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "scheme",
+        "type": "String",
+        "description": "Script argument 'scheme'.",
+        "required": false,
+        "default": ""
+      },
+      {
+        "name": "target",
+        "type": "String",
+        "description": "Script argument 'target'.",
+        "required": false,
+        "default": ""
+      },
+      {
+        "name": "param",
+        "type": "String",
+        "description": "Parameter to compare.",
+        "required": false,
+        "default": "Comments"
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.1",
+    "author": "Axoneer AI",
+    "source": "AiGenerated",
+    "codeReference": "user-library:areas.read.compare_area_counts_and_param_by_level_name",
+    "lastModifiedUtc": "2026-11-10T13:00:59.1287208Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var schemeName = Tama.Args.Get(args, \"scheme\", \"\");\nvar targetTitle = Tama.Args.Get(args, \"target\", \"\");\nvar paramName = Tama.Args.Get(args, \"param\", \"Comments\");\nDocument target = null;\nforeach (Document d in app.Documents) if (!d.IsLinked && d.Title == targetTitle) target = d;\nif (target == null) throw new InvalidOperationException(\"The target model is not open: \" + targetTitle);\nFunc<Document, string, object> summ = (Document d, string pname) => new FilteredElementCollector(d).OfCategory(BuiltInCategory.OST_Areas).WhereElementIsNotElementType().Cast<Autodesk.Revit.DB.Area>()\n  .Where(a => a.AreaScheme != null && a.AreaScheme.Name == schemeName)\n  .GroupBy(a => (a.Level?.Name ?? \"-\") + \" | \" + a.get_Parameter(BuiltInParameter.ROOM_NAME).AsString())\n  .Select(g => new { key = g.Key, count = g.Count(), vals = string.Join(\" / \", g.Select(a => a.LookupParameter(pname)?.AsString() ?? \"\").Distinct()) })\n  .OrderBy(x => x.key).ToList();\nreturn new { source = summ(doc, paramName), target = summ(target, paramName) };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:41:17.352Z"
+}

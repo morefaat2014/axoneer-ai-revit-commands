@@ -1,0 +1,84 @@
+{
+  "definition": {
+    "commandId": "columns.create.place_columns_from_table",
+    "name": "Place Columns From Table",
+    "description": "Places a structural column family at XY points on a level from a table of [mark, x, y, baseZ, topZ, rotation] in metres, setting base/top offsets, rotation and Mark; optional 'only' list.",
+    "aiDescription": "Places a structural column family at XY points on a level from a table of [mark, x, y, baseZ, topZ, rotation] in metres, setting base/top offsets, rotation and Mark; optional 'only' list.",
+    "examples": [
+      "place these columns from a table of points and heights"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Action",
+    "type": "Atomic",
+    "execution": "Modify",
+    "linkAware": false,
+    "inputs": [
+      {
+        "name": "family",
+        "type": "String",
+        "description": "Script argument 'family'.",
+        "required": true
+      },
+      {
+        "name": "level",
+        "type": "String",
+        "description": "Script argument 'level'.",
+        "required": true
+      },
+      {
+        "name": "columns",
+        "type": "Any",
+        "description": "Script argument 'columns'.",
+        "required": true
+      }
+    ],
+    "optionalInputs": [
+      {
+        "name": "only",
+        "type": "StringArray",
+        "description": "Script argument 'only'.",
+        "required": false
+      },
+      {
+        "name": "comment",
+        "type": "String",
+        "description": "Text for the Comments parameter.",
+        "required": false,
+        "default": ""
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": true,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Confirm",
+    "confirmationRequired": true,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.1",
+    "author": "Axoneer AI",
+    "source": "AiGenerated",
+    "codeReference": "user-library:columns.create.place_columns_from_table",
+    "lastModifiedUtc": "2026-11-11T08:52:51.4106067Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Action",
+  "transactionMode": "auto",
+  "code": "double f = 0.3048;\nstring famName = Tama.Args.Get(args, \"family\", \"\");\nstring lvlName = Tama.Args.Get(args, \"level\", \"\");\nvar only = (args.ContainsKey(\"only\") && args[\"only\"] is object[] oa) ? oa.Select(o => o.ToString()).ToList() : new List<string>();\nvar level = new FilteredElementCollector(doc).OfClass(typeof(Level)).Cast<Level>().First(l => l.Name == lvlName);\nvar sym = new FilteredElementCollector(doc).OfClass(typeof(FamilySymbol)).Cast<FamilySymbol>().First(s => s.Family.Name == famName);\nif (!sym.IsActive) { sym.Activate(); doc.Regenerate(); }\ndouble lz = level.Elevation * f;\nvar existingMarks = new FilteredElementCollector(doc).OfClass(typeof(FamilyInstance)).Cast<FamilyInstance>()\n    .Where(fi => fi.Symbol.Family.Name == famName).Select(fi => fi.get_Parameter(BuiltInParameter.ALL_MODEL_MARK)?.AsString()).ToList();\nvar outp = new List<object>();\nforeach (var row in (object[])args[\"columns\"]) {\n  var r = (object[])row; string id = r[0].ToString();\n  if (only.Count > 0 && !only.Contains(id)) continue;\n  if (existingMarks.Contains(id)) { outp.Add(new { id, skipped = \"already placed\" }); continue; }\n  double x = Convert.ToDouble(r[1]), y = Convert.ToDouble(r[2]), zb = Convert.ToDouble(r[3]), zt = Convert.ToDouble(r[4]), ang = Convert.ToDouble(r[5]);\n  var pt = new XYZ(x / f, y / f, level.Elevation);\n  var fi = doc.Create.NewFamilyInstance(pt, sym, level, Autodesk.Revit.DB.Structure.StructuralType.Column);\n  fi.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_PARAM).Set(level.Id);\n  fi.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM).Set((zt - lz) / f);\n  fi.get_Parameter(BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM).Set((zb - lz) / f);\n  doc.Regenerate();\n  ElementTransformUtils.RotateElement(doc, fi.Id, Line.CreateBound(pt, pt + XYZ.BasisZ), ang * Math.PI / 180);\n  fi.get_Parameter(BuiltInParameter.ALL_MODEL_MARK)?.Set(id);\n  fi.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS)?.Set(Tama.Args.Get(args, \"comment\", \"\"));\n  doc.Regenerate();\n  var bb = fi.get_BoundingBox(null); var lp = (LocationPoint)fi.Location;\n  outp.Add(new { id, elementId = fi.Id.IntegerValue, at = new[] { Math.Round(lp.Point.X * f, 4), Math.Round(lp.Point.Y * f, 4) },\n    rot = Math.Round(lp.Rotation * 180 / Math.PI, 2), zMin = Math.Round(bb.Min.Z * f, 3), zMax = Math.Round(bb.Max.Z * f, 3),\n    height = Math.Round(zt - zb, 4) });\n}\nreturn new { levelElevation = Math.Round(lz, 4), placed = outp };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:41:17.369Z"
+}

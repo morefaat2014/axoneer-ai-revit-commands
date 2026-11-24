@@ -1,7 +1,7 @@
 {
   "format": 1,
-  "catalogVersion": "20261124-122818",
-  "generatedUtc": "2026-11-24T12:28:18.763Z",
+  "catalogVersion": "20261124-124119",
+  "generatedUtc": "2026-11-24T12:41:19.169Z",
   "commands": [
     {
       "commandId": "annotations.modify.delete_dimension_by_id",
@@ -9,6 +9,34 @@
       "sha256": "72f210fb9b462b29dd9cca1deaee873639324fe07dae43bf69b5de7d334af132",
       "sizeBytes": 2327,
       "version": "1.0.0"
+    },
+    {
+      "commandId": "areas.modify.copy_area_parameter_by_level_and_name",
+      "file": "approved/areas.modify.copy_area_parameter_by_level_and_name.json",
+      "sha256": "e479932edffd98ac5a182620cce1ce418e4ea74f615f8459c054e2fca39cc782",
+      "sizeBytes": 4585,
+      "version": "1.0.1"
+    },
+    {
+      "commandId": "areas.read.areas_owned_by_others_by_level",
+      "file": "approved/areas.read.areas_owned_by_others_by_level.json",
+      "sha256": "aac8a6d2da479bc58114f22069c5acc6487bd6790ce7ce6790fb33aa6af4ea6d",
+      "sizeBytes": 2773,
+      "version": "1.0.1"
+    },
+    {
+      "commandId": "areas.read.compare_area_counts_and_param_by_level_name",
+      "file": "approved/areas.read.compare_area_counts_and_param_by_level_name.json",
+      "sha256": "8eb86e6c03892e3b01b6c9cd4ce0a5a745477dcf2792dad3982e6010934ef359",
+      "sizeBytes": 3274,
+      "version": "1.0.1"
+    },
+    {
+      "commandId": "columns.create.place_columns_from_table",
+      "file": "approved/columns.create.place_columns_from_table.json",
+      "sha256": "ad7b5cb6dac6a3295a42f27630c5508988dbadfa5f290e0c23d2d03c3eebbcf5",
+      "sizeBytes": 5017,
+      "version": "1.0.1"
     },
     {
       "commandId": "doors.read.check_swing_and_hinge_vs_comments",
@@ -67,6 +95,13 @@
       "version": "1.0.0"
     },
     {
+      "commandId": "family.modify.replace_directshape_from_stl",
+      "file": "approved/family.modify.replace_directshape_from_stl.json",
+      "sha256": "7c52519dee6e6735102998dda97f2a59bee64e163b279842527babfc63c889d1",
+      "sizeBytes": 4640,
+      "version": "1.0.1"
+    },
+    {
       "commandId": "family.read.inspect_selected_labels_with_captions",
       "file": "approved/family.read.inspect_selected_labels_with_captions.json",
       "sha256": "4fc0ba1801d2700cda5f3f6231718cd8239f212944b02bae554c856fe9c87749",
@@ -79,6 +114,20 @@
       "sha256": "7c5849cb2a93ddb75e002f0bae8100e78bb0dabfc4175d31e139cc88cbeabfb4",
       "sizeBytes": 3294,
       "version": "1.0.0"
+    },
+    {
+      "commandId": "family.read.titleblock_text_layout_in_region",
+      "file": "approved/family.read.titleblock_text_layout_in_region.json",
+      "sha256": "310af926268840c4cc53fd1f5bd3633bbed119c268557da3b56e58e0e46fcec0",
+      "sizeBytes": 3896,
+      "version": "1.0.1"
+    },
+    {
+      "commandId": "floors.create.floor_from_shared_coordinates",
+      "file": "approved/floors.create.floor_from_shared_coordinates.json",
+      "sha256": "7f777e8a7a7bb2d57513b427fbb86900738385d6f36af63b31b46861aad27a5d",
+      "sizeBytes": 3896,
+      "version": "1.0.1"
     },
     {
       "commandId": "floors.create.floors_from_polygons",
@@ -137,6 +186,13 @@
       "version": "1.0.0"
     },
     {
+      "commandId": "lines.modify.refit_setback_lines_keep_offsets",
+      "file": "approved/lines.modify.refit_setback_lines_keep_offsets.json",
+      "sha256": "462c97074fde8cfb5c998b9382b08226525bfeffb881b04e8cbb356be077f8b7",
+      "sizeBytes": 7181,
+      "version": "1.0.1"
+    },
+    {
       "commandId": "lines.modify.snap_curves_to_shared_corners",
       "file": "approved/lines.modify.snap_curves_to_shared_corners.json",
       "sha256": "1ad804e0a87a2cfa102b176247da9daa6f176ca2fc2192f2a40da4bf4229350f",
@@ -172,6 +228,13 @@
       "version": "1.0.0"
     },
     {
+      "commandId": "lines.read.setback_offsets_for_plots",
+      "file": "approved/lines.read.setback_offsets_for_plots.json",
+      "sha256": "6680e7b0c89cb13856b69ef8ab38236222022d1f33698526fa61456011a2bf78",
+      "sizeBytes": 3273,
+      "version": "1.0.1"
+    },
+    {
       "commandId": "lines.read.verify_pavement_edges",
       "file": "approved/lines.read.verify_pavement_edges.json",
       "sha256": "79412f4e3208fd21896001689050fcbf557718c623604cfb000055dc1858f30a",
@@ -186,6 +249,20 @@
       "version": "1.0.0"
     },
     {
+      "commandId": "links.modify.place_host_link_for_acquire_by_site_values",
+      "file": "approved/links.modify.place_host_link_for_acquire_by_site_values.json",
+      "sha256": "8bb40e80450d019d480661b4d48794b2210c1ffd46d69db68db3fd8aad0c304f",
+      "sizeBytes": 5851,
+      "version": "1.0.1"
+    },
+    {
+      "commandId": "links.modify.place_link_as_inverse_of_reference_instance",
+      "file": "approved/links.modify.place_link_as_inverse_of_reference_instance.json",
+      "sha256": "b0565fa5fa80b90be89278a0ee0f3fca438a3ea9e6876979f5bf54d34858b1e2",
+      "sizeBytes": 5128,
+      "version": "1.0.1"
+    },
+    {
       "commandId": "links.read.compare_link_levels_to_host",
       "file": "approved/links.read.compare_link_levels_to_host.json",
       "sha256": "0d9209a7ec73bec02f9d4aa1766b65b8d74bdde0804ca0350c49d83165308fac",
@@ -198,6 +275,13 @@
       "sha256": "bc8c6163bc1b66a982f8f2e5070932eab21b330cdaddda0c22c7396e8f97c61d",
       "sizeBytes": 2723,
       "version": "1.0.0"
+    },
+    {
+      "commandId": "links.read.link_instances_mirror_state_in_open_doc",
+      "file": "approved/links.read.link_instances_mirror_state_in_open_doc.json",
+      "sha256": "80e38a6f37c8ca26315541713ed05a7a628a13abd27dc2f7a07674466150e826",
+      "sizeBytes": 2362,
+      "version": "1.0.1"
     },
     {
       "commandId": "links.read.link_model_quality_lod_sample",
@@ -282,6 +366,13 @@
       "sha256": "253abe479b9c7c3e9c91dd46ed3aaa671fd22901cb781dbe5e0b491c4e47f109",
       "sizeBytes": 2666,
       "version": "1.0.0"
+    },
+    {
+      "commandId": "parking.read.bays_by_room",
+      "file": "approved/parking.read.bays_by_room.json",
+      "sha256": "9fff36b10167d88e4783cc960d3cc6691bb1ce59df785198445ea87b0a319a3d",
+      "sizeBytes": 2207,
+      "version": "1.0.1"
     },
     {
       "commandId": "parking.read.bays_visible_and_in_rooms",
@@ -410,6 +501,13 @@
       "version": "1.0.0"
     },
     {
+      "commandId": "project.read.list_building_types",
+      "file": "approved/project.read.list_building_types.json",
+      "sha256": "278d5babb9f30aa917ffd7c1502132360d92f434b16c95735e4957bc0315d871",
+      "sizeBytes": 2897,
+      "version": "1.0.1"
+    },
+    {
       "commandId": "project.read.list_library_paths",
       "file": "approved/project.read.list_library_paths.json",
       "sha256": "8f76782fdf281b0c7c4be828699596e171a492e83dbff553428e63a7d784fd7c",
@@ -515,11 +613,32 @@
       "version": "1.0.0"
     },
     {
+      "commandId": "schedules.modify.restore_filters_from_source_schedules",
+      "file": "approved/schedules.modify.restore_filters_from_source_schedules.json",
+      "sha256": "f5959152ddd1e44690592e89d510187aedf193440a99909bc81d83a9342c9719",
+      "sizeBytes": 5362,
+      "version": "1.0.1"
+    },
+    {
+      "commandId": "schedules.read.inspect_schedules_fields_filters_source_target",
+      "file": "approved/schedules.read.inspect_schedules_fields_filters_source_target.json",
+      "sha256": "599c20692edf32bec9fb5a181d3d8e8794365cfca8761c4dc4bdd3f2911273ae",
+      "sizeBytes": 4812,
+      "version": "1.0.1"
+    },
+    {
       "commandId": "schedules.read.list_open_docs_selection_and_schedules",
       "file": "approved/schedules.read.list_open_docs_selection_and_schedules.json",
       "sha256": "5516c8c7922130b89e7af15c74bf460cc43859041a532b1c47f08ea00874a9f9",
       "sizeBytes": 2659,
       "version": "1.0.0"
+    },
+    {
+      "commandId": "site.read.plot_floors_vs_target_coordinates",
+      "file": "approved/site.read.plot_floors_vs_target_coordinates.json",
+      "sha256": "bc1d21c9d51993712d3ab9844f5c66e0d42a2913bf8387d07fa232f8dd9172d2",
+      "sizeBytes": 4598,
+      "version": "1.0.1"
     },
     {
       "commandId": "site.read.property_line_vs_target_shared_coords",
@@ -576,6 +695,13 @@
       "sha256": "0b70861da56f0af99cc039753297183b8c0f2fa58a39ff6142b76fc42a057a1e",
       "sizeBytes": 3272,
       "version": "1.0.0"
+    },
+    {
+      "commandId": "views.read.list_views_titleblocks",
+      "file": "approved/views.read.list_views_titleblocks.json",
+      "sha256": "30d0f0f4649f4a0cb955535f068690a0eca908aac412010f3d03fdc4baf783ab",
+      "sizeBytes": 2560,
+      "version": "1.0.1"
     },
     {
       "commandId": "walls.create.walls_from_centreline_table",

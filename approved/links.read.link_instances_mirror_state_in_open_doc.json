@@ -1,0 +1,59 @@
+{
+  "definition": {
+    "commandId": "links.read.link_instances_mirror_state_in_open_doc",
+    "name": "Link Instances Mirror State",
+    "description": "Lists link instances in a named open project with rotation, mirror state and workset.",
+    "aiDescription": "Lists link instances in a named open project with rotation, mirror state and workset.",
+    "examples": [
+      "which link instances are mirrored in this open model?"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "hostTitle",
+        "type": "String",
+        "description": "Script argument 'hostTitle'.",
+        "required": false,
+        "default": ""
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.1",
+    "author": "Axoneer AI",
+    "source": "AiGenerated",
+    "codeReference": "user-library:links.read.link_instances_mirror_state_in_open_doc",
+    "lastModifiedUtc": "2026-11-11T15:07:23.0247957Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "string host = Tama.Args.Get(args, \"hostTitle\", \"\");\nDocument d = null;\nforeach (Document x in app.Documents) if (x.Title == host) d = x;\nif (d == null) return \"host not open\";\nreturn new FilteredElementCollector(d).OfClass(typeof(RevitLinkInstance)).Cast<RevitLinkInstance>()\n  .Select(li => { var t = li.GetTransform(); return new {\n     id = li.Id.IntegerValue, name = li.Name,\n     mirrored = t.BasisX.CrossProduct(t.BasisY).Z < 0,\n     rot_deg = Math.Round(Math.Atan2(t.BasisX.Y,t.BasisX.X)*180/Math.PI,4),\n     workset = d.GetWorksetTable().GetWorkset(li.WorksetId).Name\n  };}).ToList();",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:41:17.372Z"
+}

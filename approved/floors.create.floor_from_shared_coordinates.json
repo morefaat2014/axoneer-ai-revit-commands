@@ -1,0 +1,79 @@
+{
+  "definition": {
+    "commandId": "floors.create.floor_from_shared_coordinates",
+    "name": "Create Floor from Shared Coordinates",
+    "description": "Creates a floor of a given type on a level from a list of shared E/N points in metres, converted through the active site.",
+    "aiDescription": "Creates a floor of a given type on a level from a list of shared E/N points in metres, converted through the active site.",
+    "examples": [
+      "create a floor at these survey coordinates",
+      "make a slab from these E/N points"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Action",
+    "type": "Atomic",
+    "execution": "Modify",
+    "linkAware": false,
+    "inputs": [
+      {
+        "name": "level",
+        "type": "String",
+        "description": "Script argument 'level'.",
+        "required": true
+      },
+      {
+        "name": "floorType",
+        "type": "String",
+        "description": "Script argument 'floorType'.",
+        "required": true
+      },
+      {
+        "name": "points",
+        "type": "Any",
+        "description": "Script argument 'points'.",
+        "required": true
+      }
+    ],
+    "optionalInputs": [
+      {
+        "name": "comment",
+        "type": "String",
+        "description": "Script argument 'comment'.",
+        "required": false,
+        "default": ""
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": true,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Confirm",
+    "confirmationRequired": true,
+    "dependencies": [],
+    "minRevitVersion": 2022,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.1",
+    "author": "Axoneer AI",
+    "source": "AiGenerated",
+    "codeReference": "user-library:floors.create.floor_from_shared_coordinates",
+    "lastModifiedUtc": "2026-11-17T12:02:06.6347088Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Action",
+  "transactionMode": "auto",
+  "code": "var levelName = Tama.Args.Get(args, \"level\", \"\");\nvar typeName = Tama.Args.Get(args, \"floorType\", \"\");\nvar comment = Tama.Args.Get(args, \"comment\", \"\");\nvar level = new FilteredElementCollector(doc).OfClass(typeof(Level)).Cast<Level>().First(l => l.Name == levelName);\nvar ft = new FilteredElementCollector(doc).OfClass(typeof(FloorType)).Cast<FloorType>().First(f => f.Name == typeName);\nvar tf = doc.ActiveProjectLocation.GetTotalTransform();\nvar pts = new List<XYZ>();\nforeach (var o in (object[])args[\"points\"]) { var a = (object[])o; var s = new XYZ(Convert.ToDouble(a[0])/0.3048, Convert.ToDouble(a[1])/0.3048, 0); var c = tf.OfPoint(s); pts.Add(new XYZ(c.X, c.Y, level.Elevation)); }\nvar loop = new CurveLoop();\nfor (int i = 0; i < pts.Count; i++) loop.Append(Line.CreateBound(pts[i], pts[(i+1)%pts.Count]));\nvar floor = Floor.Create(doc, new List<CurveLoop>{ loop }, ft.Id, level.Id);\nvar off = floor.get_Parameter(BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM); if (off != null && !off.IsReadOnly) off.Set(0.0);\nif (!string.IsNullOrEmpty(comment)) floor.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS)?.Set(comment);\ndoc.Regenerate();\nvar inv = tf.Inverse;\nvar check = pts.Select((p,i) => { var sh = inv.OfPoint(p); return new { pt = \"P0\"+(i+1), E = Math.Round(sh.X*0.3048,3), N = Math.Round(sh.Y*0.3048,3) }; }).ToList();\nvar area = floor.get_Parameter(BuiltInParameter.HOST_AREA_COMPUTED)?.AsDouble() ?? 0;\nreturn new { floorId = floor.Id.IntegerValue, level = level.Name, type = ft.Name, area_m2 = Math.Round(area*0.092903,2), corners = check };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:41:17.384Z"
+}

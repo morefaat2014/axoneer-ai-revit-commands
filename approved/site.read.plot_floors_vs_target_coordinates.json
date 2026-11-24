@@ -1,0 +1,64 @@
+{
+  "definition": {
+    "commandId": "site.read.plot_floors_vs_target_coordinates",
+    "name": "Plot Floors vs Target Coordinates",
+    "description": "For plot IDs with target shared E/N corners, finds floors by a plot ID parameter, reports corner deviations, edge types and the setback lines inside each floor.",
+    "aiDescription": "For plot IDs with target shared E/N corners, finds floors by a plot ID parameter, reports corner deviations, edge types and the setback lines inside each floor.",
+    "examples": [
+      "compare the plot floors with their target corner coordinates"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [
+      {
+        "name": "param",
+        "type": "String",
+        "description": "Script argument 'param'.",
+        "required": true
+      },
+      {
+        "name": "plots",
+        "type": "Object",
+        "description": "Script argument 'plots'.",
+        "required": true
+      }
+    ],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2022,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.1",
+    "author": "Axoneer AI",
+    "source": "AiGenerated",
+    "codeReference": "user-library:site.read.plot_floors_vs_target_coordinates",
+    "lastModifiedUtc": "2026-11-17T14:36:58.0165964Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var pname = Tama.Args.Get(args, \"param\", \"\");\nvar plots = (IDictionary<string,object>)args[\"plots\"];\nvar inv = doc.ActiveProjectLocation.GetTotalTransform().Inverse;\nFunc<XYZ,double[]> sh = p => { var s = inv.OfPoint(p); return new[]{ s.X*0.3048, s.Y*0.3048 }; };\nvar floors = new FilteredElementCollector(doc).OfClass(typeof(Floor)).Cast<Floor>().ToList();\nvar setbacks = new FilteredElementCollector(doc).OfClass(typeof(CurveElement)).Cast<CurveElement>().Where(c => c.CurveElementType == CurveElementType.ModelCurve && c.LineStyle != null && c.LineStyle.Name.Contains(\"Setback\")).ToList();\nFunc<List<double[]>, double, double, bool> inside = (poly, x, y) => { bool r = false; for (int i=0,j=poly.Count-1;i<poly.Count;j=i++) { if (((poly[i][1]>y)!=(poly[j][1]>y)) && (x < (poly[j][0]-poly[i][0])*(y-poly[i][1])/(poly[j][1]-poly[i][1])+poly[i][0])) r = !r; } return r; };\nvar outp = new List<object>();\nforeach (var kv in plots) {\n  var id = kv.Key;\n  var tg = ((object[])kv.Value).Select(o => { var a = (object[])o; return new[]{ Convert.ToDouble(a[0]), Convert.ToDouble(a[1]) }; }).ToList();\n  var hits = floors.Where(f => { var p = f.LookupParameter(pname); var v = p?.AsString() ?? p?.AsValueString(); return v != null && v.Trim().EndsWith(id); }).ToList();\n  var fl = new List<object>();\n  foreach (var f in hits) {\n    var sk = doc.GetElement(f.SketchId) as Sketch;\n    var verts = new List<double[]>(); var types = new List<string>(); int loopsN = 0;\n    foreach (CurveArray ca in sk.Profile) { loopsN++; if (loopsN > 1) continue; foreach (Curve c in ca) { verts.Add(sh(c.GetEndPoint(0))); types.Add(c is Arc ? \"A\" : \"L\"); } }\n    var match = tg.Select((t,i) => { var b = verts.OrderBy(v => Math.Pow(v[0]-t[0],2)+Math.Pow(v[1]-t[1],2)).First(); return new { pt = \"P0\"+(i+1), dmm = Math.Round(Math.Sqrt(Math.Pow(b[0]-t[0],2)+Math.Pow(b[1]-t[1],2))*1000,1) }; }).ToList();\n    var lines = setbacks.Where(c => { var m = sh(c.GeometryCurve.Evaluate(0.5,true)); return inside(verts, m[0], m[1]); }).Select(c => c.Id.IntegerValue).ToList();\n    fl.Add(new { floorId = f.Id.IntegerValue, value = f.LookupParameter(pname)?.AsString(), type = f.Name, workset = doc.GetWorksetTable().GetWorkset(f.WorksetId).Name, owner = WorksharingUtils.GetWorksharingTooltipInfo(doc, f.Id).Owner, loops = loopsN, edges = string.Join(\"\", types), vertexCount = verts.Count, cornerDiff_mm = match, setbackLineIds = lines });\n  }\n  outp.Add(new { plot = id, floorsFound = hits.Count, floors = fl });\n}\nreturn new { activeView = doc.ActiveView.Name, plots = outp };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:41:17.387Z"
+}

@@ -1,0 +1,72 @@
+{
+  "definition": {
+    "commandId": "schedules.modify.restore_filters_from_source_schedules",
+    "name": "Restore Schedule Filters From Source Model",
+    "description": "Re-creates the filters of same-named schedules from a named source model on schedules in a named target model, mapping level filters by level name.",
+    "aiDescription": "Re-creates the filters of same-named schedules from a named source model on schedules in a named target model, mapping level filters by level name.",
+    "examples": [
+      "restore the filters of these schedules from the same schedules in another open model"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Action",
+    "type": "Atomic",
+    "execution": "Modify",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "target",
+        "type": "String",
+        "description": "Script argument 'target'.",
+        "required": false,
+        "default": ""
+      },
+      {
+        "name": "source",
+        "type": "String",
+        "description": "Script argument 'source'.",
+        "required": false,
+        "default": ""
+      },
+      {
+        "name": "ids",
+        "type": "IntegerArray",
+        "description": "Script argument 'ids'.",
+        "required": false
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": true,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Confirm",
+    "confirmationRequired": true,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.1",
+    "author": "Axoneer AI",
+    "source": "AiGenerated",
+    "codeReference": "user-library:schedules.modify.restore_filters_from_source_schedules",
+    "lastModifiedUtc": "2026-11-10T13:05:35.7914066Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Action",
+  "transactionMode": "manual",
+  "code": "var targetTitle = Tama.Args.Get(args, \"target\", \"\");\nvar sourceTitle = Tama.Args.Get(args, \"source\", \"\");\nvar ids = ((object[])args[\"ids\"]).Select(o => new ElementId(Convert.ToInt32(o))).ToList();\nDocument target = null, source = null;\nforeach (Document d in app.Documents) { if (d.IsLinked) continue; if (d.Title == targetTitle) target = d; if (d.Title == sourceTitle) source = d; }\nif (target == null || source == null) throw new Exception(\"Source or target not open\");\nvar tLevels = new FilteredElementCollector(target).OfClass(typeof(Level)).Cast<Level>().ToDictionary(l => l.Name, l => l.Id);\nvar srcScheds = new FilteredElementCollector(source).OfClass(typeof(ViewSchedule)).Cast<ViewSchedule>().Where(v => !v.IsTemplate).ToList();\nvar res = new List<object>();\nusing (var t = new Transaction(target, \"Restore schedule filters\")) {\n  t.Start();\n  foreach (var id in ids) {\n    var vs = (ViewSchedule)target.GetElement(id);\n    var tdef = vs.Definition;\n    if (tdef.GetFilterCount() > 0) { res.Add(new { vs.Name, added = new List<string> { \"already has filters - skipped\" } }); continue; }\n    var src = srcScheds.FirstOrDefault(s => s.Name == vs.Name);\n    if (src == null) throw new Exception(\"No source schedule \" + vs.Name);\n    var sdef = src.Definition;\n    var added = new List<string>();\n    for (int i = 0; i < sdef.GetFilterCount(); i++) {\n      var sf = sdef.GetFilter(i);\n      var sField = sdef.GetField(sf.FieldId);\n      ScheduleField tField = null;\n      for (int j = 0; j < tdef.GetFieldCount(); j++) { var f = tdef.GetField(j); if (f.ColumnHeading == sField.ColumnHeading && f.FieldType == sField.FieldType) { tField = f; break; } }\n      if (tField == null) throw new Exception(vs.Name + \": field \" + sField.ColumnHeading + \" missing\");\n      ScheduleFilter nf;\n      if (sf.IsElementIdValue) {\n        var lvlName = source.GetElement(sf.GetElementIdValue())?.Name;\n        if (lvlName == null || !tLevels.ContainsKey(lvlName)) throw new Exception(vs.Name + \": level \" + lvlName + \" not in target\");\n        nf = new ScheduleFilter(tField.FieldId, sf.FilterType, tLevels[lvlName]);\n        added.Add(sField.ColumnHeading + \" = \" + lvlName);\n      } else if (sf.IsStringValue) { nf = new ScheduleFilter(tField.FieldId, sf.FilterType, sf.GetStringValue()); added.Add(sField.ColumnHeading + \" \" + sf.FilterType + \" \" + sf.GetStringValue()); }\n      else { nf = new ScheduleFilter(tField.FieldId, sf.FilterType); added.Add(sField.ColumnHeading + \" \" + sf.FilterType); }\n      tdef.AddFilter(nf);\n    }\n    res.Add(new { vs.Name, added });\n  }\n  t.Commit();\n}\nvar verify = ids.Select(id => { var vs = (ViewSchedule)target.GetElement(id); var b = vs.GetTableData().GetSectionData(SectionType.Body); var rows = new List<string>(); for (int r = 1; r < b.NumberOfRows; r++) { var c = new List<string>(); foreach (int k in new[] { 0, 1, 2, 4 }) if (k < b.NumberOfColumns) c.Add(vs.GetCellText(SectionType.Body, r, k)); rows.Add(string.Join(\" | \", c)); } return new { vs.Name, rows }; }).ToList();\nreturn new { res, verify };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:41:17.361Z"
+}

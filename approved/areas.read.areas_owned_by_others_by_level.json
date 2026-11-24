@@ -1,0 +1,66 @@
+{
+  "definition": {
+    "commandId": "areas.read.areas_owned_by_others_by_level",
+    "name": "Areas Owned By Others By Level",
+    "description": "Counts the areas of a scheme that other users have checked out, by level and owner, in an open workshared model.",
+    "aiDescription": "Counts the areas of a scheme that other users have checked out, by level and owner, in an open workshared model.",
+    "examples": [
+      "which areas are owned by other users?"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "scheme",
+        "type": "String",
+        "description": "Script argument 'scheme'.",
+        "required": false,
+        "default": ""
+      },
+      {
+        "name": "target",
+        "type": "String",
+        "description": "Script argument 'target'.",
+        "required": false,
+        "default": ""
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.1",
+    "author": "Axoneer AI",
+    "source": "AiGenerated",
+    "codeReference": "user-library:areas.read.areas_owned_by_others_by_level",
+    "lastModifiedUtc": "2026-11-10T13:03:51.6571417Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var schemeName = Tama.Args.Get(args, \"scheme\", \"\");\nvar targetTitle = Tama.Args.Get(args, \"target\", \"\");\nDocument target = null;\nforeach (Document d in app.Documents) if (!d.IsLinked && d.Title == targetTitle) target = d;\nif (target == null) throw new InvalidOperationException(\"The target model is not open: \" + targetTitle);\nreturn new FilteredElementCollector(target).OfCategory(BuiltInCategory.OST_Areas).WhereElementIsNotElementType().Cast<Autodesk.Revit.DB.Area>()\n .Where(a => a.AreaScheme != null && a.AreaScheme.Name == schemeName && WorksharingUtils.GetCheckoutStatus(target, a.Id) == CheckoutStatus.OwnedByOtherUser)\n .GroupBy(a => (a.Level?.Name ?? \"-\") + \" | owner: \" + WorksharingUtils.GetWorksharingTooltipInfo(target, a.Id).Owner)\n .Select(g => new { key = g.Key, count = g.Count() }).ToList();",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:41:17.355Z"
+}

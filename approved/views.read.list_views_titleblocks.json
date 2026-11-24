@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "views.read.list_views_titleblocks",
+    "name": "List Views, Title Blocks and Dimension Types",
+    "description": "Lists views, title blocks, section and elevation types, and linear dimension types.",
+    "aiDescription": "Lists views, title blocks, section and elevation types, and linear dimension types.",
+    "examples": [
+      "list the views and title blocks in this model"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.1",
+    "author": "Axoneer AI",
+    "source": "AiGenerated",
+    "codeReference": "user-library:views.read.list_views_titleblocks",
+    "lastModifiedUtc": "2026-11-13T18:37:33.200336Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var views = new FilteredElementCollector(doc).OfClass(typeof(View)).Cast<View>().Where(v => !v.IsTemplate).Select(v => new { v.Name, id = v.Id.IntegerValue, type = v.ViewType.ToString(), scale = v.ViewType == ViewType.Schedule ? 0 : v.Scale }).ToList();\nvar tbs = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_TitleBlocks).OfClass(typeof(FamilySymbol)).Cast<FamilySymbol>().Select(s => new { fam = s.FamilyName, s.Name, id = s.Id.IntegerValue }).ToList();\nvar vft = new FilteredElementCollector(doc).OfClass(typeof(ViewFamilyType)).Cast<ViewFamilyType>().Where(t => t.ViewFamily == ViewFamily.Section || t.ViewFamily == ViewFamily.Elevation).Select(t => new { t.Name, fam = t.ViewFamily.ToString(), id = t.Id.IntegerValue }).ToList();\nvar dimTypes = new FilteredElementCollector(doc).OfClass(typeof(DimensionType)).Cast<DimensionType>().Where(d => d.StyleType == DimensionStyleType.Linear).Select(d => new { d.Name, id = d.Id.IntegerValue }).ToList();\nreturn new { views, tbs, vft, dimTypes };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:41:17.403Z"
+}

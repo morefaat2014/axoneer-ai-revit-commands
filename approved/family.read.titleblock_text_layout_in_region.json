@@ -1,0 +1,87 @@
+{
+  "definition": {
+    "commandId": "family.read.titleblock_text_layout_in_region",
+    "name": "Title Block Text Layout In Region",
+    "description": "Lists text notes and labels in a region of the active family view (mm), flags selected labels, and lists the shared parameter file definitions with a given name prefix.",
+    "aiDescription": "Lists text notes and labels in a region of the active family view (mm), flags selected labels, and lists the shared parameter file definitions with a given name prefix.",
+    "examples": [
+      "show the text and labels in the title block info panel"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "xMin",
+        "type": "Number",
+        "description": "Script argument 'xMin'.",
+        "required": false,
+        "default": 680
+      },
+      {
+        "name": "xMax",
+        "type": "Number",
+        "description": "Script argument 'xMax'.",
+        "required": false,
+        "default": 900
+      },
+      {
+        "name": "yMin",
+        "type": "Number",
+        "description": "Script argument 'yMin'.",
+        "required": false,
+        "default": 40
+      },
+      {
+        "name": "yMax",
+        "type": "Number",
+        "description": "Script argument 'yMax'.",
+        "required": false,
+        "default": 300
+      },
+      {
+        "name": "prefix",
+        "type": "String",
+        "description": "Start of the shared parameter names to list; empty lists none.",
+        "required": false,
+        "default": ""
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.1",
+    "author": "Axoneer AI",
+    "source": "AiGenerated",
+    "codeReference": "user-library:family.read.titleblock_text_layout_in_region",
+    "lastModifiedUtc": "2026-11-16T17:22:32.0515198Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "double x0 = Tama.Args.Get(args, \"xMin\", 680.0), x1 = Tama.Args.Get(args, \"xMax\", 900.0), y0 = Tama.Args.Get(args, \"yMin\", 40.0), y1 = Tama.Args.Get(args, \"yMax\", 300.0);\nvar sel = new HashSet<long>(uidoc.Selection.GetElementIds().Select(i => (long)i.IntegerValue));\nvar items = new FilteredElementCollector(doc, doc.ActiveView.Id).OfClass(typeof(TextElement)).Cast<TextElement>()\n  .Where(t => { var x = t.Coord.X*304.8; var y = t.Coord.Y*304.8; return x>=x0 && x<=x1 && y>=y0 && y<=y1; })\n  .Select(t => new { id = t.Id.IntegerValue, kind = (t is TextNote) ? \"note\" : (sel.Contains(t.Id.IntegerValue) ? \"LABEL*\" : \"label\"), text = t.Text.Trim().Replace(\"\\r\",\" | \"), x = Math.Round(t.Coord.X*304.8), y = Math.Round(t.Coord.Y*304.8) })\n  .OrderByDescending(t => t.y).ThenBy(t => t.x).ToList();\nvar prefix = Tama.Args.Get(args, \"prefix\", \"\");\nvar guids = new List<object>();\ntry {\n  var f = app.OpenSharedParameterFile();\n  if (f != null) foreach (DefinitionGroup g in f.Groups) foreach (ExternalDefinition d in g.Definitions)\n    if (prefix.Length > 0 && d.Name.StartsWith(prefix)) guids.Add(new { g = g.Name, n = d.Name, guid = d.GUID.ToString() });\n} catch (Exception ex) { guids.Add(ex.Message); }\nreturn new { items, sharedFileParams = guids };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:41:17.381Z"
+}

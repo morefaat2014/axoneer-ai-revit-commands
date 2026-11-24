@@ -1,0 +1,66 @@
+{
+  "definition": {
+    "commandId": "lines.read.setback_offsets_for_plots",
+    "name": "Measure Setback Offsets for Plots",
+    "description": "For plot floors and their setback lines, reports each line's length, nearest plot edge and offset in metres.",
+    "aiDescription": "For plot floors and their setback lines, reports each line's length, nearest plot edge and offset in metres.",
+    "examples": [
+      "what are the setback offsets of these plots?"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [
+      {
+        "name": "plots",
+        "type": "Any",
+        "description": "Script argument 'plots'.",
+        "required": true
+      }
+    ],
+    "optionalInputs": [
+      {
+        "name": "plotParam",
+        "type": "String",
+        "description": "Floor parameter that holds the plot ID.",
+        "required": false,
+        "default": "Mark"
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2022,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.1",
+    "author": "Axoneer AI",
+    "source": "AiGenerated",
+    "codeReference": "user-library:lines.read.setback_offsets_for_plots",
+    "lastModifiedUtc": "2026-11-17T14:52:33.7296693Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var plotParam = Tama.Args.Get(args, \"plotParam\", \"Mark\");\nvar res = new List<object>();\nforeach (var po in (object[])args[\"plots\"]) {\n  var pdict = (IDictionary<string,object>)po;\n  int fid = Convert.ToInt32(pdict[\"floorId\"]);\n  var floor = doc.GetElement(new ElementId(fid)) as Floor;\n  var sk = doc.GetElement(floor.SketchId) as Sketch;\n  var plot = new List<Curve>(); foreach (CurveArray ca in sk.Profile) { foreach (Curve c in ca) plot.Add(c.CreateTransformed(Transform.CreateTranslation(new XYZ(0,0,-c.GetEndPoint(0).Z)))); break; }\n  var edgeLens = plot.Select(c => Math.Round(c.Length*0.3048,2)).ToList();\n  var lines = new List<string>();\n  foreach (var o in (object[])pdict[\"ids\"]) {\n    var ce = doc.GetElement(new ElementId(Convert.ToInt32(o))) as CurveElement; var c = ce.GeometryCurve;\n    var m = c.Evaluate(0.5,true); m = new XYZ(m.X, m.Y, 0);\n    var best = plot.Select((p,i) => { var u = p.Clone(); u.MakeUnbound(); return new { i, d = u.Project(m).Distance }; }).OrderBy(x => x.d).First();\n    lines.Add(ce.Id.IntegerValue + (c is Arc ? \"(A)\" : \"(L)\") + \" len \" + Math.Round(c.Length*0.3048,2) + \" -> edge\" + best.i + \" @ \" + Math.Round(best.d*0.3048,3));\n  }\n  res.Add(new { fid, plotId = floor.LookupParameter(plotParam)?.AsString(), type = floor.Name, edgeLens, lines });\n}\nreturn res;",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:41:17.390Z"
+}

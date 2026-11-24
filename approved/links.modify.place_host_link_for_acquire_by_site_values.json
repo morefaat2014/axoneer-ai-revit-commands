@@ -1,0 +1,122 @@
+{
+  "definition": {
+    "commandId": "links.modify.place_host_link_for_acquire_by_site_values",
+    "name": "Place Site Link For Acquire",
+    "description": "Moves and rotates a linked site model in the active document so the host sits at given shared E/N/elevation/angle, ready for Acquire Coordinates.",
+    "aiDescription": "Moves and rotates a linked site model in the active document so the host sits at given shared E/N/elevation/angle, ready for Acquire Coordinates.",
+    "examples": [
+      "move and rotate the linked site model so this model sits at given shared coordinates"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Action",
+    "type": "Atomic",
+    "execution": "Modify",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "hostTitle",
+        "type": "String",
+        "description": "Script argument 'hostTitle'.",
+        "required": false,
+        "default": ""
+      },
+      {
+        "name": "linkId",
+        "type": "Integer",
+        "description": "Script argument 'linkId'.",
+        "required": false,
+        "default": 0
+      },
+      {
+        "name": "siteEW",
+        "type": "Number",
+        "description": "Script argument 'siteEW'.",
+        "required": false,
+        "default": 0
+      },
+      {
+        "name": "siteNS",
+        "type": "Number",
+        "description": "Script argument 'siteNS'.",
+        "required": false,
+        "default": 0
+      },
+      {
+        "name": "siteElev",
+        "type": "Number",
+        "description": "Script argument 'siteElev'.",
+        "required": false,
+        "default": 0
+      },
+      {
+        "name": "siteAngleDeg",
+        "type": "Number",
+        "description": "Script argument 'siteAngleDeg'.",
+        "required": false,
+        "default": 0
+      },
+      {
+        "name": "hostEW",
+        "type": "Number",
+        "description": "Script argument 'hostEW'.",
+        "required": false,
+        "default": 0
+      },
+      {
+        "name": "hostNS",
+        "type": "Number",
+        "description": "Script argument 'hostNS'.",
+        "required": false,
+        "default": 0
+      },
+      {
+        "name": "hostElev",
+        "type": "Number",
+        "description": "Script argument 'hostElev'.",
+        "required": false,
+        "default": 0
+      },
+      {
+        "name": "hostAngleDeg",
+        "type": "Number",
+        "description": "Script argument 'hostAngleDeg'.",
+        "required": false,
+        "default": 0
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": true,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Confirm",
+    "confirmationRequired": true,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.1",
+    "author": "Axoneer AI",
+    "source": "AiGenerated",
+    "codeReference": "user-library:links.modify.place_host_link_for_acquire_by_site_values",
+    "lastModifiedUtc": "2026-11-12T17:17:51.716231Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Action",
+  "transactionMode": "auto",
+  "code": "double ft = 0.3048;\nstring hostTitle = Tama.Args.Get(args, \"hostTitle\", \"\");\nDocument h = doc;\nif (hostTitle.Length > 0) { h = null; foreach (Document d in app.Documents) if (!d.IsLinked && d.Title == hostTitle) h = d; }\nif (h == null) throw new Exception(\"Host document not open: \" + hostTitle);\nif (h.Title != doc.Title) throw new Exception(\"Host is not the active document; activate it first.\");\nint linkId = Tama.Args.Get(args, \"linkId\", 0);\ndouble sE = Tama.Args.Get(args, \"siteEW\", 0.0), sN = Tama.Args.Get(args, \"siteNS\", 0.0), sZ = Tama.Args.Get(args, \"siteElev\", 0.0), sA = Tama.Args.Get(args, \"siteAngleDeg\", 0.0) * Math.PI / 180;\ndouble vE = Tama.Args.Get(args, \"hostEW\", 0.0), vN = Tama.Args.Get(args, \"hostNS\", 0.0), vZ = Tama.Args.Get(args, \"hostElev\", 0.0), vA = Tama.Args.Get(args, \"hostAngleDeg\", 0.0) * Math.PI / 180;\nvar li = h.GetElement(new ElementId(linkId)) as RevitLinkInstance;\nif (li == null) throw new Exception(\"Link instance not found\");\nif (li.Pinned) throw new Exception(\"Link is pinned\");\ndouble rot = sA - vA;\ndouble dx = (sE - vE) / ft, dy = (sN - vN) / ft, dz = (sZ - vZ) / ft;\ndouble c = Math.Cos(-vA), s = Math.Sin(-vA);\nvar targetOrigin = new XYZ(c*dx - s*dy, s*dx + c*dy, dz);\nvar t0 = li.GetTransform();\nElementTransformUtils.RotateElement(h, li.Id, Line.CreateBound(t0.Origin, t0.Origin + XYZ.BasisZ), rot - Math.Atan2(t0.BasisX.Y, t0.BasisX.X));\nh.Regenerate();\nElementTransformUtils.MoveElement(h, li.Id, targetOrigin - li.GetTransform().Origin);\nh.Regenerate();\nvar t = li.GetTransform();\nvar vInSite = t.Inverse.OfPoint(XYZ.Zero);\ndouble cs = Math.Cos(sA), ss = Math.Sin(sA);\nvar shared = new XYZ(sE + (cs*vInSite.X - ss*vInSite.Y)*ft, sN + (ss*vInSite.X + cs*vInSite.Y)*ft, sZ + vInSite.Z*ft);\ndouble err = Math.Sqrt(Math.Pow(shared.X - vE,2) + Math.Pow(shared.Y - vN,2) + Math.Pow(shared.Z - vZ,2));\nif (err > 0.001) throw new Exception(\"Check failed, error \" + err + \" m - rolled back\");\nreturn new { host = h.Title, link = li.Name,\n  origin_m = new[]{Math.Round(t.Origin.X*ft,4), Math.Round(t.Origin.Y*ft,4), Math.Round(t.Origin.Z*ft,4)},\n  rotation_deg = Math.Round(Math.Atan2(t.BasisX.Y, t.BasisX.X)*180/Math.PI, 6),\n  hostOriginReadsInSite = new[]{Math.Round(shared.X,4), Math.Round(shared.Y,4), Math.Round(shared.Z,4)},\n  checkError_mm = Math.Round(err*1000,3) };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:41:17.375Z"
+}

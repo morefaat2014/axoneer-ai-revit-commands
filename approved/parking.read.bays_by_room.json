@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "parking.read.bays_by_room",
+    "name": "Bays by Room",
+    "description": "Counts parking bays by level and the room they are in, lists rooms per level, and the model warnings.",
+    "aiDescription": "Counts parking bays by level and the room they are in, lists rooms per level, and the model warnings.",
+    "examples": [
+      "how many parking bays are in each room?"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.1",
+    "author": "Axoneer AI",
+    "source": "AiGenerated",
+    "codeReference": "user-library:parking.read.bays_by_room",
+    "lastModifiedUtc": "2026-11-24T12:26:39.079309Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var ph=doc.Phases.Cast<Phase>().Last();\nvar pk=new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Parking).OfClass(typeof(FamilyInstance)).Cast<FamilyInstance>().GroupBy(f=>doc.GetElement(f.LevelId).Name+\" -> \"+(f.get_Room(ph)==null?\"none\":f.get_Room(ph).Name)).Select(g=>g.Key+\": \"+g.Count()).ToList();\nvar rm=new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Rooms).WhereElementIsNotElementType().Cast<SpatialElement>().GroupBy(r=>r.Level.Name).Select(g=>g.Key+\": \"+g.Count()+\" zero \"+g.Count(r=>r.Area<=0)).ToList();\nreturn new{pk,rm,warn=doc.GetWarnings().Select(w=>w.GetDescriptionText()).Distinct().ToList(),modified=doc.IsModified};",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:41:17.399Z"
+}

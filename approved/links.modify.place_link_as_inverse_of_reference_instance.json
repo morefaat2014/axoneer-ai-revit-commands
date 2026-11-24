@@ -1,0 +1,80 @@
+{
+  "definition": {
+    "commandId": "links.modify.place_link_as_inverse_of_reference_instance",
+    "name": "Place Link As Inverse Of Reference",
+    "description": "Places a link instance in the active model as the exact inverse of a reference link instance in another open model (handles mirrored placements), with a given elevation.",
+    "aiDescription": "Places a link instance in the active model as the exact inverse of a reference link instance in another open model (handles mirrored placements), with a given elevation.",
+    "examples": [
+      "align the site link using the reference instance in the site model"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Action",
+    "type": "Atomic",
+    "execution": "Modify",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "siteTitle",
+        "type": "String",
+        "description": "Script argument 'siteTitle'.",
+        "required": false,
+        "default": ""
+      },
+      {
+        "name": "refInstanceId",
+        "type": "Integer",
+        "description": "Script argument 'refInstanceId'.",
+        "required": false,
+        "default": 0
+      },
+      {
+        "name": "linkId",
+        "type": "Integer",
+        "description": "Script argument 'linkId'.",
+        "required": false,
+        "default": 0
+      },
+      {
+        "name": "elev",
+        "type": "Number",
+        "description": "Script argument 'elev'.",
+        "required": false,
+        "default": 0
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": true,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Confirm",
+    "confirmationRequired": true,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.1",
+    "author": "Axoneer AI",
+    "source": "AiGenerated",
+    "codeReference": "user-library:links.modify.place_link_as_inverse_of_reference_instance",
+    "lastModifiedUtc": "2026-11-15T12:36:36.1426148Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Action",
+  "transactionMode": "auto",
+  "code": "double ft = 0.3048;\nstring siteTitle = Tama.Args.Get(args, \"siteTitle\", \"\");\nint refId = Tama.Args.Get(args, \"refInstanceId\", 0);\nint linkId = Tama.Args.Get(args, \"linkId\", 0);\ndouble elev = Tama.Args.Get(args, \"elev\", 0.0) / ft;\nDocument site = null;\nforeach (Document d in app.Documents) if (!d.IsLinked && d.Title == siteTitle) site = d;\nif (site == null) throw new Exception(\"Site model not open\");\nvar refLi = site.GetElement(new ElementId(refId)) as RevitLinkInstance;\nif (refLi == null) throw new Exception(\"Reference instance not found\");\nvar Tref = refLi.GetTransform();               // plot internal -> site internal (mirrored)\nvar Tt = Tref.Inverse;                          // site internal -> plot internal\nTt.Origin = new XYZ(Tt.Origin.X, Tt.Origin.Y, -elev);\n\nvar li = doc.GetElement(new ElementId(linkId)) as RevitLinkInstance;\nif (li == null) throw new Exception(\"Link not found\");\nif (li.Pinned) throw new Exception(\"Link is pinned\");\nvar t0 = li.GetTransform();\nbool curMir = t0.BasisX.CrossProduct(t0.BasisY).Z < 0;\nbool tgtMir = Tt.BasisX.CrossProduct(Tt.BasisY).Z < 0;\nif (curMir != tgtMir) {\n    ElementTransformUtils.MirrorElements(doc, new List<ElementId>{ li.Id }, Plane.CreateByNormalAndOrigin(XYZ.BasisX, t0.Origin), false);\n    doc.Regenerate();\n}\nvar t1 = li.GetTransform();\ndouble ang = Math.Atan2(Tt.BasisX.Y, Tt.BasisX.X) - Math.Atan2(t1.BasisX.Y, t1.BasisX.X);\nElementTransformUtils.RotateElement(doc, li.Id, Line.CreateBound(t1.Origin, t1.Origin + XYZ.BasisZ), ang);\ndoc.Regenerate();\nElementTransformUtils.MoveElement(doc, li.Id, Tt.Origin - li.GetTransform().Origin);\ndoc.Regenerate();\nvar t = li.GetTransform();\ndouble err = t.BasisX.DistanceTo(Tt.BasisX) + t.BasisY.DistanceTo(Tt.BasisY) + t.Origin.DistanceTo(Tt.Origin);\nif (err > 1e-6) throw new Exception(\"Placement check failed (\" + err + \") - rolled back.\");\n// plot origin in site internal coordinates\nvar pIn = t.Inverse.OfPoint(XYZ.Zero);\nvar rp = Tref.Origin;\nreturn new {\n  refInstance = refLi.Name, refOriginSite_m = new[]{Math.Round(rp.X*ft,4), Math.Round(rp.Y*ft,4), Math.Round(rp.Z*ft,4)},\n  refRot = Math.Round(Math.Atan2(Tref.BasisX.Y, Tref.BasisX.X)*180/Math.PI,6), refMirrored = Tref.BasisX.CrossProduct(Tref.BasisY).Z < 0,\n  link = li.Name, mirrored = t.BasisX.CrossProduct(t.BasisY).Z < 0,\n  origin_m = new[]{Math.Round(t.Origin.X*ft,4), Math.Round(t.Origin.Y*ft,4), Math.Round(t.Origin.Z*ft,4)},\n  rot = Math.Round(Math.Atan2(t.BasisX.Y, t.BasisX.X)*180/Math.PI,6),\n  plotOriginInSiteInternal_m = new[]{Math.Round(pIn.X*ft,4), Math.Round(pIn.Y*ft,4), Math.Round(pIn.Z*ft,4)}\n};",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:41:17.378Z"
+}

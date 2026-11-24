@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "project.read.list_building_types",
+    "name": "List Levels and Building Element Types",
+    "description": "Lists levels plus available wall, roof, floor, door, window and plumbing fixture types.",
+    "aiDescription": "Lists levels plus available wall, roof, floor, door, window and plumbing fixture types.",
+    "examples": [
+      "Lists levels plus available wall, roof, floor, door, window and plumbing fixture types."
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.1",
+    "author": "Axoneer AI",
+    "source": "AiGenerated",
+    "codeReference": "user-library:project.read.list_building_types",
+    "lastModifiedUtc": "2026-11-13T16:23:23.4709164Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var levels = new FilteredElementCollector(doc).OfClass(typeof(Level)).Cast<Level>().Select(l => new { l.Name, id = l.Id.IntegerValue, elevM = Math.Round(l.Elevation*0.3048,3) }).ToList();\nvar wallTypes = new FilteredElementCollector(doc).OfClass(typeof(WallType)).Cast<WallType>().Select(w => new { w.Name, id = w.Id.IntegerValue, kind = w.Kind.ToString(), widthMm = Math.Round(w.Width*304.8) }).ToList();\nvar roofTypes = new FilteredElementCollector(doc).OfClass(typeof(RoofType)).Select(r => new { r.Name, id = r.Id.IntegerValue }).ToList();\nvar floorTypes = new FilteredElementCollector(doc).OfClass(typeof(FloorType)).Select(r => new { r.Name, id = r.Id.IntegerValue }).ToList();\nFunc<BuiltInCategory, object> syms = c => new FilteredElementCollector(doc).OfCategory(c).OfClass(typeof(FamilySymbol)).Cast<FamilySymbol>().Select(s => new { fam = s.FamilyName, s.Name, id = s.Id.IntegerValue }).ToList();\nvar rtypes = new FilteredElementCollector(doc).OfClass(typeof(ElementType)).Where(e=>e.Category!=null && e.Category.Id.IntegerValue==(int)BuiltInCategory.OST_RoomTags).Count();\nreturn new { levels, wallTypes, roofTypes, floorTypes, doors = syms(BuiltInCategory.OST_Doors), windows = syms(BuiltInCategory.OST_Windows), plumbing = syms(BuiltInCategory.OST_PlumbingFixtures), roomTagTypes = rtypes };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:41:17.401Z"
+}

@@ -1,0 +1,88 @@
+{
+  "definition": {
+    "commandId": "lines.modify.refit_setback_lines_keep_offsets",
+    "name": "Re-fit Setback Lines (Keep Offsets)",
+    "description": "Re-fits setback model lines to their plot floor boundaries, keeping each edge's current setback distance (snapped to 0.5 m when within 5 mm); handles arcs and any number of edges.",
+    "aiDescription": "Re-fits setback model lines to their plot floor boundaries, keeping each edge's current setback distance (snapped to 0.5 m when within 5 mm); handles arcs and any number of edges.",
+    "examples": [
+      "re-fit the setback lines to the updated plot floors",
+      "keep the setbacks but follow the new plot boundary"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Action",
+    "type": "Atomic",
+    "execution": "Modify",
+    "linkAware": false,
+    "inputs": [
+      {
+        "name": "plots",
+        "type": "Any",
+        "description": "Script argument 'plots'.",
+        "required": true
+      }
+    ],
+    "optionalInputs": [
+      {
+        "name": "maxMoveM",
+        "type": "Number",
+        "description": "Script argument 'maxMoveM'.",
+        "required": false,
+        "default": 0.1
+      },
+      {
+        "name": "snapStepM",
+        "type": "Number",
+        "description": "Script argument 'snapStepM'.",
+        "required": false,
+        "default": 0.5
+      },
+      {
+        "name": "snapTolMm",
+        "type": "Number",
+        "description": "Script argument 'snapTolMm'.",
+        "required": false,
+        "default": 5
+      },
+      {
+        "name": "plotParam",
+        "type": "String",
+        "description": "Floor parameter that holds the plot ID.",
+        "required": false,
+        "default": "Mark"
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": true,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Confirm",
+    "confirmationRequired": true,
+    "dependencies": [],
+    "minRevitVersion": 2022,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.1",
+    "author": "Axoneer AI",
+    "source": "AiGenerated",
+    "codeReference": "user-library:lines.modify.refit_setback_lines_keep_offsets",
+    "lastModifiedUtc": "2026-11-17T14:53:49.5356333Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Action",
+  "transactionMode": "auto",
+  "code": "double maxMove = Tama.Args.Get(args, \"maxMoveM\", 0.1)/0.3048;\ndouble step = Tama.Args.Get(args, \"snapStepM\", 0.5), tol = Tama.Args.Get(args, \"snapTolMm\", 5.0)/1000.0;\nFunc<XYZ,XYZ> flat = p => new XYZ(p.X, p.Y, 0);\nFunc<Curve,XYZ> cdir = c => (c.GetEndPoint(1) - c.GetEndPoint(0)).Normalize();\nvar plotParam = Tama.Args.Get(args, \"plotParam\", \"Mark\");\nvar summary = new List<object>();\nforeach (var po in (object[])args[\"plots\"]) {\n  var pdict = (IDictionary<string,object>)po;\n  int fid = Convert.ToInt32(pdict[\"floorId\"]);\n  var ids = ((object[])pdict[\"ids\"]).Select(x => Convert.ToInt32(x)).ToList();\n  var floor = doc.GetElement(new ElementId(fid)) as Floor;\n  var sk = doc.GetElement(floor.SketchId) as Sketch;\n  var plot = new List<Curve>(); foreach (CurveArray ca in sk.Profile) { foreach (Curve c in ca) plot.Add(c.CreateTransformed(Transform.CreateTranslation(new XYZ(0,0,-c.GetEndPoint(0).Z)))); break; }\n  int n = plot.Count;\n  if (ids.Count != n) throw new Exception(\"Floor \" + fid + \": \" + n + \" edges but \" + ids.Count + \" lines\");\n  var unb = plot.Select(c => { var u = c.Clone(); u.MakeUnbound(); return u; }).ToList();\n  var cen = plot.Select(c => c.GetEndPoint(0)).Aggregate(XYZ.Zero, (a,b) => a+b) / n;\n  // match each line to an edge by direction, then proximity\n  var lineEdge = new Dictionary<int,int>(); var edgeDist = new double[n]; var used = new HashSet<int>();\n  var lines = ids.Select(id => doc.GetElement(new ElementId(id)) as CurveElement).ToList();\n  var pairs = new List<Tuple<double,int,int,double>>();\n  for (int li = 0; li < lines.Count; li++) { var c = lines[li].GeometryCurve; var m = flat(c.Evaluate(0.5,true)); var ld = cdir(c);\n    for (int e = 0; e < n; e++) { double dot = Math.Abs(ld.DotProduct(cdir(plot[e]))); double d = unb[e].Project(m).Distance; pairs.Add(Tuple.Create((1 - dot) * 1000 + d, li, e, d)); } }\n  var usedL = new HashSet<int>();\n  foreach (var p in pairs.OrderBy(p => p.Item1)) { if (usedL.Contains(p.Item2) || used.Contains(p.Item3)) continue; usedL.Add(p.Item2); used.Add(p.Item3); lineEdge[p.Item2] = p.Item3; edgeDist[p.Item3] = p.Item4; }\n  var dm = new double[n];\n  for (int e = 0; e < n; e++) { double m = edgeDist[e]*0.3048; double r = Math.Round(m/step)*step; dm[e] = Math.Abs(m - r) <= tol ? r : Math.Round(m,3); }\n  var offs = new List<Curve>();\n  for (int e = 0; e < n; e++) { double d = dm[e]/0.3048; var o1 = plot[e].CreateOffset(d, XYZ.BasisZ); var o2 = plot[e].CreateOffset(-d, XYZ.BasisZ);\n    var pick = o1.Evaluate(0.5,true).DistanceTo(cen) < o2.Evaluate(0.5,true).DistanceTo(cen) ? o1 : o2; var u = pick.Clone(); u.MakeUnbound(); offs.Add(u); }\n  var corners = new List<XYZ>();\n  for (int i = 0; i < n; i++) { IntersectionResultArray ira; offs[(i+n-1)%n].Intersect(offs[i], out ira);\n    if (ira == null || ira.Size == 0) throw new Exception(\"Floor \" + fid + \": no intersection at corner \" + i);\n    var orig = plot[i].GetEndPoint(0); XYZ best = null; foreach (IntersectionResult ir in ira) if (best == null || ir.XYZPoint.DistanceTo(orig) < best.DistanceTo(orig)) best = ir.XYZPoint; corners.Add(best); }\n  var newEdges = new List<Curve>();\n  for (int i = 0; i < n; i++) { var p0 = corners[i]; var p1 = corners[(i+1)%n]; newEdges.Add(offs[i] is Arc ? (Curve)Arc.Create(p0, p1, offs[i].Project((p0+p1)/2).XYZPoint) : Line.CreateBound(p0, p1)); }\n  double maxMv = 0;\n  for (int li = 0; li < lines.Count; li++) {\n    var ce = lines[li]; var c = ce.GeometryCurve; double z = c.GetEndPoint(0).Z; var e = newEdges[lineEdge[li]]; var a0 = flat(c.GetEndPoint(0));\n    bool same = e.GetEndPoint(0).DistanceTo(a0) <= e.GetEndPoint(1).DistanceTo(a0); var dz = new XYZ(0,0,z);\n    var na = (same ? e.GetEndPoint(0) : e.GetEndPoint(1)) + dz; var nb = (same ? e.GetEndPoint(1) : e.GetEndPoint(0)) + dz;\n    Curve nc = e is Arc ? (Curve)Arc.Create(na, nb, e.Evaluate(0.5,true) + dz) : Line.CreateBound(na, nb);\n    double mv = Math.Max(c.GetEndPoint(0).DistanceTo(na), c.GetEndPoint(1).DistanceTo(nb));\n    if (mv > maxMove) throw new Exception(\"Floor \" + fid + \", line \" + ce.Id.IntegerValue + \" would move \" + Math.Round(mv*304.8) + \" mm; aborted.\");\n    maxMv = Math.Max(maxMv, mv); ce.SetGeometryCurve(nc, true);\n  }\n  summary.Add(new { plotId = floor.LookupParameter(plotParam)?.AsString(), floorId = fid, offsets_m = string.Join(\" / \", dm.Select(d => d.ToString(\"0.###\"))), maxMove_mm = Math.Round(maxMv*304.8,1) });\n}\nreturn summary;",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:41:17.393Z"
+}

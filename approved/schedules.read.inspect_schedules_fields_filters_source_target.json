@@ -1,0 +1,73 @@
+{
+  "definition": {
+    "commandId": "schedules.read.inspect_schedules_fields_filters_source_target",
+    "name": "Inspect Schedule Fields and Filters in Source and Target",
+    "description": "Lists fields, filters, area scheme and template of schedules whose name contains a keyword, in the active model and in another open model.",
+    "aiDescription": "Lists fields, filters, area scheme and template of schedules whose name contains a keyword, in the active model and in another open model.",
+    "examples": [
+      "compare the fields and filters of a schedule between two open models"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "keyword",
+        "type": "String",
+        "description": "Script argument 'keyword'.",
+        "required": false,
+        "default": ""
+      },
+      {
+        "name": "target",
+        "type": "String",
+        "description": "Script argument 'target'.",
+        "required": false,
+        "default": ""
+      },
+      {
+        "name": "sourceLimit",
+        "type": "Integer",
+        "description": "Script argument 'sourceLimit'.",
+        "required": false,
+        "default": 2
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.1",
+    "author": "Axoneer AI",
+    "source": "AiGenerated",
+    "codeReference": "user-library:schedules.read.inspect_schedules_fields_filters_source_target",
+    "lastModifiedUtc": "2026-11-10T13:00:23.6753784Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var kw = Tama.Args.Get(args, \"keyword\", \"\").ToUpper();\nvar targetTitle = Tama.Args.Get(args, \"target\", \"\");\nint srcLimit = Tama.Args.Get(args, \"sourceLimit\", 2);\nFunc<Document, int, List<object>> describe = (Document d, int lim) => {\n  var vs = new FilteredElementCollector(d).OfClass(typeof(ViewSchedule)).Cast<ViewSchedule>()\n    .Where(v => !v.IsTemplate && v.Name.ToUpper().Contains(kw)).Take(lim).ToList();\n  return vs.Select(v => {\n    var def = v.Definition;\n    var fields = new List<object>();\n    for (int i = 0; i < def.GetFieldCount(); i++) {\n      var f = def.GetField(i);\n      fields.Add(new { f.ColumnHeading, ft = f.FieldType.ToString(), pid = f.ParameterId.IntegerValue, f.IsHidden, calc = f.IsCalculatedField });\n    }\n    var filters = new List<object>();\n    for (int i = 0; i < def.GetFilterCount(); i++) {\n      var fl = def.GetFilter(i);\n      var f = def.GetField(fl.FieldId);\n      string val = fl.IsStringValue ? fl.GetStringValue() : fl.IsElementIdValue ? (d.GetElement(fl.GetElementIdValue())?.Name ?? fl.GetElementIdValue().IntegerValue.ToString()) : fl.IsDoubleValue ? fl.GetDoubleValue().ToString() : fl.IsIntegerValue ? fl.GetIntegerValue().ToString() : \"\";\n      filters.Add(new { field = f.ColumnHeading, type = fl.FilterType.ToString(), val });\n    }\n    var body = v.GetTableData().GetSectionData(SectionType.Body);\n    return (object)new { id = v.Id.IntegerValue, v.Name, rows = body.NumberOfRows, cols = body.NumberOfColumns, scheme = def.AreaSchemeId.IntegerValue > 0 ? d.GetElement(def.AreaSchemeId)?.Name : null, template = v.ViewTemplateId.IntegerValue > 0 ? d.GetElement(v.ViewTemplateId)?.Name : null, fields, filters };\n  }).ToList();\n};\nDocument target = null;\nforeach (Document d in app.Documents) if (!d.IsLinked && d.Title == targetTitle) target = d;\nobject tInfo = null;\nif (target != null) {\n  var schemes = new FilteredElementCollector(target).OfClass(typeof(AreaScheme)).Select(e => e.Name).ToList();\n  var levels = new FilteredElementCollector(target).OfClass(typeof(Level)).Select(e => e.Name).OrderBy(n => n).ToList();\n  var areaCount = new FilteredElementCollector(target).OfCategory(BuiltInCategory.OST_Areas).WhereElementIsNotElementType().GetElementCount();\n  tInfo = new { schemes, levels, areaCount, existing = describe(target, 50) };\n}\nvar srcLevels = new FilteredElementCollector(doc).OfClass(typeof(Level)).Select(e => e.Name).OrderBy(n => n).ToList();\nreturn new { source = describe(doc, srcLimit), srcLevels, target = tInfo };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:41:17.348Z"
+}

@@ -1,0 +1,71 @@
+{
+  "definition": {
+    "commandId": "family.modify.replace_directshape_from_stl",
+    "name": "Replace DirectShape from STL",
+    "description": "Imports an STL in feet as a DirectShape of the same category, aligned using the offset between the old DirectShape and its source STL, then deletes the old DirectShape.",
+    "aiDescription": "Imports an STL in feet as a DirectShape of the same category, aligned using the offset between the old DirectShape and its source STL, then deletes the old DirectShape.",
+    "examples": [
+      "replace this DirectShape with a new STL export",
+      "swap the imported STL in this family for an updated version"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Action",
+    "type": "Atomic",
+    "execution": "Modify",
+    "linkAware": false,
+    "inputs": [
+      {
+        "name": "newPath",
+        "type": "String",
+        "description": "Script argument 'newPath'.",
+        "required": true
+      },
+      {
+        "name": "refPath",
+        "type": "String",
+        "description": "Script argument 'refPath'.",
+        "required": true
+      },
+      {
+        "name": "oldId",
+        "type": "Integer",
+        "description": "Script argument 'oldId'.",
+        "required": true
+      }
+    ],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": true,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Confirm",
+    "confirmationRequired": true,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.1",
+    "author": "Axoneer AI",
+    "source": "AiGenerated",
+    "codeReference": "user-library:family.modify.replace_directshape_from_stl",
+    "lastModifiedUtc": "2026-11-19T16:34:00.8914831Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Action",
+  "transactionMode": "auto",
+  "code": "string newPath = Tama.Args.Get(args, \"newPath\", \"\");\nstring refPath = Tama.Args.Get(args, \"refPath\", \"\");\nlong oldIdNum = Tama.Args.Get(args, \"oldId\", 0L);\nvar oldDs = doc.GetElement(new ElementId((int)oldIdNum)) as DirectShape;\nif (oldDs == null) throw new Exception(\"Old DirectShape not found\");\nvar catId = oldDs.Category.Id;\nstring appId = oldDs.ApplicationId;\nbool pinned = oldDs.Pinned;\n\nFunc<string, IList<GeometryObject>> load = p => {\n  var imp = new ShapeImporter(); imp.InputFormat = ShapeImporterSourceFormat.Auto; imp.SetDefaultLengthUnit(ImportUnit.Foot);\n  return imp.Convert(doc, p);\n};\nFunc<IEnumerable<GeometryObject>, double[]> minOf = gs => {\n  double[] mn = {1e18,1e18,1e18};\n  if (gs == null) return mn;\n  foreach (var g in gs) if (g is Mesh m) foreach (var p in m.Vertices) { mn[0]=Math.Min(mn[0],p.X); mn[1]=Math.Min(mn[1],p.Y); mn[2]=Math.Min(mn[2],p.Z); }\n  return mn;\n};\nvar refMin = minOf(load(refPath));\nvar oldGeoElem = oldDs.get_Geometry(new Options());\nif (oldGeoElem == null) throw new Exception(\"Old DirectShape has no geometry\");\nvar oldMin = minOf(oldGeoElem.Cast<GeometryObject>());\nvar T = new XYZ(oldMin[0]-refMin[0], oldMin[1]-refMin[1], oldMin[2]-refMin[2]);\n\nvar geo = load(newPath);\nif (geo == null || geo.Count == 0) throw new Exception(\"STL conversion returned no geometry\");\nvar tr = Transform.CreateTranslation(T);\nvar shapes = new List<GeometryObject>();\nforeach (var g in geo) {\n  if (g is Mesh m) shapes.Add(m.get_Transformed(tr));\n  else if (g is Solid s) shapes.Add(SolidUtils.CreateTransformed(s, tr));\n}\nvar ds = DirectShape.CreateElement(doc, catId);\nif (!string.IsNullOrEmpty(appId)) ds.ApplicationId = appId;\nds.ApplicationDataId = newPath;\nds.SetShape(shapes);\nvar oldId = oldDs.Id;\ndoc.Delete(oldId);\ndoc.Regenerate();\nds.Pinned = pinned;\n\ndouble[] mn = {1e18,1e18,1e18}, mx = {-1e18,-1e18,-1e18}; int tris = 0;\nvar ge = ds.get_Geometry(new Options());\nif (ge != null) foreach (var g in ge) if (g is Mesh m) { tris += m.NumTriangles; foreach (var p in m.Vertices) { mn[0]=Math.Min(mn[0],p.X); mn[1]=Math.Min(mn[1],p.Y); mn[2]=Math.Min(mn[2],p.Z); mx[0]=Math.Max(mx[0],p.X); mx[1]=Math.Max(mx[1],p.Y); mx[2]=Math.Max(mx[2],p.Z);} }\nreturn new { newId = ds.Id.IntegerValue, deletedId = oldId.IntegerValue, offsetFt = new[]{T.X,T.Y,T.Z}, tris, mn, mx, pinned, shapesCount = shapes.Count };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:41:17.396Z"
+}

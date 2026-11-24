@@ -1,0 +1,80 @@
+{
+  "definition": {
+    "commandId": "areas.modify.copy_area_parameter_by_level_and_name",
+    "name": "Copy Area Parameter Between Models by Level and Name",
+    "description": "Copies a text parameter (by parameter id) from one open model's areas of a scheme to another open model's areas, matched by level and area name.",
+    "aiDescription": "Copies a text parameter (by parameter id) from one open model's areas of a scheme to another open model's areas, matched by level and area name.",
+    "examples": [
+      "copy an area parameter from one open model to another by level and area name"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Action",
+    "type": "Atomic",
+    "execution": "Modify",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "source",
+        "type": "String",
+        "description": "Script argument 'source'.",
+        "required": false,
+        "default": ""
+      },
+      {
+        "name": "target",
+        "type": "String",
+        "description": "Script argument 'target'.",
+        "required": false,
+        "default": ""
+      },
+      {
+        "name": "scheme",
+        "type": "String",
+        "description": "Script argument 'scheme'.",
+        "required": false,
+        "default": ""
+      },
+      {
+        "name": "paramId",
+        "type": "Integer",
+        "description": "Script argument 'paramId'.",
+        "required": false,
+        "default": -1010106
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": true,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Confirm",
+    "confirmationRequired": true,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.1",
+    "author": "Axoneer AI",
+    "source": "AiGenerated",
+    "codeReference": "user-library:areas.modify.copy_area_parameter_by_level_and_name",
+    "lastModifiedUtc": "2026-11-10T13:07:03.5040672Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Action",
+  "transactionMode": "manual",
+  "code": "var sourceTitle = Tama.Args.Get(args, \"source\", \"\");\nvar targetTitle = Tama.Args.Get(args, \"target\", \"\");\nvar schemeName = Tama.Args.Get(args, \"scheme\", \"\");\nvar pid = new ElementId(Tama.Args.Get(args, \"paramId\", -1010106));\nDocument source = null, target = null;\nforeach (Document d in app.Documents) { if (d.IsLinked) continue; if (d.Title == sourceTitle) source = d; if (d.Title == targetTitle) target = d; }\nif (source == null || target == null) throw new Exception(\"Source or target not open\");\nFunc<Element, Parameter> getP = e => e.Parameters.Cast<Parameter>().FirstOrDefault(p => p.Id == pid);\nFunc<Document, List<Autodesk.Revit.DB.Area>> areas = d => new FilteredElementCollector(d).OfCategory(BuiltInCategory.OST_Areas).WhereElementIsNotElementType().Cast<Autodesk.Revit.DB.Area>().Where(a => a.AreaScheme != null && a.AreaScheme.Name == schemeName).ToList();\nstring pName = null;\nvar valMap = areas(source).Select(a => { var p = getP(a); if (p != null) pName = p.Definition.Name; return new { k = (a.Level?.Name ?? \"\") + \"|\" + a.get_Parameter(BuiltInParameter.ROOM_NAME).AsString(), v = p?.AsString() }; })\n  .Where(x => !string.IsNullOrEmpty(x.v)).GroupBy(x => x.k)\n  .ToDictionary(g => g.Key, g => g.GroupBy(x => x.v).OrderByDescending(h => h.Count()).First().Key);\nint set = 0, skippedOwned = 0, unchanged = 0; var missing = new HashSet<string>();\nusing (var t = new Transaction(target, \"Copy area parameter\")) {\n  t.Start();\n  foreach (var a in areas(target)) {\n    if (WorksharingUtils.GetCheckoutStatus(target, a.Id) == CheckoutStatus.OwnedByOtherUser) { skippedOwned++; continue; }\n    var key = (a.Level?.Name ?? \"\") + \"|\" + a.get_Parameter(BuiltInParameter.ROOM_NAME).AsString();\n    if (!valMap.ContainsKey(key)) { missing.Add(key); continue; }\n    var p = getP(a);\n    if (p == null || p.IsReadOnly) { missing.Add(key + \" (param n/a)\"); continue; }\n    if (p.AsString() == valMap[key]) { unchanged++; continue; }\n    p.Set(valMap[key]); set++;\n  }\n  t.Commit();\n}\nreturn new { parameter = pName, set, unchanged, skippedOwned, missing, values = valMap.Values.Distinct() };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:41:17.365Z"
+}
