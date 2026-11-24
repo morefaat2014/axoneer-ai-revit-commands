@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "model.read.parking_inventory",
+    "name": "Parking Inventory",
+    "description": "Saved automatically from a script that ran successfully.",
+    "aiDescription": "Script kept automatically after it ran successfully. Review its metadata before relying on it.",
+    "examples": [
+      "run the saved script model.read.parking_inventory"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:model.read.parking_inventory",
+    "lastModifiedUtc": "2026-11-24T08:57:18.6305366Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var o=new Dictionary<string,object>();\no[\"title\"]=doc.Title;\nvar fams=new FilteredElementCollector(doc).OfClass(typeof(FamilySymbol)).Cast<FamilySymbol>().Where(s=>s.FamilyName.ToLower().Contains(\"parking\")||s.Name.ToLower().Contains(\"parking\")).Select(s=>new{id=s.Id.IntegerValue,fam=s.FamilyName,name=s.Name,cat=s.Category==null?\"\":s.Category.Name,active=s.IsActive}).ToList();\no[\"syms\"]=fams;\nvar ids=new[]{12963,12965,12967,12969};\no[\"byid\"]=ids.Select(i=>{var e=doc.GetElement(new ElementId(i));return e==null?\"null\":e.GetType().Name+\"|\"+e.Name+\"|\"+(e is FamilySymbol?((FamilySymbol)e).FamilyName:\"\");}).ToList();\no[\"levels\"]=new FilteredElementCollector(doc).OfClass(typeof(Level)).Cast<Level>().Select(l=>new{id=l.Id.IntegerValue,n=l.Name,el=l.Elevation*304.8}).ToList();\no[\"cnt\"]=new{grids=new FilteredElementCollector(doc).OfClass(typeof(Grid)).GetElementCount(),walls=new FilteredElementCollector(doc).OfClass(typeof(Wall)).GetElementCount(),rooms=new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Rooms).GetElementCount(),parking=new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Parking).WhereElementIsNotElementType().GetElementCount()};\nreturn o;",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.294Z"
+}

@@ -1,0 +1,59 @@
+{
+  "definition": {
+    "commandId": "families.read.find_instances_by_family_keyword",
+    "name": "Find Instances By Family Keyword",
+    "description": "Lists family instances whose family or type name contains a keyword, with level, insertion point, rotation and bounding box in metres, plus DirectShapes, imports and levels.",
+    "aiDescription": "Lists family instances whose family or type name contains a keyword, with level, insertion point, rotation and bounding box in metres, plus DirectShapes, imports and levels.",
+    "examples": [
+      "Lists family instances whose family or type name contains a keyword, with level, insertion point, rotation and bounding box in metres, plus DirectShapes, imports and levels."
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "keyword",
+        "type": "String",
+        "description": "Script argument 'keyword'. Example: \"canopy\".",
+        "required": false,
+        "default": "canopy"
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:families.read.find_instances_by_family_keyword",
+    "lastModifiedUtc": "2026-11-10T14:47:57.7642207Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var kw = Tama.Args.Get(args, \"keyword\", \"canopy\").ToLower();\nFunc<XYZ,double[]> M = p => new[]{Math.Round(p.X*0.3048,4),Math.Round(p.Y*0.3048,4),Math.Round(p.Z*0.3048,4)};\nvar res = new List<object>();\nforeach (var fi in new FilteredElementCollector(doc).OfClass(typeof(FamilyInstance)).Cast<FamilyInstance>())\n{\n    var fam = fi.Symbol.Family.Name; var typ = fi.Symbol.Name;\n    if (!(fam.ToLower().Contains(kw) || typ.ToLower().Contains(kw))) continue;\n    var lp = fi.Location as LocationPoint; var bb = fi.get_BoundingBox(null);\n    var lvl = doc.GetElement(fi.LevelId) as Level; var t = fi.GetTransform();\n    res.Add(new { id = fi.Id.IntegerValue, family = fam, type = typ, category = fi.Category?.Name,\n        level = lvl?.Name, levelElev_m = lvl == null ? (double?)null : Math.Round(lvl.Elevation*0.3048,4),\n        point_m = lp == null ? null : M(lp.Point), rotation_deg = lp == null ? 0 : Math.Round(lp.Rotation*180/Math.PI,4),\n        mirrored = fi.Mirrored, basisX = new[]{Math.Round(t.BasisX.X,6),Math.Round(t.BasisX.Y,6),Math.Round(t.BasisX.Z,6)},\n        offset_m = Math.Round((fi.get_Parameter(BuiltInParameter.INSTANCE_FREE_HOST_OFFSET_PARAM)?.AsDouble() ?? 0)*0.3048,4),\n        bbMin_m = bb==null?null:M(bb.Min), bbMax_m = bb==null?null:M(bb.Max), host = fi.Host?.Name });\n}\nvar fams = new FilteredElementCollector(doc).OfClass(typeof(Family)).Cast<Family>().Where(f=>f.Name.ToLower().Contains(kw)).Select(f=>new{id=f.Id.IntegerValue,f.Name, cat=f.FamilyCategory?.Name, inPlace=f.IsInPlace}).ToList();\nvar ds = new FilteredElementCollector(doc).OfClass(typeof(DirectShape)).Cast<DirectShape>().Select(d=>new{id=d.Id.IntegerValue,name=d.Name,cat=d.Category?.Name}).Take(20).ToList();\nvar imps = new FilteredElementCollector(doc).OfClass(typeof(ImportInstance)).Cast<ImportInstance>().Select(i=>new{id=i.Id.IntegerValue,name=(doc.GetElement(i.GetTypeId()) as ElementType)?.Name}).ToList();\nvar lvls = new FilteredElementCollector(doc).OfClass(typeof(Level)).Cast<Level>().OrderBy(l=>l.Elevation).Select(l=>new{l.Name,elev_m=Math.Round(l.Elevation*0.3048,4)}).ToList();\nreturn new { instances = res, families = fams, directShapes = ds, imports = imps, levels = lvls, doc = doc.Title, isFamily = doc.IsFamilyDocument };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.157Z"
+}

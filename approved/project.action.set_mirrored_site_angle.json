@@ -1,0 +1,66 @@
+{
+  "definition": {
+    "commandId": "project.action.set_mirrored_site_angle",
+    "name": "Set Mirrored Site Angle",
+    "description": "Sets the angle of a mirrored (non-current) project site, compensating for Revit's mirrored-site angle behaviour, rolling back if anything else changes.",
+    "aiDescription": "Sets the angle of a mirrored (non-current) project site, compensating for Revit's mirrored-site angle behaviour, rolling back if anything else changes.",
+    "examples": [
+      "fix the mirror site angle"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Action",
+    "type": "Atomic",
+    "execution": "Modify",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "locationName",
+        "type": "String",
+        "description": "Script argument 'locationName'. Example: \"5 BR TYPE A (5 BR TYPE A-MIRROR)\".",
+        "required": false,
+        "default": ""
+      },
+      {
+        "name": "angleDeg",
+        "type": "Number",
+        "description": "Script argument 'angleDeg'. Example: 94.246703.",
+        "required": false,
+        "default": 0
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": true,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Confirm",
+    "confirmationRequired": true,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:project.action.set_mirrored_site_angle",
+    "lastModifiedUtc": "2026-11-11T18:31:56.0174743Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Action",
+  "transactionMode": "auto",
+  "code": "double ft = 0.3048;\nstring name = Tama.Args.Get(args, \"locationName\", \"\");\ndouble tA = Tama.Args.Get(args, \"angleDeg\", 0.0) * Math.PI / 180;\nFunc<double,double> wrap = x => Math.Atan2(Math.Sin(x), Math.Cos(x));\nProjectLocation target = null;\nforeach (ProjectLocation pl in doc.ProjectLocations) if (pl.Name == name) target = pl;\nif (target == null) throw new Exception(\"Location not found\");\nif (target.Id == doc.ActiveProjectLocation.Id) throw new Exception(\"Target is current site - refused.\");\nvar act = doc.ActiveProjectLocation; var actBefore = act.GetProjectPosition(XYZ.Zero);\nvar sp = new FilteredElementCollector(doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().First(b => b.IsShared);\nvar spBefore = sp.SharedPosition;\n\nvar before = target.GetProjectPosition(XYZ.Zero);\n// mirrored site: setter behaves as read_new = 2*read_old - set\nvar pp = target.GetProjectPosition(XYZ.Zero);\npp.Angle = wrap(2 * before.Angle - tA);\ntarget.SetProjectPosition(XYZ.Zero, pp);\ndoc.Regenerate();\nvar r = target.GetProjectPosition(XYZ.Zero);\n\ndouble errDeg = Math.Abs(wrap(tA - r.Angle)) * 180 / Math.PI;\ndouble errMm = Math.Sqrt(Math.Pow((r.EastWest-before.EastWest)*ft,2)+Math.Pow((r.NorthSouth-before.NorthSouth)*ft,2)+Math.Pow((r.Elevation-before.Elevation)*ft,2))*1000;\nif (errDeg > 1e-6 || errMm > 0.5) throw new Exception(\"Check failed (angle err \" + errDeg + \" deg, position drift \" + errMm + \" mm) - rolled back.\");\nvar a2 = act.GetProjectPosition(XYZ.Zero);\nif (Math.Abs(a2.EastWest-actBefore.EastWest)+Math.Abs(a2.NorthSouth-actBefore.NorthSouth)+Math.Abs(a2.Elevation-actBefore.Elevation) > 0.003 || Math.Abs(a2.Angle-actBefore.Angle) > 1e-8) throw new Exception(\"Current site changed - rolled back.\");\nif (sp.SharedPosition.DistanceTo(spBefore) > 0.003) throw new Exception(\"Survey point changed - rolled back.\");\nFunc<ProjectPosition, object> f = p => new { ew = Math.Round(p.EastWest*ft,4), ns = Math.Round(p.NorthSouth*ft,4), elev = Math.Round(p.Elevation*ft,4), angle = Math.Round(p.Angle*180/Math.PI,6) };\nreturn new { site = target.Name, before = f(before), after = f(r), current = new { name = act.Name, values = f(a2) } };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.174Z"
+}

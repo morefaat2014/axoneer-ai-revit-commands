@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "elements.read.instances_and_stairs_summary",
+    "name": "Instances and Stairs Summary",
+    "description": "Saved automatically from a script that ran successfully.",
+    "aiDescription": "Script kept automatically after it ran successfully. Review its metadata before relying on it.",
+    "examples": [
+      "run the saved script elements.read.instances_and_stairs_summary"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:elements.read.instances_and_stairs_summary",
+    "lastModifiedUtc": "2026-11-24T08:57:00.0788906Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var fi=new FilteredElementCollector(doc).OfClass(typeof(FamilyInstance)).Cast<FamilyInstance>().GroupBy(f=>f.Category.Name+\" / \"+f.Symbol.Name).Select(g=>g.Key+\": \"+g.Count()).ToList();\nvar st=new FilteredElementCollector(doc).OfClass(typeof(Autodesk.Revit.DB.Architecture.Stairs)).Cast<Autodesk.Revit.DB.Architecture.Stairs>().Select(s=>s.Id.IntegerValue+\" risers \"+s.ActualRisersNumber+\" top \"+Math.Round(s.TopElevation*304.8)).ToList();\nreturn new{doc.Title,fi,st,walls=new FilteredElementCollector(doc).OfClass(typeof(Wall)).GetElementCount(),warn=doc.GetWarnings().Count};",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.288Z"
+}

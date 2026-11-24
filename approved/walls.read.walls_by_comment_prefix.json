@@ -1,0 +1,59 @@
+{
+  "definition": {
+    "commandId": "walls.read.walls_by_comment_prefix",
+    "name": "Walls By Comment Prefix",
+    "description": "Saved automatically from a script that ran successfully.",
+    "aiDescription": "Script kept automatically after it ran successfully. Review its metadata before relying on it.",
+    "examples": [
+      "run the saved script walls.read.walls_by_comment_prefix"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "prefix",
+        "type": "String",
+        "description": "Script argument 'prefix'. Example: \"B1-\".",
+        "required": false,
+        "default": "B1-"
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:walls.read.walls_by_comment_prefix",
+    "lastModifiedUtc": "2026-11-24T10:36:05.6054534Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "double F=304.8; string pre=Tama.Args.Get(args,\"prefix\",\"B1-\"); Func<Element,string> cm=e=>e.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS)?.AsString()??\"\";\nvar ws=new FilteredElementCollector(doc).OfClass(typeof(Wall)).Cast<Wall>().ToList();\nreturn new{doc.Title,total=ws.Count,warn=doc.GetWarnings().GroupBy(w=>w.GetDescriptionText()).Select(g=>g.Key+\" x\"+g.Count()).ToList(),\ncnt=new FilteredElementCollector(doc).WhereElementIsNotElementType().Where(e=>e.Category!=null&&e.Category.CategoryType==CategoryType.Model).GroupBy(e=>e.Category.Name).Select(g=>g.Key+\" \"+g.Count()).ToList(),\nb1=ws.Where(w=>cm(w).StartsWith(pre)).Select(w=>{var c=(w.Location as LocationCurve).Curve;var a=c.GetEndPoint(0)*F;var b=c.GetEndPoint(1)*F;var bb=w.get_BoundingBox(null);return w.Id.IntegerValue+\" \"+cm(w)+\" lv\"+w.LevelId.IntegerValue+\" o(\"+w.Orientation.X.ToString(\"F2\")+\",\"+w.Orientation.Y.ToString(\"F2\")+\") t\"+(w.Width*F).ToString(\"F0\")+\" \"+a.X.ToString(\"F0\")+\",\"+a.Y.ToString(\"F0\")+\">\"+b.X.ToString(\"F0\")+\",\"+b.Y.ToString(\"F0\")+\" z\"+(bb.Min.Z*F).ToString(\"F0\")+\"..\"+(bb.Max.Z*F).ToString(\"F0\")+(w.Flipped?\" FL\":\"\");}).ToList()};",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.344Z"
+}

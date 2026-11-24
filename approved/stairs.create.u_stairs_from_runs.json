@@ -1,0 +1,58 @@
+{
+  "definition": {
+    "commandId": "stairs.create.u_stairs_from_runs",
+    "name": "Create U Stairs From Runs",
+    "description": "Creates U-shaped stairs between two levels from two straight run paths and a rectangular half landing (mm).",
+    "aiDescription": "Creates U-shaped stairs between two levels from two straight run paths and a rectangular half landing (mm). Runs with manual transactions (its own transactions and edit scopes, one undo step).",
+    "examples": [
+      "Build Stairs 5 and 6 in Block C (U-shaped, 2 x 8 risers of 212.5 mm, 250 going, 1198 wide, half landing) from Level 2 to Level 3, and delete any empty leftovers from the diagnostic run."
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Action",
+    "type": "Atomic",
+    "execution": "Modify",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "stairs",
+        "type": "Any",
+        "description": "Script argument 'stairs'. Example: [{\"landing\":[8301,46111,10850,47312],\"name\":\"Stair 6\",\"run1\":[10251,44361,10251,....",
+        "required": false
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": true,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Confirm",
+    "confirmationRequired": true,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:stairs.create.u_stairs_from_runs",
+    "lastModifiedUtc": "2026-11-23T16:30:01.7065671Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Action",
+  "transactionMode": "manual",
+  "code": "var lb=new FilteredElementCollector(doc).OfClass(typeof(Level)).Cast<Level>().First(l=>l.Name==\"Level 2\");\nvar lt=new FilteredElementCollector(doc).OfClass(typeof(Level)).Cast<Level>().First(l=>l.Name==\"Level 3\");\nvar cleaned=new List<int>();\nusing(var t=new Transaction(doc,\"Cleanup + type\")){ t.Start();\n  foreach(var i in new[]{350192,350193,350194,350195}){ var e=doc.GetElement(new ElementId(i)); if(e!=null){ try{doc.Delete(e.Id);cleaned.Add(i);}catch(Exception){} } }\n  t.Commit(); }\nElementId typeId=null;\nusing(var t=new Transaction(doc,\"Stair type\")){ t.Start();\n  var types=new FilteredElementCollector(doc).OfClass(typeof(Autodesk.Revit.DB.Architecture.StairsType)).Cast<Autodesk.Revit.DB.Architecture.StairsType>().ToList();\n  var st=types.FirstOrDefault(x=>x.Name==\"BC_Stair 215 max riser\");\n  if(st==null){ st=(Autodesk.Revit.DB.Architecture.StairsType)types.First(x=>x.Name==\"Monolithic Stair\").Duplicate(\"BC_Stair 215 max riser\");\n    st.MaxRiserHeight=215/304.8; st.MinTreadDepth=250/304.8; st.MinRunWidth=1000/304.8; }\n  typeId=st.Id; t.Commit(); }\nvar out_=new List<object>();\nforeach(var o in (object[])args[\"stairs\"]){ var s=(Dictionary<string,object>)o;\n  string name=s[\"name\"].ToString(); var r1=((object[])s[\"run1\"]).Select(Convert.ToDouble).ToArray(); var r2=((object[])s[\"run2\"]).Select(Convert.ToDouble).ToArray(); var ld=((object[])s[\"landing\"]).Select(Convert.ToDouble).ToArray();\n  double width=Convert.ToDouble(s[\"width\"])/304.8;\n  using(var scope=new StairsEditScope(doc,\"Create \"+name)){\n    var sid=scope.Start(lb.Id,lt.Id);\n    using(var t=new Transaction(doc,\"Runs \"+name)){ t.Start();\n      var stairs=(Autodesk.Revit.DB.Architecture.Stairs)doc.GetElement(sid);\n      stairs.ChangeTypeId(typeId); stairs.DesiredRisersNumber=16; stairs.ActualTreadDepth=250/304.8;\n      double z=lb.Elevation;\n      var l1=Line.CreateBound(new XYZ(r1[0]/304.8,r1[1]/304.8,z),new XYZ(r1[2]/304.8,r1[3]/304.8,z));\n      var run1=Autodesk.Revit.DB.Architecture.StairsRun.CreateStraightRun(doc,sid,l1,Autodesk.Revit.DB.Architecture.StairsRunJustification.Center);\n      run1.ActualRunWidth=width;\n      double z2=lb.Elevation+run1.TopElevation;\n      var l2=Line.CreateBound(new XYZ(r2[0]/304.8,r2[1]/304.8,z2),new XYZ(r2[2]/304.8,r2[3]/304.8,z2));\n      var run2=Autodesk.Revit.DB.Architecture.StairsRun.CreateStraightRun(doc,sid,l2,Autodesk.Revit.DB.Architecture.StairsRunJustification.Center);\n      run2.ActualRunWidth=width;\n      var loop=new CurveLoop(); var p=new[]{new XYZ(ld[0]/304.8,ld[1]/304.8,z2),new XYZ(ld[2]/304.8,ld[1]/304.8,z2),new XYZ(ld[2]/304.8,ld[3]/304.8,z2),new XYZ(ld[0]/304.8,ld[3]/304.8,z2)};\n      for(int i=0;i<4;i++) loop.Append(Line.CreateBound(p[i],p[(i+1)%4]));\n      Autodesk.Revit.DB.Architecture.StairsLanding.CreateSketchedLanding(doc,sid,loop,run1.TopElevation);\n      stairs.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS).Set(\"Block C | \"+name);\n      t.Commit(); }\n    scope.Commit(new Tama.Failures.RollbackOnError());\n    var st2=(Autodesk.Revit.DB.Architecture.Stairs)doc.GetElement(sid);\n    out_.Add(new{name,id=sid.IntegerValue,risers=st2.ActualRisersNumber,riserMm=Math.Round(st2.ActualRiserHeight*304.8,1),treadMm=Math.Round(st2.ActualTreadDepth*304.8),heightMm=Math.Round(st2.Height*304.8)});\n  }\n}\nreturn new{cleaned,stairs=out_};",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.268Z"
+}

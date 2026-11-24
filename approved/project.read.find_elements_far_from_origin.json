@@ -1,0 +1,67 @@
+{
+  "definition": {
+    "commandId": "project.read.find_elements_far_from_origin",
+    "name": "Find Elements Far From Origin",
+    "description": "For each open/linked project document, reports the furthest element from the internal origin and lists elements beyond a distance limit.",
+    "aiDescription": "For each open/linked project document, reports the furthest element from the internal origin and lists elements beyond a distance limit.",
+    "examples": [
+      "are there elements far from the internal origin?",
+      "why does the link go origin to origin"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "limitMetres",
+        "type": "Number",
+        "description": "Script argument 'limitMetres'. Example: 1000.",
+        "required": false,
+        "default": 1000
+      },
+      {
+        "name": "titleContains",
+        "type": "String",
+        "description": "Script argument 'titleContains'. Example: \"000\".",
+        "required": false,
+        "default": ""
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:project.read.find_elements_far_from_origin",
+    "lastModifiedUtc": "2026-11-11T15:07:00.3689091Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "double limitM = Tama.Args.Get(args, \"limitMetres\", 1000.0);\nstring filter = Tama.Args.Get(args, \"titleContains\", \"\");\nvar outList = new List<object>();\nforeach (Document d in app.Documents)\n{\n    if (d.IsFamilyDocument) continue;\n    if (filter.Length > 0 && !d.Title.Contains(filter)) continue;\n    var far = new List<object>();\n    double maxR = 0;\n    int n = 0;\n    foreach (Element e in new FilteredElementCollector(d).WhereElementIsNotElementType())\n    {\n        BoundingBoxXYZ bb = null;\n        try { bb = e.get_BoundingBox(null); } catch {}\n        if (bb == null) continue;\n        n++;\n        var c = (bb.Min + bb.Max) / 2;\n        double r = Math.Sqrt(c.X*c.X + c.Y*c.Y) * 0.3048;\n        if (r > maxR) maxR = r;\n        if (r > limitM && far.Count < 15)\n            far.Add(new { id = e.Id.IntegerValue, cat = e.Category?.Name, name = e.Name,\n                centre_m = new[]{Math.Round(c.X*0.3048,1), Math.Round(c.Y*0.3048,1)}, dist_km = Math.Round(r/1000,2) });\n    }\n    outList.Add(new { title = d.Title, isLinked = d.IsLinked, elementsWithBox = n, maxDistFromOrigin_m = Math.Round(maxR,1), farElements = far });\n}\nreturn outList;",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.163Z"
+}

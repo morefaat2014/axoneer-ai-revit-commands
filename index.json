@@ -1,8 +1,554 @@
 {
   "format": 1,
-  "catalogVersion": "20261108-155809",
-  "generatedUtc": "2026-11-08T15:58:09.537Z",
+  "catalogVersion": "20261124-122818",
+  "generatedUtc": "2026-11-24T12:28:18.763Z",
   "commands": [
+    {
+      "commandId": "annotations.modify.delete_dimension_by_id",
+      "file": "approved/annotations.modify.delete_dimension_by_id.json",
+      "sha256": "72f210fb9b462b29dd9cca1deaee873639324fe07dae43bf69b5de7d334af132",
+      "sizeBytes": 2327,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "doors.read.check_swing_and_hinge_vs_comments",
+      "file": "approved/doors.read.check_swing_and_hinge_vs_comments.json",
+      "sha256": "00a58d55c02800654f2eb42620f2ae310e8366cfe45c981afce8b2c6c9b15f7c",
+      "sizeBytes": 2959,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "doors.read.opening_size_and_wall_face_edges",
+      "file": "approved/doors.read.opening_size_and_wall_face_edges.json",
+      "sha256": "2c1f27548e99b62e48a9c0300da31a25d5e96466e907dea380d5dda3f6e8bb05",
+      "sizeBytes": 3158,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "elements.read.find_imported_geometry_candidates",
+      "file": "approved/elements.read.find_imported_geometry_candidates.json",
+      "sha256": "0e9b7fb9e09ad59f4b7d6ad54ad07532f03a008b1ad17ffec540e317f7847b0a",
+      "sizeBytes": 3624,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "elements.read.instances_and_stairs_summary",
+      "file": "approved/elements.read.instances_and_stairs_summary.json",
+      "sha256": "4e79e80898e364f7421e427e283f07c0814c37e174f46f560b1a2893bf785454",
+      "sizeBytes": 2138,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "elements.read.instances_by_level_and_z",
+      "file": "approved/elements.read.instances_by_level_and_z.json",
+      "sha256": "1c23779ce721fc47c91d2c33a5828abb376db195f76ec63d4757ee8e0989a884",
+      "sizeBytes": 2421,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "elements.read.interior_objects_and_wall_heights",
+      "file": "approved/elements.read.interior_objects_and_wall_heights.json",
+      "sha256": "1b4f2f11c4dcc68c0fa7d8149683cc10ee816137eef1eaad5649489b681c87c0",
+      "sizeBytes": 3065,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "families.read.find_instances_by_family_keyword",
+      "file": "approved/families.read.find_instances_by_family_keyword.json",
+      "sha256": "72c8e3e28775ecf22fcc599e729ec30c3af40830ef781498e5578f266ec2ffc0",
+      "sizeBytes": 4331,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "families.read.symbols_listed_categories_v2",
+      "file": "approved/families.read.symbols_listed_categories_v2.json",
+      "sha256": "31fca6a0ca77120945388bc50ec1cc1865bdedaf982218d4ca6f0de24bc88663",
+      "sizeBytes": 2763,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "family.read.inspect_selected_labels_with_captions",
+      "file": "approved/family.read.inspect_selected_labels_with_captions.json",
+      "sha256": "4fc0ba1801d2700cda5f3f6231718cd8239f212944b02bae554c856fe9c87749",
+      "sizeBytes": 3247,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "family.read.list_imported_geometry",
+      "file": "approved/family.read.list_imported_geometry.json",
+      "sha256": "7c5849cb2a93ddb75e002f0bae8100e78bb0dabfc4175d31e139cc88cbeabfb4",
+      "sizeBytes": 3294,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "floors.create.floors_from_polygons",
+      "file": "approved/floors.create.floors_from_polygons.json",
+      "sha256": "5f63296df1a2d38841b16e60e039a927308f695fc58bba9f0f42717e27f92f6f",
+      "sizeBytes": 4514,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "floors.modify.move_floor_sketch_corner_to_shared_point",
+      "file": "approved/floors.modify.move_floor_sketch_corner_to_shared_point.json",
+      "sha256": "9e3f6aff3b24261aed44ba472b5cf295094441b9cedc3347e2fb251963fec2b8",
+      "sizeBytes": 5289,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "floors.read.floor_sketch_in_shared_coordinates",
+      "file": "approved/floors.read.floor_sketch_in_shared_coordinates.json",
+      "sha256": "43d45057d4ff9703fa34b16dfd8ee087ee2de237345a82fcb2a4b3d09d984737",
+      "sizeBytes": 3897,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "grids.create.from_table",
+      "file": "approved/grids.create.from_table.json",
+      "sha256": "18d065e610dd034fa3481fb0f8f223902e2dd7e6c0fc64b83db055f0b1b7b5dd",
+      "sizeBytes": 2391,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "lines.execute.draw_pavement_edges",
+      "file": "approved/lines.execute.draw_pavement_edges.json",
+      "sha256": "1260bb733f99434515f6116585ced2e1018d296fcb2b4d8f090fc03625989e35",
+      "sizeBytes": 3557,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "lines.execute.rename_sketch_plane",
+      "file": "approved/lines.execute.rename_sketch_plane.json",
+      "sha256": "faa82fecce2a3037874fb6ca01f18d2c37359aef95df16788435f12bd1f8758d",
+      "sizeBytes": 1858,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "lines.modify.offset_setback_lines_from_floor_boundary",
+      "file": "approved/lines.modify.offset_setback_lines_from_floor_boundary.json",
+      "sha256": "3c92f01403403d0a30c636baddb5856e7a0ce7cc912d0a9b49add8eedb08f7fe",
+      "sizeBytes": 6430,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "lines.modify.realign_setback_line_to_floor_edge",
+      "file": "approved/lines.modify.realign_setback_line_to_floor_edge.json",
+      "sha256": "dab8cc14cf4e897377a6b5628ab2891ad2d4693cf79beecf45a6e84c71c6da37",
+      "sizeBytes": 6311,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "lines.modify.snap_curves_to_shared_corners",
+      "file": "approved/lines.modify.snap_curves_to_shared_corners.json",
+      "sha256": "1ad804e0a87a2cfa102b176247da9daa6f176ca2fc2192f2a40da4bf4229350f",
+      "sizeBytes": 4028,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "lines.read.check_sketch_plane",
+      "file": "approved/lines.read.check_sketch_plane.json",
+      "sha256": "1a3836cf69d1d8a3553335dd4b58797c753062a6c399e90cfd6cc9d30a9927cb",
+      "sizeBytes": 2190,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "lines.read.curve_elements_in_shared_coordinates",
+      "file": "approved/lines.read.curve_elements_in_shared_coordinates.json",
+      "sha256": "50e206eefe9698238611f460de7f4e239d654bb9b20a421e9beacd4a801e91e5",
+      "sizeBytes": 2827,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "lines.read.setback_lines_vs_plot_edges",
+      "file": "approved/lines.read.setback_lines_vs_plot_edges.json",
+      "sha256": "be1862150ab8db4751bca2af242a20075eee42fb92a05edde975f0d34662983a",
+      "sizeBytes": 3456,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "lines.read.setback_offset_from_plot_dry_run",
+      "file": "approved/lines.read.setback_offset_from_plot_dry_run.json",
+      "sha256": "e19f842ca1a162c378958c767a938e1f696395161df6501e6e3cbef52b9f339e",
+      "sizeBytes": 4970,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "lines.read.verify_pavement_edges",
+      "file": "approved/lines.read.verify_pavement_edges.json",
+      "sha256": "79412f4e3208fd21896001689050fcbf557718c623604cfb000055dc1858f30a",
+      "sizeBytes": 2917,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "lines.read.verify_pavement_lines",
+      "file": "approved/lines.read.verify_pavement_lines.json",
+      "sha256": "e0a36f64b3ac76f38e63654a39fbdc8f4d0199ddd47495546fdad9f2f2359c5f",
+      "sizeBytes": 2868,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "links.read.compare_link_levels_to_host",
+      "file": "approved/links.read.compare_link_levels_to_host.json",
+      "sha256": "0d9209a7ec73bec02f9d4aa1766b65b8d74bdde0804ca0350c49d83165308fac",
+      "sizeBytes": 2902,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "links.read.link_extents_shared_coordinates",
+      "file": "approved/links.read.link_extents_shared_coordinates.json",
+      "sha256": "bc8c6163bc1b66a982f8f2e5070932eab21b330cdaddda0c22c7396e8f97c61d",
+      "sizeBytes": 2723,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "links.read.link_model_quality_lod_sample",
+      "file": "approved/links.read.link_model_quality_lod_sample.json",
+      "sha256": "69cef753b02bdc40bcb37882987d072dc1daa67eaa361bf54032e71e74123e42",
+      "sizeBytes": 4999,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "links.read.link_wall_extents_shared",
+      "file": "approved/links.read.link_wall_extents_shared.json",
+      "sha256": "20aed5bd609397ef4df54ce26c4833dde143ba9e1bf16437cd340ecd2c856a1f",
+      "sizeBytes": 3040,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "model.read.level_inventory",
+      "file": "approved/model.read.level_inventory.json",
+      "sha256": "ed5a03367ef2f4c547873054dd4401ad05730e13a78ba986d4189d14fcbb69ef",
+      "sizeBytes": 2467,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "model.read.parking_family_info",
+      "file": "approved/model.read.parking_family_info.json",
+      "sha256": "10b2f6022608e49a00f0895f904bfb095a1e8d7b798f956bc55314c6c954c39f",
+      "sizeBytes": 2390,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "model.read.parking_inventory",
+      "file": "approved/model.read.parking_inventory.json",
+      "sha256": "f23e66a6f18f356f128e1d5459c0cc6b656d78d5c7f98c0d16b3d4053048f410",
+      "sizeBytes": 2720,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "model.read.pavement_precheck",
+      "file": "approved/model.read.pavement_precheck.json",
+      "sha256": "9c5631a1ee359bcc6280fea12fa2919e77cc7c5c610187d2b6a0de0d072a9ddd",
+      "sizeBytes": 2262,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "openings.create.doors_windows_from_table",
+      "file": "approved/openings.create.doors_windows_from_table.json",
+      "sha256": "b6f3aae049357eb2494dd45ee670695635684e16e4f0ee5f0e587236fdd41570",
+      "sizeBytes": 9131,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "openings.modify.fix_swings_and_add_infill_openings",
+      "file": "approved/openings.modify.fix_swings_and_add_infill_openings.json",
+      "sha256": "42bf747b4f3a719adf0fb4ac9459e357e4cfc71c03c8a0d382578f8519ccbdc6",
+      "sizeBytes": 7175,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "parking.execute.place_bays_from_table",
+      "file": "approved/parking.execute.place_bays_from_table.json",
+      "sha256": "fbd005473cd7300dc27c8ec705d7474ffb1e6b9d3f4f472dbd51386436659470",
+      "sizeBytes": 3101,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "parking.modify.lower_parking_surface",
+      "file": "approved/parking.modify.lower_parking_surface.json",
+      "sha256": "741c90c1c727e06ee4d17e29f89b47c343a0e8881dce7ad652e9e110c61ceb50",
+      "sizeBytes": 4136,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "parking.modify.reset_bay_level_offset",
+      "file": "approved/parking.modify.reset_bay_level_offset.json",
+      "sha256": "a1356eda0958b306f58229c53a97de4ccae9b40ce6f287b30a94383e7b155dba",
+      "sizeBytes": 2722,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "parking.read.bay_centres",
+      "file": "approved/parking.read.bay_centres.json",
+      "sha256": "253abe479b9c7c3e9c91dd46ed3aaa671fd22901cb781dbe5e0b491c4e47f109",
+      "sizeBytes": 2666,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "parking.read.bays_visible_and_in_rooms",
+      "file": "approved/parking.read.bays_visible_and_in_rooms.json",
+      "sha256": "080dd4bf340078b307f81e0fc3c835ba0cdc671dc47bb404ad5b04efed30e33e",
+      "sizeBytes": 2329,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "parking.read.verify_parking_surface",
+      "file": "approved/parking.read.verify_parking_surface.json",
+      "sha256": "3fd7ae6731e2ed3e1508e9754ddc9437cd82d0c65c6f2561848269060b4e2798",
+      "sizeBytes": 2664,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "project.action.move_survey_point_keep_coordinates",
+      "file": "approved/project.action.move_survey_point_keep_coordinates.json",
+      "sha256": "47980b477e9e0ddc1adbacd77d29a3d46ac91b1e9c8ae71151baeae0024a3a5b",
+      "sizeBytes": 4901,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "project.action.raise_all_site_elevations",
+      "file": "approved/project.action.raise_all_site_elevations.json",
+      "sha256": "d0e11ec0600ed8df5a3c80e2f4a21a4c1d2caa7f9f7699fee4b4cce040bc95b7",
+      "sizeBytes": 4411,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "project.action.rename_current_site",
+      "file": "approved/project.action.rename_current_site.json",
+      "sha256": "ff883eb0042daf1c4de3307d3fb609d1fce8d854cade3950be758a29867a60c9",
+      "sizeBytes": 2060,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "project.action.set_mirrored_site_angle",
+      "file": "approved/project.action.set_mirrored_site_angle.json",
+      "sha256": "f50eba9c6785c418a050dd843019f3e05dc7aec165fb54ce71a12a55bb244b88",
+      "sizeBytes": 4263,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "project.action.set_secondary_site_position",
+      "file": "approved/project.action.set_secondary_site_position.json",
+      "sha256": "52aefe3e234fb307779ff020cb80a87931650b2dcefce42ec4f4d280568b264a",
+      "sizeBytes": 4657,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "project.action.set_site_elevation_at_zero",
+      "file": "approved/project.action.set_site_elevation_at_zero.json",
+      "sha256": "fa31f66cd1acedb38a5b411748d12da1a0aa8c92dd19a5863ee39d0be01cc1fb",
+      "sizeBytes": 3102,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "project.action.translate_site_to_match_property_line",
+      "file": "approved/project.action.translate_site_to_match_property_line.json",
+      "sha256": "c704bda5281b5a4fec20f69699221122aece593e3d73ce838ac81c4d86f9b959",
+      "sizeBytes": 4723,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "project.read.category_counts_by_level",
+      "file": "approved/project.read.category_counts_by_level.json",
+      "sha256": "8ac3eb62ac449349206602a4f3fc26a594388d69437d7fb7d3e4c6b2dbc0c08b",
+      "sizeBytes": 2292,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "project.read.coordinates_and_site_links_by_titles",
+      "file": "approved/project.read.coordinates_and_site_links_by_titles.json",
+      "sha256": "d98b33c0273acacb142d782bb12cf972e20241678a87aaad0bebc5b8358c2499",
+      "sizeBytes": 3751,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "project.read.coordinates_levels_worksets_audit",
+      "file": "approved/project.read.coordinates_levels_worksets_audit.json",
+      "sha256": "df36ec8306889c677a14a53757b94abc8248aa33f9afdf56c743e0cce327cc1a",
+      "sizeBytes": 3454,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "project.read.coordinates_report_all_open_docs",
+      "file": "approved/project.read.coordinates_report_all_open_docs.json",
+      "sha256": "0d62a2911c30b106531b522c3197669bcee5cd99a53f71a526e6dbd297d05f1d",
+      "sizeBytes": 4085,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "project.read.coordinates_report_by_title",
+      "file": "approved/project.read.coordinates_report_by_title.json",
+      "sha256": "dfb77d9949a0e0c8488f2b79842cc048040eef861c303df7d1d689dc0073f851",
+      "sizeBytes": 4062,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "project.read.door_lift_stair_types",
+      "file": "approved/project.read.door_lift_stair_types.json",
+      "sha256": "ca9f469b0212f18501ab977931b319df0a54cbee10aed26de423be84c6d81504",
+      "sizeBytes": 3581,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "project.read.find_elements_far_from_origin",
+      "file": "approved/project.read.find_elements_far_from_origin.json",
+      "sha256": "7d2b1a902d4f296bce2fc8d81808ed6bc67099972f039df83da2bcb34430f66d",
+      "sizeBytes": 3289,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "project.read.host_coordinates_and_link_placements",
+      "file": "approved/project.read.host_coordinates_and_link_placements.json",
+      "sha256": "db21b5c52160540e7e9751f752dd8f8347dd7414b3d832e7bcfe970d7fed61c8",
+      "sizeBytes": 3426,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "project.read.level_modelling_status",
+      "file": "approved/project.read.level_modelling_status.json",
+      "sha256": "c2b71f54fe94c63c53ddaccacc216a145e22406ca3199b74f7d1225a11dae71c",
+      "sizeBytes": 2997,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "project.read.list_library_paths",
+      "file": "approved/project.read.list_library_paths.json",
+      "sha256": "8f76782fdf281b0c7c4be828699596e171a492e83dbff553428e63a7d784fd7c",
+      "sizeBytes": 1596,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "project.read.model_inventory_for_modelling",
+      "file": "approved/project.read.model_inventory_for_modelling.json",
+      "sha256": "ef960e5cd9b8afffe54e0b0b07691619419e58171f132f62645f832c12d0599a",
+      "sizeBytes": 2876,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "project.read.modelling_readiness_inventory",
+      "file": "approved/project.read.modelling_readiness_inventory.json",
+      "sha256": "d4d6ac443b6c00533ea4cac3fecd1e97f8225550f15c1b8197ee2cce13eba1e1",
+      "sizeBytes": 3629,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "project.read.parking_lines_rooms_status",
+      "file": "approved/project.read.parking_lines_rooms_status.json",
+      "sha256": "5316bc8a7dfcd303cd2c90db95bf81984f8ec43aaadd93dec2c0685a34431959",
+      "sizeBytes": 2776,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "project.read.shared_points_to_internal_check",
+      "file": "approved/project.read.shared_points_to_internal_check.json",
+      "sha256": "3656feb4d453b2610abc38fb92aa186a3af1d9606dc2d6a4aabd15a14cc94883",
+      "sizeBytes": 2955,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "project.read.shared_points_to_internal_with_levels_floortypes",
+      "file": "approved/project.read.shared_points_to_internal_with_levels_floortypes.json",
+      "sha256": "555f8292ac54d8729eceea20f258c4decc45a5dc31b97769be8f6dc7a352c66b",
+      "sizeBytes": 3212,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "project.read.sites_by_titles_any_doc",
+      "file": "approved/project.read.sites_by_titles_any_doc.json",
+      "sha256": "790cd1eb735514245a7975d678b0c73fe3b545dec2e8dca22a01aabb214875d2",
+      "sizeBytes": 2794,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "project.read.type_inventory_floors_stairs_railings",
+      "file": "approved/project.read.type_inventory_floors_stairs_railings.json",
+      "sha256": "bcc5b40ad8e0f55b5636e5400b4971540afa07cedcf2e48c5c23e667446ef8e7",
+      "sizeBytes": 2728,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "qa.read.block_summary_units_and_warnings",
+      "file": "approved/qa.read.block_summary_units_and_warnings.json",
+      "sha256": "09e93290ef80a5dca2b7662c85afc13d586bbc8c37239b5c9c7cc71db8451e32",
+      "sizeBytes": 3236,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "qa.read.handover_doc_audit",
+      "file": "approved/qa.read.handover_doc_audit.json",
+      "sha256": "760a44081df825fa6d9551ca39409acdc95097bc5783c5ba507a8bdd8f4ef3a3",
+      "sizeBytes": 4025,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "qa.read.host_model_quality_lod_sample",
+      "file": "approved/qa.read.host_model_quality_lod_sample.json",
+      "sha256": "59b0736f1ef233efbd84661b3ca57014d026fc39eff6d1a3aeecdfbce29858ba",
+      "sizeBytes": 4707,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "rooms.create.rooms_and_balustrades_from_table",
+      "file": "approved/rooms.create.rooms_and_balustrades_from_table.json",
+      "sha256": "a4155534d134054bbb273e73c52e91940e2f0fd9d8619fafda166236fda4258b",
+      "sizeBytes": 5899,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "rooms.execute.place_rooms_and_separators",
+      "file": "approved/rooms.execute.place_rooms_and_separators.json",
+      "sha256": "76b6d4715f7a7a42e5de868c83b1ed9432aeca30bb4c820d80e096d73398b85b",
+      "sizeBytes": 4579,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "rooms.read.boundary_segments_with_coords",
+      "file": "approved/rooms.read.boundary_segments_with_coords.json",
+      "sha256": "285d25d545e8726d729f6045f5e3548954bbe1dcaff213238a6ddf13a08ab6ce",
+      "sizeBytes": 2532,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "rooms.read.room_param_names",
+      "file": "approved/rooms.read.room_param_names.json",
+      "sha256": "11bc355e806b6d782cf8bae959ce2df95e849c13ccf56a32c51d40b73d435e2f",
+      "sizeBytes": 2143,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "schedules.read.list_open_docs_selection_and_schedules",
+      "file": "approved/schedules.read.list_open_docs_selection_and_schedules.json",
+      "sha256": "5516c8c7922130b89e7af15c74bf460cc43859041a532b1c47f08ea00874a9f9",
+      "sizeBytes": 2659,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "site.read.property_line_vs_target_shared_coords",
+      "file": "approved/site.read.property_line_vs_target_shared_coords.json",
+      "sha256": "fa18b303ac4e00b3634ddd8fd5b4b2c844d410ffe925f6cc34a9ee9bad5357c7",
+      "sizeBytes": 3859,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "site.read.selected_property_lines_corners",
+      "file": "approved/site.read.selected_property_lines_corners.json",
+      "sha256": "dae438d15ece9d491698d2c8635c8de1ae809a0af518870b011c15bd652c1d21",
+      "sizeBytes": 2917,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "stairs.create.u_stairs_from_runs",
+      "file": "approved/stairs.create.u_stairs_from_runs.json",
+      "sha256": "570481be78aba877ce912ec64cc4ea873c571a08f0e1d2df7a901b282963badd",
+      "sizeBytes": 5434,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "stairs.modify.set_stair_type_min_tread",
+      "file": "approved/stairs.modify.set_stair_type_min_tread.json",
+      "sha256": "4b67b3ab07d22cb279cf64f7163f0e3d26e035ec4662e62247cb4e9b3b9fb1a7",
+      "sizeBytes": 2528,
+      "version": "1.0.0"
+    },
     {
       "commandId": "tests.read.review_route_check",
       "file": "approved/tests.read.review_route_check.json",
@@ -22,6 +568,48 @@
       "file": "approved/tests.read.stage_verify_category_count.json",
       "sha256": "c8d4afdb8745844e78e5198faa99ddb9b1a4a40010aa54109c31d0d5f494ba5a",
       "sizeBytes": 2583,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "types.read.wall_floor_stair_grid_types_v2",
+      "file": "approved/types.read.wall_floor_stair_grid_types_v2.json",
+      "sha256": "0b70861da56f0af99cc039753297183b8c0f2fa58a39ff6142b76fc42a057a1e",
+      "sizeBytes": 3272,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "walls.create.walls_from_centreline_table",
+      "file": "approved/walls.create.walls_from_centreline_table.json",
+      "sha256": "13dc9888220e8b6d6c5376f59780f9d4ca8b3efea03e24a83c78c68d5a9157b3",
+      "sizeBytes": 5227,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "walls.read.level_walls_arcs_summary",
+      "file": "approved/walls.read.level_walls_arcs_summary.json",
+      "sha256": "ecfc70a31561d2fe4543602529b2f1e82c72772270461afd9f6c587051cd51f4",
+      "sizeBytes": 2218,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "walls.read.wall_grid_summary",
+      "file": "approved/walls.read.wall_grid_summary.json",
+      "sha256": "84ad85bd677b02c13fee7882722bd55fa033e90d8bde15ab9825bf79160049ca",
+      "sizeBytes": 2287,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "walls.read.wall_inserts_by_ids",
+      "file": "approved/walls.read.wall_inserts_by_ids.json",
+      "sha256": "5120a5dabbb04a32160cf2d4e61ccd13e17e4358cd9b58b4c722a87cbe72fbe0",
+      "sizeBytes": 2473,
+      "version": "1.0.0"
+    },
+    {
+      "commandId": "walls.read.walls_by_comment_prefix",
+      "file": "approved/walls.read.walls_by_comment_prefix.json",
+      "sha256": "0627838297bd42298120618a445afd348db7105315a2d2cd33d37f8aa0808603",
+      "sizeBytes": 2909,
       "version": "1.0.0"
     }
   ]

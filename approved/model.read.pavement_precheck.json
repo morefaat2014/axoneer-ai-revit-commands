@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "model.read.pavement_precheck",
+    "name": "Pavement Precheck",
+    "description": "Saved automatically from a script that ran successfully.",
+    "aiDescription": "Script kept automatically after it ran successfully. Review its metadata before relying on it.",
+    "examples": [
+      "run the saved script model.read.pavement_precheck"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:model.read.pavement_precheck",
+    "lastModifiedUtc": "2026-11-24T09:17:26.7374107Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var o=new Dictionary<string,object>();\nvar lines=Category.GetCategory(doc,BuiltInCategory.OST_Lines);\no[\"subs\"]=lines.SubCategories.Cast<Category>().Select(c=>c.Name).ToList();\no[\"planes\"]=new FilteredElementCollector(doc).OfClass(typeof(SketchPlane)).Cast<SketchPlane>().Select(s=>s.Name).Where(n=>n.Contains(\"B2\")||n.Contains(\"Pave\")).ToList();\nvar v=doc.GetElement(new ElementId(312));o[\"v312\"]=v==null?\"null\":v.GetType().Name+\"|\"+v.Name;\no[\"modellines\"]=new FilteredElementCollector(doc).OfClass(typeof(CurveElement)).Count();\nvar b=new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Parking).WhereElementIsNotElementType().Cast<FamilyInstance>().First();\no[\"bayZ\"]=(b.Location as LocationPoint).Point.Z*304.8;\nreturn o;",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.314Z"
+}

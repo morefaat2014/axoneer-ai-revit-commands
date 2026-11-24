@@ -1,0 +1,81 @@
+{
+  "definition": {
+    "commandId": "floors.modify.move_floor_sketch_corner_to_shared_point",
+    "name": "Move Floor Sketch Corner to Shared Point",
+    "description": "Moves one corner of a floor's sketch to a shared E/N point, keeping arc bulges on adjoining edges.",
+    "aiDescription": "Moves one corner of a floor's sketch to a shared E/N point, keeping arc bulges on adjoining edges. Runs with manual transactions (its own transactions and edit scopes, one undo step).",
+    "examples": [
+      "move this floor corner to these coordinates",
+      "snap the plot floor vertex to the surveyed point"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Action",
+    "type": "Atomic",
+    "execution": "Modify",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "floorId",
+        "type": "Integer",
+        "description": "Script argument 'floorId'. Example: 12680646.",
+        "required": false,
+        "default": 0
+      },
+      {
+        "name": "newE",
+        "type": "Number",
+        "description": "Script argument 'newE'. Example: 246534.412.",
+        "required": false,
+        "default": 0
+      },
+      {
+        "name": "newN",
+        "type": "Number",
+        "description": "Script argument 'newN'. Example: 2713893.918.",
+        "required": false,
+        "default": 0
+      },
+      {
+        "name": "searchRadiusM",
+        "type": "Number",
+        "description": "Script argument 'searchRadiusM'. Example: 0.1.",
+        "required": false,
+        "default": 0.1
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": true,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Confirm",
+    "confirmationRequired": true,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:floors.modify.move_floor_sketch_corner_to_shared_point",
+    "lastModifiedUtc": "2026-11-17T12:23:23.16501Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Action",
+  "transactionMode": "manual",
+  "code": "var fid = Tama.Args.Get(args, \"floorId\", 0L);\nvar newE = Tama.Args.Get(args, \"newE\", 0.0); var newN = Tama.Args.Get(args, \"newN\", 0.0);\nvar rad = Tama.Args.Get(args, \"searchRadiusM\", 0.1) / 0.3048;\nvar floor = doc.GetElement(new ElementId((int)fid)) as Floor;\nif (floor == null) throw new Exception(\"Floor not found.\");\nvar tf = doc.ActiveProjectLocation.GetTotalTransform(); var inv = tf.Inverse;\nvar tgt2 = tf.OfPoint(new XYZ(newE/0.3048, newN/0.3048, 0));\nvar sketch = doc.GetElement(floor.SketchId) as Sketch;\nvar scope = new SketchEditScope(doc, \"Adjust floor corner\");\nscope.Start(floor.SketchId);\nvar report = new List<object>();\nusing (var t = new Transaction(doc, \"Move corner\")) {\n  t.Start();\n  var curves = sketch.GetAllElements().Select(id => doc.GetElement(id) as CurveElement).Where(c => c != null).ToList();\n  XYZ oldPt = null;\n  foreach (var ce in curves) foreach (var p in new[]{ce.GeometryCurve.GetEndPoint(0), ce.GeometryCurve.GetEndPoint(1)}) { var d = new XYZ(p.X - tgt2.X, p.Y - tgt2.Y, 0).GetLength(); if (d < rad && (oldPt == null || d < new XYZ(oldPt.X - tgt2.X, oldPt.Y - tgt2.Y, 0).GetLength())) oldPt = p; }\n  if (oldPt == null) throw new Exception(\"No sketch vertex near the target.\");\n  var newPt = new XYZ(tgt2.X, tgt2.Y, oldPt.Z);\n  int changed = 0;\n  foreach (var ce in curves) {\n    var c = ce.GeometryCurve; var a = c.GetEndPoint(0); var b = c.GetEndPoint(1);\n    bool aHit = a.DistanceTo(oldPt) < 1e-6, bHit = b.DistanceTo(oldPt) < 1e-6;\n    if (!aHit && !bHit) continue;\n    var na = aHit ? newPt : a; var nb = bHit ? newPt : b;\n    Curve nc;\n    if (c is Arc) {\n      var mid = c.Evaluate(0.5, true);\n      var chordMid = (a + b) / 2; var chordDir = (b - a).Normalize();\n      var nrm = XYZ.BasisZ.CrossProduct(chordDir);\n      double sag = (mid - chordMid).DotProduct(nrm);\n      var nDir = (nb - na).Normalize(); var nNrm = XYZ.BasisZ.CrossProduct(nDir);\n      var nMid = (na + nb) / 2 + nNrm * sag;\n      nc = Arc.Create(na, nb, nMid);\n      report.Add(new { edge = \"arc\", sagitta_mm = Math.Round(sag*304.8,1) });\n    } else { nc = Line.CreateBound(na, nb); report.Add(new { edge = \"line\" }); }\n    ce.SetGeometryCurve(nc, true); changed++;\n  }\n  if (changed != 2) throw new Exception(\"Expected 2 edges at the corner, found \" + changed);\n  t.Commit();\n}\nscope.Commit(new Tama.Failures.RollbackOnError());\nvar sk2 = doc.GetElement(floor.SketchId) as Sketch;\nvar verts = new List<object>();\nforeach (CurveArray ca in sk2.Profile) foreach (Curve c in ca) { var s = inv.OfPoint(c.GetEndPoint(0)); verts.Add(new { type = c.GetType().Name, E = Math.Round(s.X*0.3048,3), N = Math.Round(s.Y*0.3048,3) }); }\nreturn new { edges = report, sketchStartPoints = verts };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.235Z"
+}

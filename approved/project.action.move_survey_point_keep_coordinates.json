@@ -1,0 +1,81 @@
+{
+  "definition": {
+    "commandId": "project.action.move_survey_point_keep_coordinates",
+    "name": "Move Survey Point Keep Coordinates",
+    "description": "Moves the survey point (unclipped) to an internal XYZ in metres without changing shared coordinates, rolling back if any location or base point value changes.",
+    "aiDescription": "Moves the survey point (unclipped) to an internal XYZ in metres without changing shared coordinates, rolling back if any location or base point value changes.",
+    "examples": [
+      "move the survey point to the internal origin without changing coordinates",
+      "copy the survey point position from the Coordinates model"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Action",
+    "type": "Atomic",
+    "execution": "Modify",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "x",
+        "type": "Number",
+        "description": "Script argument 'x'. Example: 0.15.",
+        "required": false,
+        "default": 0.15
+      },
+      {
+        "name": "y",
+        "type": "Number",
+        "description": "Script argument 'y'. Example: 0.1505.",
+        "required": false,
+        "default": 0.1505
+      },
+      {
+        "name": "z",
+        "type": "Number",
+        "description": "Script argument 'z'. Example: 0.3.",
+        "required": false,
+        "default": 0.3
+      },
+      {
+        "name": "tolMm",
+        "type": "Number",
+        "description": "Script argument 'tolMm'. Example: 1.",
+        "required": false,
+        "default": 1
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": true,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Confirm",
+    "confirmationRequired": true,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:project.action.move_survey_point_keep_coordinates",
+    "lastModifiedUtc": "2026-11-11T17:08:24.5376434Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Action",
+  "transactionMode": "auto",
+  "code": "double ft = 0.3048;\ndouble tx = Tama.Args.Get(args, \"x\", 0.15) / ft;\ndouble ty = Tama.Args.Get(args, \"y\", 0.1505) / ft;\ndouble tz = Tama.Args.Get(args, \"z\", 0.3) / ft;\ndouble tol = Tama.Args.Get(args, \"tolMm\", 1.0) / 304.8;\n\nFunc<List<double[]>> snapLocs = () => {\n    var l = new List<double[]>();\n    foreach (ProjectLocation pl in doc.ProjectLocations) {\n        var pp = pl.GetProjectPosition(XYZ.Zero);\n        l.Add(new[]{pp.EastWest, pp.NorthSouth, pp.Elevation, pp.Angle});\n    }\n    return l;\n};\nvar bps = new FilteredElementCollector(doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().ToList();\nvar sp = bps.First(b => b.IsShared);\nvar pbp = bps.First(b => !b.IsShared);\n\nvar status = WorksharingUtils.GetCheckoutStatus(doc, sp.Id);\nif (status == CheckoutStatus.OwnedByOtherUser) throw new Exception(\"Survey point is owned by another user.\");\n\nvar locsBefore = snapLocs();\nvar pbpBefore = pbp.SharedPosition;\nvar spBeforeInt = sp.Position; var spBeforeShared = sp.SharedPosition;\nbool clippedBefore = sp.Clipped;\nbool pinnedBefore = sp.Pinned;\n\nif (sp.Pinned) sp.Pinned = false;\nsp.Clipped = false;\ndoc.Regenerate();\nvar delta = new XYZ(tx, ty, tz) - sp.Position;\nElementTransformUtils.MoveElement(doc, sp.Id, delta);\ndoc.Regenerate();\nsp.Clipped = clippedBefore;\nsp.Pinned = pinnedBefore;\ndoc.Regenerate();\n\nvar locsAfter = snapLocs();\nfor (int i = 0; i < locsBefore.Count; i++)\n  for (int k = 0; k < 3; k++)\n    if (Math.Abs(locsBefore[i][k] - locsAfter[i][k]) > tol || Math.Abs(locsBefore[i][3] - locsAfter[i][3]) > 1e-7)\n      throw new Exception(\"Project location values changed - rolled back.\");\nif (pbp.SharedPosition.DistanceTo(pbpBefore) > tol) throw new Exception(\"Project base point shared value changed - rolled back.\");\nif (sp.Position.DistanceTo(new XYZ(tx, ty, tz)) > tol) throw new Exception(\"Survey point did not reach target - rolled back. Now at \" + sp.Position.Multiply(ft));\n\nFunc<XYZ, double[]> m = p => new[]{Math.Round(p.X*ft,4), Math.Round(p.Y*ft,4), Math.Round(p.Z*ft,4)};\nreturn new {\n  surveyBefore = new { internal_m = m(spBeforeInt), shared_m = m(spBeforeShared) },\n  surveyAfter = new { internal_m = m(sp.Position), shared_m = m(sp.SharedPosition), clipped = sp.Clipped, pinned = sp.Pinned },\n  pbpShared_m = m(pbp.SharedPosition),\n  locationsUnchanged = true\n};",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.167Z"
+}

@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "elements.read.interior_objects_and_wall_heights",
+    "name": "Interior Objects And Wall Heights",
+    "description": "Lists casework, fixtures, furniture, floors, ceilings, windows with bounding boxes and all walls with heights.",
+    "aiDescription": "Lists casework, fixtures, furniture, floors, ceilings, windows with bounding boxes and all walls with heights.",
+    "examples": [
+      "Lists casework, fixtures, furniture, floors, ceilings, windows with bounding boxes and all walls with heights."
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:elements.read.interior_objects_and_wall_heights",
+    "lastModifiedUtc": "2026-11-17T09:27:14.7659734Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var cats = new[]{BuiltInCategory.OST_Casework, BuiltInCategory.OST_GenericModel, BuiltInCategory.OST_Furniture, BuiltInCategory.OST_PlumbingFixtures, BuiltInCategory.OST_SpecialityEquipment, BuiltInCategory.OST_Ceilings, BuiltInCategory.OST_Floors, BuiltInCategory.OST_Windows};\nvar outl = new List<object>();\nforeach (var bc in cats) foreach (var e in new FilteredElementCollector(doc).OfCategory(bc).WhereElementIsNotElementType()) {\n  var bb = e.get_BoundingBox(null);\n  outl.Add(new { cat = e.Category.Name, id = e.Id.IntegerValue, name = e.Name, fam = (e as FamilyInstance)?.Symbol?.FamilyName,\n   min = bb==null?null:new[]{Math.Round(bb.Min.X*0.3048,2),Math.Round(bb.Min.Y*0.3048,2),Math.Round(bb.Min.Z*0.3048,2)},\n   max = bb==null?null:new[]{Math.Round(bb.Max.X*0.3048,2),Math.Round(bb.Max.Y*0.3048,2),Math.Round(bb.Max.Z*0.3048,2)} });\n}\nvar walls = new List<object>();\nforeach (Wall w in new FilteredElementCollector(doc).OfClass(typeof(Wall))) {\n  var bb = w.get_BoundingBox(null);\n  walls.Add(new { id = w.Id.IntegerValue, t = w.Name, h = Math.Round(w.get_Parameter(BuiltInParameter.WALL_USER_HEIGHT_PARAM).AsDouble()*0.3048,3), off = Math.Round(w.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET).AsDouble()*0.3048,3), zmin=Math.Round(bb.Min.Z*0.3048,2), zmax=Math.Round(bb.Max.Z*0.3048,2), wd = Math.Round(w.Width*0.3048,3)});\n}\nreturn new { outl, walls };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.214Z"
+}

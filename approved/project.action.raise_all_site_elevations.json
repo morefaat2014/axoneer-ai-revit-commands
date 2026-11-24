@@ -1,0 +1,59 @@
+{
+  "definition": {
+    "commandId": "project.action.raise_all_site_elevations",
+    "name": "Raise All Site Elevations",
+    "description": "Raises the elevation of every project site by a given amount in mm, keeping E/N and angles (handles mirrored sites), rolling back if anything else changes.",
+    "aiDescription": "Raises the elevation of every project site by a given amount in mm, keeping E/N and angles (handles mirrored sites), rolling back if anything else changes.",
+    "examples": [
+      "increase the elevation of both sites by 300 mm"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Action",
+    "type": "Atomic",
+    "execution": "Modify",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "deltaMm",
+        "type": "Number",
+        "description": "Script argument 'deltaMm'. Example: 300.",
+        "required": false,
+        "default": 300
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": true,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Confirm",
+    "confirmationRequired": true,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:project.action.raise_all_site_elevations",
+    "lastModifiedUtc": "2026-11-15T10:45:22.9997076Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Action",
+  "transactionMode": "auto",
+  "code": "double ft = 0.3048;\ndouble dz = Tama.Args.Get(args, \"deltaMm\", 300.0) / 304.8;\nFunc<double,double> wrap = x => Math.Atan2(Math.Sin(x), Math.Cos(x));\nvar sp = new FilteredElementCollector(doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().First(b => b.IsShared);\nvar spBefore = sp.SharedPosition;\nvar act = doc.ActiveProjectLocation;\nvar locs = new List<ProjectLocation>(); foreach (ProjectLocation pl in doc.ProjectLocations) locs.Add(pl);\nvar before = locs.ToDictionary(l => l.Id.IntegerValue, l => l.GetProjectPosition(XYZ.Zero));\n// active first, then others\nforeach (var l in locs.OrderBy(x => x.Id == act.Id ? 0 : 1))\n{\n    var b = before[l.Id.IntegerValue];\n    var pp = l.GetProjectPosition(XYZ.Zero);\n    pp.EastWest = b.EastWest; pp.NorthSouth = b.NorthSouth; pp.Angle = b.Angle; pp.Elevation = b.Elevation + dz;\n    l.SetProjectPosition(XYZ.Zero, pp);\n    doc.Regenerate();\n    var r = l.GetProjectPosition(XYZ.Zero);\n    if (Math.Abs(wrap(r.Angle - b.Angle)) > 1e-9)\n    {   // mirrored site: angle reflects on write (read_new = 2*read_old - set)\n        var p2 = l.GetProjectPosition(XYZ.Zero);\n        p2.Angle = wrap(2 * r.Angle - b.Angle);\n        l.SetProjectPosition(XYZ.Zero, p2);\n        doc.Regenerate();\n    }\n}\nvar outList = new List<object>();\nforeach (var l in locs)\n{\n    var b = before[l.Id.IntegerValue]; var r = l.GetProjectPosition(XYZ.Zero);\n    double dEN = Math.Sqrt(Math.Pow(r.EastWest-b.EastWest,2)+Math.Pow(r.NorthSouth-b.NorthSouth,2))*ft*1000;\n    double dZ = (r.Elevation - b.Elevation)*ft*1000;\n    double dA = Math.Abs(wrap(r.Angle-b.Angle))*180/Math.PI;\n    if (dEN > 0.5 || Math.Abs(dZ - dz*304.8) > 0.5 || dA > 1e-6) throw new Exception(l.Name + \" check failed (EN \" + dEN + \" mm, dZ \" + dZ + \" mm, angle \" + dA + \" deg) - rolled back.\");\n    outList.Add(new { site = l.Name, current = l.Id == act.Id, elevBefore = Math.Round(b.Elevation*ft,4), elevAfter = Math.Round(r.Elevation*ft,4),\n        ew = Math.Round(r.EastWest*ft,4), ns = Math.Round(r.NorthSouth*ft,4), angle = Math.Round(r.Angle*180/Math.PI,6) });\n}\nvar spa = sp.SharedPosition;\nif (Math.Sqrt(Math.Pow(spa.X-spBefore.X,2)+Math.Pow(spa.Y-spBefore.Y,2))*ft > 0.001) throw new Exception(\"Survey point E/N changed - rolled back.\");\nreturn new { sites = outList, surveyReads_m = new[]{Math.Round(spa.X*ft,4), Math.Round(spa.Y*ft,4), Math.Round(spa.Z*ft,4)}, surveyInternal_m = new[]{Math.Round(sp.Position.X*ft,4), Math.Round(sp.Position.Y*ft,4), Math.Round(sp.Position.Z*ft,4)} };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.204Z"
+}

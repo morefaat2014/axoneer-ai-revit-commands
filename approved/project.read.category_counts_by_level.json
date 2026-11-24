@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "project.read.category_counts_by_level",
+    "name": "Category Counts By Level",
+    "description": "Saved automatically from a script that ran successfully.",
+    "aiDescription": "Script kept automatically after it ran successfully. Review its metadata before relying on it.",
+    "examples": [
+      "run the saved script project.read.category_counts_by_level"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:project.read.category_counts_by_level",
+    "lastModifiedUtc": "2026-11-24T08:40:33.3226283Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var byLevel = new Dictionary<string,Dictionary<string,int>>();\nint total = 0;\nforeach (Element e in new FilteredElementCollector(doc).WhereElementIsNotElementType()) {\n  if (e is View || e.Category == null) continue;\n  total++;\n  string lname = \"(no level)\";\n  try { var lid = e.LevelId; if (lid != null && lid.IntegerValue > 0) { var l = doc.GetElement(lid) as Level; if (l != null) lname = l.Name; } } catch {}\n  string c = e.Category.Name;\n  if (!byLevel.ContainsKey(lname)) byLevel[lname] = new Dictionary<string,int>();\n  if (!byLevel[lname].ContainsKey(c)) byLevel[lname][c] = 0;\n  byLevel[lname][c]++;\n}\nvar summary = byLevel.Select(kv => new { level = kv.Key, cats = kv.Value }).ToList();\nreturn new { total = total, byLevel = summary };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.278Z"
+}

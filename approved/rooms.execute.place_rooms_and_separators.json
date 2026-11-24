@@ -1,0 +1,64 @@
+{
+  "definition": {
+    "commandId": "rooms.execute.place_rooms_and_separators",
+    "name": "Place Rooms And Separators",
+    "description": "Add 4 room separation lines on Basement 2 (ramp south side, NE stair corner, corridor south side, void west side) and place 30 rooms (Parking, plant rooms, stairs, lifts, ramp etc.) at the JSON seed points, upper limit Basement 1, numbered B2-01 to B2-30; any room that does not enclose is deleted again and reported.",
+    "aiDescription": "Add 4 room separation lines on Basement 2 (ramp south side, NE stair corner, corridor south side, void west side) and place 30 rooms (Parking, plant rooms, stairs, lifts, ramp etc.) at the JSON seed points, upper limit Basement 1, numbered B2-01 to B2-30; any room that does not enclose is deleted again and reported.",
+    "examples": [
+      "Add 4 room separation lines on Basement 2 (ramp south side, NE stair corner, corridor south side, void west side) and place 30 rooms (Parking, plant rooms, stairs, lifts, ramp etc.) at the JSON seed points, upper limit Basement 1, numbered B2-01 to B2-30; any room that does not enclose is deleted again and reported."
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Action",
+    "type": "Atomic",
+    "execution": "Modify",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "rooms",
+        "type": "Any",
+        "description": "Script argument 'rooms'. Example: [[\"B2-01\",\"Parking\",42125,55722,\"R1\"],[\"B2-02\",\"Mechanical Room\",3410,17445,\"R2\"....",
+        "required": false
+      },
+      {
+        "name": "seps",
+        "type": "Any",
+        "description": "Script argument 'seps'. Example: [[\"SEP-RAMP-S\",23360.093815746361,7196,32212.566711244162,7196],[\"SEP-R12-NE\",90....",
+        "required": false
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": true,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Confirm",
+    "confirmationRequired": true,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:rooms.execute.place_rooms_and_separators",
+    "lastModifiedUtc": "2026-11-24T09:03:32.9019661Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Action",
+  "transactionMode": "auto",
+  "code": "double k=1/304.8;\nvar lvl=doc.GetElement(new ElementId(311)) as Level;\nvar up=doc.GetElement(new ElementId(694)) as Level;\nvar view=new FilteredElementCollector(doc).OfClass(typeof(ViewPlan)).Cast<ViewPlan>().First(v=>!v.IsTemplate&&v.GenLevel!=null&&v.GenLevel.Id.IntegerValue==311&&v.ViewType==ViewType.FloorPlan);\nvar sp=SketchPlane.Create(doc,lvl.Id);\nvar sepIds=new List<int>();\nforeach(var o in args[\"seps\"] as object[]){\n var a=o as object[];\n var ca=new CurveArray();\n ca.Append(Line.CreateBound(new XYZ(Convert.ToDouble(a[1])*k,Convert.ToDouble(a[2])*k,lvl.Elevation),new XYZ(Convert.ToDouble(a[3])*k,Convert.ToDouble(a[4])*k,lvl.Elevation)));\n var ms=doc.Create.NewRoomBoundaryLines(sp,ca,view);\n foreach(Element e in ms)sepIds.Add(e.Id.IntegerValue);\n}\ndoc.Regenerate();\nvar rep=new List<object>();\nforeach(var o in args[\"rooms\"] as object[]){\n var a=o as object[];\n double x=Convert.ToDouble(a[2]),y=Convert.ToDouble(a[3]);\n var r=doc.Create.NewRoom(lvl,new UV(x*k,y*k));\n if(r==null){rep.Add(new{src=a[4],err=\"null\"});continue;}\n r.get_Parameter(BuiltInParameter.ROOM_NAME).Set(Convert.ToString(a[1]));\n r.get_Parameter(BuiltInParameter.ROOM_NUMBER).Set(Convert.ToString(a[0]));\n r.get_Parameter(BuiltInParameter.ROOM_UPPER_LEVEL).Set(up.Id);\n r.get_Parameter(BuiltInParameter.ROOM_UPPER_OFFSET).Set(0.0);\n rep.Add(new{src=a[4],id=r.Id.IntegerValue,num=a[0],area=Math.Round(r.Area*0.09290304,2)});\n}\ndoc.Regenerate();\nvar del=new List<object>();\nforeach(var r in new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Rooms).Cast<Autodesk.Revit.DB.Architecture.Room>().ToList()){\n double ar=r.Area*0.09290304;\n if(ar<=0.0001){del.Add(new{num=r.Number,name=r.Name});doc.Delete(r.Id);}\n}\nreturn new{seps=sepIds,rooms=rep,deletedNotEnclosed=del};",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.303Z"
+}

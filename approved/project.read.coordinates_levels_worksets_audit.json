@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "project.read.coordinates_levels_worksets_audit",
+    "name": "Coordinates Levels Worksets Audit",
+    "description": "Reports base/survey point positions in internal and shared coordinates, active site, true north, levels, worksets and grid pinning.",
+    "aiDescription": "Reports base/survey point positions in internal and shared coordinates, active site, true north, levels, worksets and grid pinning.",
+    "examples": [
+      "Reports base/survey point positions in internal and shared coordinates, active site, true north, levels, worksets and grid pinning."
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:project.read.coordinates_levels_worksets_audit",
+    "lastModifiedUtc": "2026-11-12T10:35:46.3865442Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var pbp = BasePoint.GetProjectBasePoint(doc);\nvar sp = BasePoint.GetSurveyPoint(doc);\nvar loc = doc.ActiveProjectLocation;\nvar pos = loc.GetProjectPosition(XYZ.Zero);\nFunc<XYZ, object> m = p => new { x = Math.Round(p.X*304.8,1), y = Math.Round(p.Y*304.8,1), z = Math.Round(p.Z*304.8,1) };\nFunc<XYZ, object> sh = p => { var t = loc.GetTotalTransform().OfPoint(p); return new { E = Math.Round(t.X*0.3048,3), N = Math.Round(t.Y*0.3048,3), Z = Math.Round(t.Z*0.3048,3) }; };\nvar sites = new FilteredElementCollector(doc).OfClass(typeof(ProjectLocation)).Cast<ProjectLocation>().Select(l => l.Name).ToList();\nvar levels = new FilteredElementCollector(doc).OfClass(typeof(Level)).Cast<Level>().OrderBy(l => l.Elevation)\n  .Select(l => new { l.Name, elevM = Math.Round(l.Elevation*0.3048,3) }).ToList();\nvar ws = new FilteredWorksetCollector(doc).OfKind(WorksetKind.UserWorkset).Select(w => w.Name).ToList();\nvar links = new FilteredElementCollector(doc).OfClass(typeof(RevitLinkInstance)).Cast<RevitLinkInstance>().ToList();\nint sharedPlaced = 0; \nvar gridsPinned = new FilteredElementCollector(doc).OfClass(typeof(Grid)).Count(g => g.Pinned);\nvar gridsTotal = new FilteredElementCollector(doc).OfClass(typeof(Grid)).Count();\nreturn new {\n  pbpInternal = m(pbp.Position), pbpShared = sh(pbp.Position), pbpPinned = pbp.Pinned,\n  spInternal = m(sp.Position), spShared = sh(sp.Position), spPinned = sp.Pinned,\n  activeSite = loc.Name, sites, angleToTrueNorthDeg = Math.Round(pos.Angle*180/Math.PI,4), ewAtOrigin = Math.Round(pos.EastWest*0.3048,3), nsAtOrigin = Math.Round(pos.NorthSouth*0.3048,3), elevAtOrigin = Math.Round(pos.Elevation*0.3048,3),\n  levels, worksets = ws, gridsPinned, gridsTotal };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.180Z"
+}

@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "project.read.type_inventory_floors_stairs_railings",
+    "name": "Type Inventory Floors Stairs Railings",
+    "description": "Saved automatically from a script that ran successfully.",
+    "aiDescription": "Script kept automatically after it ran successfully. Review its metadata before relying on it.",
+    "examples": [
+      "run the saved script project.read.type_inventory_floors_stairs_railings"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:project.read.type_inventory_floors_stairs_railings",
+    "lastModifiedUtc": "2026-11-23T16:08:32.4903142Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "Func<Type,List<string>> names = t => new FilteredElementCollector(doc).OfClass(t).Cast<Element>().Select(e=>e.Name).ToList();\nvar floorTypes = new FilteredElementCollector(doc).OfClass(typeof(FloorType)).Cast<FloorType>().Select(f=>f.Name+\" | \"+Math.Round((f.GetCompoundStructure()?.GetWidth()??0)*304.8)).ToList();\nvar stairTypes = names(typeof(Autodesk.Revit.DB.Architecture.StairsType));\nvar railTypes = names(typeof(Autodesk.Revit.DB.Architecture.RailingType));\nvar lv2 = new FilteredElementCollector(doc).OfClass(typeof(Level)).Cast<Level>().First(l=>l.Name==\"Level 2\");\nvar plans = new FilteredElementCollector(doc).OfClass(typeof(ViewPlan)).Cast<ViewPlan>().Where(v=>!v.IsTemplate && v.GenLevel!=null && v.GenLevel.Id==lv2.Id).Select(v=>v.Name+\" | \"+v.ViewType).ToList();\nvar phases = names(typeof(Phase));\nvar mats = new FilteredElementCollector(doc).OfClass(typeof(Material)).Cast<Material>().Where(m=>m.Name.ToLower().Contains(\"concrete\")||m.Name.ToLower().Contains(\"gypsum\")||m.Name.ToLower().Contains(\"plaster\")).Select(m=>m.Name).Take(15).ToList();\nreturn new{floorTypes,stairTypes,railTypes,plans,phases,mats};",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.255Z"
+}

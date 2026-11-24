@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "project.read.model_inventory_for_modelling",
+    "name": "Model Inventory For Modelling",
+    "description": "Saved automatically from a script that ran successfully.",
+    "aiDescription": "Script kept automatically after it ran successfully. Review its metadata before relying on it.",
+    "examples": [
+      "run the saved script project.read.model_inventory_for_modelling"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:project.read.model_inventory_for_modelling",
+    "lastModifiedUtc": "2026-11-23T16:03:04.4618637Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var lv = new FilteredElementCollector(doc).OfClass(typeof(Level)).Cast<Level>().Select(l=>l.Id).ToList();\nFunc<BuiltInCategory,int> cnt = c => new FilteredElementCollector(doc).OfCategory(c).WhereElementIsNotElementType().GetElementCount();\nvar wallTypes = new FilteredElementCollector(doc).OfClass(typeof(WallType)).Cast<WallType>().Select(w=>new{w.Name, kind=w.Kind.ToString(), wmm=Math.Round(w.Width*304.8)}).ToList();\nvar doors = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Doors).WhereElementIsElementType().Cast<FamilySymbol>().Select(s=>s.FamilyName+\" : \"+s.Name).ToList();\nvar wins = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Windows).WhereElementIsElementType().Cast<FamilySymbol>().Select(s=>s.FamilyName+\" : \"+s.Name).ToList();\nvar byLevel = new FilteredElementCollector(doc).WhereElementIsNotElementType().Where(e=>e.LevelId!=null && e.LevelId!=ElementId.InvalidElementId && e.Category!=null).GroupBy(e=>doc.GetElement(e.LevelId).Name+\" | \"+e.Category.Name).Select(g=>new{k=g.Key,n=g.Count()}).ToList();\nvar imports = new FilteredElementCollector(doc).OfClass(typeof(ImportInstance)).Count();\nreturn new{walls=cnt(BuiltInCategory.OST_Walls),rooms=cnt(BuiltInCategory.OST_Rooms),floors=cnt(BuiltInCategory.OST_Floors),wallTypes,doors,wins,byLevel,imports};",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.253Z"
+}

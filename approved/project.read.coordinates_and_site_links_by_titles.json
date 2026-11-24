@@ -1,0 +1,59 @@
+{
+  "definition": {
+    "commandId": "project.read.coordinates_and_site_links_by_titles",
+    "name": "Coordinates And Site Links By Titles",
+    "description": "For open (non-linked) documents whose titles contain any of the given keys, reports sites, base points and the site-model link instances.",
+    "aiDescription": "For open (non-linked) documents whose titles contain any of the given keys, reports sites, base points and the site-model link instances.",
+    "examples": [
+      "check sites and site links in the 5SW and 6BA models"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "titles",
+        "type": "String",
+        "description": "Script argument 'titles'. Example: \"5SW,6BA\".",
+        "required": false,
+        "default": ""
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:project.read.coordinates_and_site_links_by_titles",
+    "lastModifiedUtc": "2026-11-12T17:17:26.1146293Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var keys = Tama.Args.Get(args, \"titles\", \"\").Split(',').Select(s => s.Trim()).Where(s => s.Length > 0).ToList();\nFunc<XYZ,double[]> m = p => new[]{Math.Round(p.X*0.3048,4),Math.Round(p.Y*0.3048,4),Math.Round(p.Z*0.3048,4)};\nvar res = new List<object>();\nvar all = new List<string>();\nforeach (Document d in app.Documents)\n{\n  all.Add(d.Title + (d.IsLinked ? \" [link]\" : \" [open]\") + (d.Title == doc.Title ? \" [active]\" : \"\"));\n  if (d.IsLinked || d.IsFamilyDocument || !keys.Any(k => d.Title.Contains(k))) continue;\n  var locs = new List<object>();\n  foreach (ProjectLocation pl in d.ProjectLocations) {\n    var pp = pl.GetProjectPosition(XYZ.Zero);\n    locs.Add(new { name = pl.Name, id = pl.Id.IntegerValue, active = d.ActiveProjectLocation.Id == pl.Id,\n      ew = Math.Round(pp.EastWest*0.3048,4), ns = Math.Round(pp.NorthSouth*0.3048,4), elev = Math.Round(pp.Elevation*0.3048,4), angle = Math.Round(pp.Angle*180/Math.PI,6) });\n  }\n  var bps = new FilteredElementCollector(d).OfClass(typeof(BasePoint)).Cast<BasePoint>().Select(b => new { survey = b.IsShared, internal_m = m(b.Position), shared_m = m(b.SharedPosition), pinned = b.Pinned }).ToList();\n  var links = new FilteredElementCollector(d).OfClass(typeof(RevitLinkInstance)).Cast<RevitLinkInstance>().Where(li => li.Name.Contains(\"000000\")).Select(li => {\n    var t = li.GetTransform();\n    return new { id = li.Id.IntegerValue, name = li.Name, pinned = li.Pinned, origin_m = m(t.Origin), rot = Math.Round(Math.Atan2(t.BasisX.Y,t.BasisX.X)*180/Math.PI,6),\n      owner = d.IsWorkshared ? WorksharingUtils.GetCheckoutStatus(d, li.Id).ToString() : \"n/a\" };\n  }).ToList();\n  res.Add(new { title = d.Title, path = d.PathName, workshared = d.IsWorkshared, locations = locs, basePoints = bps, siteLinks = links });\n}\nreturn new { active = doc.Title, docs = all, matches = res };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.200Z"
+}

@@ -1,0 +1,86 @@
+{
+  "definition": {
+    "commandId": "lines.modify.realign_setback_line_to_floor_edge",
+    "name": "Realign Setback Line to Floor Edge",
+    "description": "Re-offsets one setback line parallel to its nearest straight floor edge at a given distance and trims its joined neighbours along their own curves.",
+    "aiDescription": "Re-offsets one setback line parallel to its nearest straight floor edge at a given distance and trims its joined neighbours along their own curves.",
+    "examples": [
+      "Moves setback line 12684567 so it is again exactly 4 m from (and parallel to) the floor's P01–P02 edge, and moves the touching ends of its two joined setback arcs along their own arcs to meet it; aborts if anything would move more than 50 mm."
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Action",
+    "type": "Atomic",
+    "execution": "Modify",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "floorId",
+        "type": "Integer",
+        "description": "Script argument 'floorId'. Example: 12680010.",
+        "required": false,
+        "default": 0
+      },
+      {
+        "name": "lineId",
+        "type": "Integer",
+        "description": "Script argument 'lineId'. Example: 12684567.",
+        "required": false,
+        "default": 0
+      },
+      {
+        "name": "offsetM",
+        "type": "Number",
+        "description": "Script argument 'offsetM'. Example: 4.",
+        "required": false,
+        "default": 4
+      },
+      {
+        "name": "maxMoveM",
+        "type": "Number",
+        "description": "Script argument 'maxMoveM'. Example: 0.05.",
+        "required": false,
+        "default": 0.05
+      },
+      {
+        "name": "setbackIds",
+        "type": "IntegerArray",
+        "description": "Script argument 'setbackIds'. Example: [12684566,12684567,12684568,12684569,12684570,12684571].",
+        "required": false
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": true,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Confirm",
+    "confirmationRequired": true,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:lines.modify.realign_setback_line_to_floor_edge",
+    "lastModifiedUtc": "2026-11-22T08:53:34.4902878Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Action",
+  "transactionMode": "auto",
+  "code": "var floor = doc.GetElement(new ElementId((int)Tama.Args.Get(args, \"floorId\", 0L))) as Floor;\nvar line = doc.GetElement(new ElementId((int)Tama.Args.Get(args, \"lineId\", 0L))) as CurveElement;\ndouble off = Tama.Args.Get(args, \"offsetM\", 4.0)/0.3048, maxMove = Tama.Args.Get(args, \"maxMoveM\", 0.05)/0.3048;\nFunc<XYZ,XYZ> flat = p => new XYZ(p.X, p.Y, 0);\nvar lc = line.GeometryCurve; double z = lc.GetEndPoint(0).Z; var dz = new XYZ(0,0,z);\nvar la = flat(lc.GetEndPoint(0)); var lb = flat(lc.GetEndPoint(1)); var lm = (la+lb)/2; var ldir = (lb-la).Normalize();\nvar sk = doc.GetElement(floor.SketchId) as Sketch;\nCurve edge = null; double bestScore = double.MaxValue;\nforeach (CurveArray ca in sk.Profile) foreach (Curve c0 in ca) { if (!(c0 is Line)) continue; var c = Line.CreateBound(flat(c0.GetEndPoint(0)), flat(c0.GetEndPoint(1))); var dot = Math.Abs(ldir.DotProduct((c.GetEndPoint(1)-c.GetEndPoint(0)).Normalize())); var u = c.Clone(); u.MakeUnbound(); var d = u.Project(lm).Distance; var score = (1-dot)*1000 + d; if (score < bestScore) { bestScore = score; edge = c; } }\nvar o1 = edge.CreateOffset(off, XYZ.BasisZ); var o2 = edge.CreateOffset(-off, XYZ.BasisZ);\nvar newInf = (o1.Project(lm) != null && o1.Clone() is Curve) ? null : (Curve)null;\nvar u1 = o1.Clone(); u1.MakeUnbound(); var u2 = o2.Clone(); u2.MakeUnbound();\nvar target = u1.Project(lm).Distance < u2.Project(lm).Distance ? u1 : u2;\nvar report = new List<object>();\nvar others = ((object[])args[\"setbackIds\"]).Select(x => doc.GetElement(new ElementId(Convert.ToInt32(x))) as CurveElement).Where(c => c.Id != line.Id).ToList();\nvar newEnds = new XYZ[2]; var oldEnds = new[]{ la, lb };\nfor (int k = 0; k < 2; k++) {\n  var end = oldEnds[k];\n  var adj = others.FirstOrDefault(o => flat(o.GeometryCurve.GetEndPoint(0)).DistanceTo(end) < 0.003 || flat(o.GeometryCurve.GetEndPoint(1)).DistanceTo(end) < 0.003);\n  if (adj == null) throw new Exception(\"No setback curve joined at end \" + k);\n  var ac = adj.GeometryCurve; var acf = ac.CreateTransformed(Transform.CreateTranslation(new XYZ(0,0,-ac.GetEndPoint(0).Z)));\n  var au = acf.Clone(); au.MakeUnbound();\n  IntersectionResultArray ira; target.Intersect(au, out ira);\n  if (ira == null || ira.Size == 0) throw new Exception(\"No intersection at end \" + k);\n  XYZ best = null; foreach (IntersectionResult ir in ira) if (best == null || ir.XYZPoint.DistanceTo(end) < best.DistanceTo(end)) best = ir.XYZPoint;\n  if (best.DistanceTo(end) > maxMove) throw new Exception(\"End \" + k + \" would move \" + Math.Round(best.DistanceTo(end)*304.8) + \" mm; aborted.\");\n  newEnds[k] = best;\n  bool startHit = flat(ac.GetEndPoint(0)).DistanceTo(end) < 0.003; var az = new XYZ(0,0,ac.GetEndPoint(0).Z);\n  var p0 = startHit ? best + az : ac.GetEndPoint(0); var p1 = startHit ? ac.GetEndPoint(1) : best + az;\n  Curve nac = ac is Arc ? (Curve)Arc.Create(p0, p1, au.Project(flat((p0+p1)/2)).XYZPoint + az) : Line.CreateBound(p0, p1);\n  adj.SetGeometryCurve(nac, true);\n  report.Add(new { adjusted = adj.Id.IntegerValue, type = ac.GetType().Name, moved_mm = Math.Round(best.DistanceTo(end)*304.8,1) });\n}\nline.SetGeometryCurve(Line.CreateBound(newEnds[0] + dz, newEnds[1] + dz), true);\nvar eu = edge.Clone(); eu.MakeUnbound();\nvar nm = (newEnds[0]+newEnds[1])/2;\nreturn new { line = line.Id.IntegerValue, newOffset_m = Math.Round(eu.Project(nm).Distance*0.3048,4), endsMoved = report };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.251Z"
+}

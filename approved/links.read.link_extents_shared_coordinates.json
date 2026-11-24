@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "links.read.link_extents_shared_coordinates",
+    "name": "Link Extents In Shared Coordinates",
+    "description": "Reports centre and size of selected link instances in internal and shared coordinates, with the link's active site.",
+    "aiDescription": "Reports centre and size of selected link instances in internal and shared coordinates, with the link's active site.",
+    "examples": [
+      "Reports centre and size of selected link instances in internal and shared coordinates, with the link's active site."
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:links.read.link_extents_shared_coordinates",
+    "lastModifiedUtc": "2026-11-12T10:35:59.9840017Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var loc = doc.ActiveProjectLocation;\nvar tr = loc.GetTotalTransform().Inverse;\nvar res = new List<object>();\nforeach (var li in new FilteredElementCollector(doc).OfClass(typeof(RevitLinkInstance)).Cast<RevitLinkInstance>()) {\n  var nm = li.Name;\n  if (!(nm.Contains(\"Building 03 Shell\") || nm.Contains(\"Building 03 Internal\") || nm.Contains(\"STR-0011\"))) continue;\n  var bb = li.get_BoundingBox(null); if (bb == null) continue;\n  var c = (bb.Min + bb.Max) / 2;\n  var s = tr.OfPoint(c);\n  var ld = li.GetLinkDocument();\n  string linkSite = ld != null ? ld.ActiveProjectLocation.Name : \"unloaded\";\n  string linkSize = null;\n  res.Add(new { nm, centerInternalM = new { x = Math.Round(c.X*0.3048,1), y = Math.Round(c.Y*0.3048,1) }, centerSharedM = new { E = Math.Round(s.X*0.3048,3), N = Math.Round(s.Y*0.3048,3) }, sizeM = new { x = Math.Round((bb.Max.X-bb.Min.X)*0.3048,1), y = Math.Round((bb.Max.Y-bb.Min.Y)*0.3048,1), z = Math.Round((bb.Max.Z-bb.Min.Z)*0.3048,1) }, linkSite, pinned = li.Pinned });\n}\nreturn res;",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.187Z"
+}

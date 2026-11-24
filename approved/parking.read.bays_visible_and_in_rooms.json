@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "parking.read.bays_visible_and_in_rooms",
+    "name": "Bays Visible and In Rooms",
+    "description": "Saved automatically from a script that ran successfully.",
+    "aiDescription": "Script kept automatically after it ran successfully. Review its metadata before relying on it.",
+    "examples": [
+      "run the saved script parking.read.bays_visible_and_in_rooms"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:parking.read.bays_visible_and_in_rooms",
+    "lastModifiedUtc": "2026-11-24T09:07:47.5582283Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var v=new FilteredElementCollector(doc,new ElementId(312)).OfCategory(BuiltInCategory.OST_Parking).WhereElementIsNotElementType().GetElementCount();\nvar ps=new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Parking).OfClass(typeof(FamilyInstance)).Cast<FamilyInstance>().ToList();\nvar ph=doc.Phases.Cast<Phase>().Last();\nvar pr=ps.GroupBy(p=>{var b=p.get_BoundingBox(null);var c=(b.Min+b.Max)/2;var r=doc.GetRoomAtPoint(new XYZ(c.X,c.Y,c.Z+1),ph);return r==null?\"none\":r.Name;}).Select(g=>g.Key+\": \"+g.Count()).ToList();\nvar rooms=new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Rooms).WhereElementIsNotElementType().Cast<SpatialElement>().ToList();\nreturn new{visible=v,pr,rooms=rooms.Count,zero=rooms.Count(r=>r.Area<=0),warn=doc.GetWarnings().Count};",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.309Z"
+}

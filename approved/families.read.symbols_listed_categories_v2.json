@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "families.read.symbols_listed_categories_v2",
+    "name": "Family Symbols In Listed Categories",
+    "description": "Saved automatically from a script that ran successfully.",
+    "aiDescription": "Script kept automatically after it ran successfully. Review its metadata before relying on it.",
+    "examples": [
+      "run the saved script families.read.symbols_listed_categories_v2"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:families.read.symbols_listed_categories_v2",
+    "lastModifiedUtc": "2026-11-24T08:40:49.7017575Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var wanted = new HashSet<string>{\"Doors\",\"Windows\",\"Parking\",\"Plumbing Fixtures\",\"Specialty Equipment\",\"Generic Models\",\"Columns\",\"Structural Columns\",\"Casework\",\"Furniture\",\"Mechanical Equipment\"};\nvar rows = new List<object>();\nvar counts = new Dictionary<string,int>();\nforeach (FamilySymbol s in new FilteredElementCollector(doc).OfClass(typeof(FamilySymbol)).Cast<FamilySymbol>()) {\n  if (s.Category == null || !wanted.Contains(s.Category.Name)) continue;\n  string cat = s.Category.Name;\n  if (!counts.ContainsKey(cat)) counts[cat] = 0;\n  counts[cat]++;\n  if (rows.Count >= 200) continue;\n  string pt = \"\";\n  try { pt = s.Family.FamilyPlacementType.ToString(); } catch {}\n  var dims = new Dictionary<string,string>();\n  foreach (string pn in new[]{\"Width\",\"Length\",\"Depth\",\"Height\"}) {\n    try { var p = s.LookupParameter(pn); if (p != null && p.StorageType == StorageType.Double) dims[pn] = Math.Round(p.AsDouble()*304.8).ToString(); } catch {}\n  }\n  rows.Add(new { id = s.Id.IntegerValue, cat = cat, family = s.FamilyName, type = s.Name, placement = pt, dimsMm = dims });\n}\nreturn new { categoryCounts = counts, shown = rows.Count, symbols = rows };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.280Z"
+}

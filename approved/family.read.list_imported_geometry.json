@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "family.read.list_imported_geometry",
+    "name": "List Imported Geometry in Family",
+    "description": "Lists import instances, DirectShapes and free-form elements in the open document with their bounding boxes and transforms.",
+    "aiDescription": "Lists import instances, DirectShapes and free-form elements in the open document with their bounding boxes and transforms.",
+    "examples": [
+      "Lists import instances, DirectShapes and free-form elements in the open document with their bounding boxes and transforms."
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:family.read.list_imported_geometry",
+    "lastModifiedUtc": "2026-11-19T16:31:18.3976679Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var res = new List<object>();\nforeach (var e in new FilteredElementCollector(doc).WhereElementIsNotElementType())\n{\n    if (e is ImportInstance || e is DirectShape || e is FreeFormElement || (e.Category != null && e.Category.Name.ToLower().Contains(\"import\")) || e is GenericForm)\n    {\n        var bb = e.get_BoundingBox(null);\n        string tname = null; try { var t = doc.GetElement(e.GetTypeId()); tname = t?.Name; } catch {}\n        object extra = null;\n        if (e is ImportInstance ii) {\n            var tr = ii.GetTotalTransform();\n            extra = new { linked = ii.IsLinked, origin = new[]{tr.Origin.X, tr.Origin.Y, tr.Origin.Z}, bx = new[]{tr.BasisX.X,tr.BasisX.Y,tr.BasisX.Z}, pinned = ii.Pinned };\n        }\n        res.Add(new { id = e.Id.IntegerValue, cls = e.GetType().Name, cat = e.Category?.Name, name = e.Name, type = tname,\n            bbMinFt = bb == null ? null : new[]{bb.Min.X,bb.Min.Y,bb.Min.Z}, bbMaxFt = bb == null ? null : new[]{bb.Max.X,bb.Max.Y,bb.Max.Z}, extra,\n            subcat = e.get_Parameter(BuiltInParameter.FAMILY_ELEM_SUBCATEGORY)?.AsValueString(), mat = e.get_Parameter(BuiltInParameter.MATERIAL_ID_PARAM)?.AsValueString(),\n            vis = e.get_Parameter(BuiltInParameter.IS_VISIBLE_PARAM)?.AsInteger() });\n    }\n}\nvar cad = new FilteredElementCollector(doc).OfClass(typeof(CADLinkType)).Select(t => new { id = t.Id.IntegerValue, name = t.Name }).ToList();\nvar fam = doc.OwnerFamily; \nreturn new { count = res.Count, items = res, cadTypes = cad, famCat = fam?.FamilyCategory?.Name, docTitle = doc.Title, docPath = doc.PathName };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.247Z"
+}

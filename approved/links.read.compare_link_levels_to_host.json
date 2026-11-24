@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "links.read.compare_link_levels_to_host",
+    "name": "Compare Link Levels To Host",
+    "description": "For selected links, reports placement offset/rotation and the vertical delta between same-named levels in the link and the host.",
+    "aiDescription": "For selected links, reports placement offset/rotation and the vertical delta between same-named levels in the link and the host.",
+    "examples": [
+      "For selected links, reports placement offset/rotation and the vertical delta between same-named levels in the link and the host."
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:links.read.compare_link_levels_to_host",
+    "lastModifiedUtc": "2026-11-12T11:20:14.3043829Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var res = new List<object>();\nvar hostLevels = new FilteredElementCollector(doc).OfClass(typeof(Level)).Cast<Level>().ToDictionary(l => l.Name, l => l.Elevation);\nforeach (var li in new FilteredElementCollector(doc).OfClass(typeof(RevitLinkInstance)).Cast<RevitLinkInstance>()) {\n  var nm = doc.GetElement(li.GetTypeId()).Name;\n  if (!(nm.Contains(\"Building 03\") || nm.Contains(\"STR-0010\") || nm.Contains(\"0000_Datum\") || nm.Contains(\"Building 01\"))) continue;\n  var ld = li.GetLinkDocument(); if (ld == null) { res.Add(new { nm, status = \"not loaded\" }); continue; }\n  var t = li.GetTotalTransform();\n  var cmp = new FilteredElementCollector(ld).OfClass(typeof(Level)).Cast<Level>().Where(l => hostLevels.ContainsKey(l.Name))\n    .Select(l => new { l.Name, deltaMm = Math.Round((t.OfPoint(new XYZ(0,0,l.Elevation)).Z - hostLevels[l.Name]) * 304.8, 1) }).ToList();\n  res.Add(new { nm, sameSharedSite = ld.ActiveProjectLocation.Name, offsetXYmm = new { x = Math.Round(t.Origin.X*304.8,1), y = Math.Round(t.Origin.Y*304.8,1), z = Math.Round(t.Origin.Z*304.8,1) }, rotDeg = Math.Round(Math.Atan2(t.BasisX.Y, t.BasisX.X)*180/Math.PI,3), levelDeltas = cmp });\n}\nreturn res;",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.195Z"
+}

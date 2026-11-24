@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "elements.read.find_imported_geometry_candidates",
+    "name": "Find Imported Geometry Candidates",
+    "description": "Lists CAD imports, DirectShapes, IFC/canopy links, the most recently loaded families and recent Generic Model instances, to locate newly brought-in geometry.",
+    "aiDescription": "Lists CAD imports, DirectShapes, IFC/canopy links, the most recently loaded families and recent Generic Model instances, to locate newly brought-in geometry.",
+    "examples": [
+      "Lists CAD imports, DirectShapes, IFC/canopy links, the most recently loaded families and recent Generic Model instances, to locate newly brought-in geometry."
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:elements.read.find_imported_geometry_candidates",
+    "lastModifiedUtc": "2026-11-10T14:47:26.3934341Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "Func<BoundingBoxXYZ, object> B = bb => bb==null?null:new{min=new[]{Math.Round(bb.Min.X*0.3048,2),Math.Round(bb.Min.Y*0.3048,2),Math.Round(bb.Min.Z*0.3048,2)},max=new[]{Math.Round(bb.Max.X*0.3048,2),Math.Round(bb.Max.Y*0.3048,2),Math.Round(bb.Max.Z*0.3048,2)}};\nvar imports = new FilteredElementCollector(doc).OfClass(typeof(ImportInstance)).Cast<ImportInstance>().Select(i=>new{id=i.Id.IntegerValue,name=(doc.GetElement(i.GetTypeId()) as ElementType)?.Name,linked=i.IsLinked,bb=B(i.get_BoundingBox(null))}).ToList();\nvar ds = new FilteredElementCollector(doc).OfClass(typeof(DirectShape)).Cast<DirectShape>().Select(d=>new{id=d.Id.IntegerValue,name=d.Name,cat=d.Category?.Name,bb=B(d.get_BoundingBox(null))}).Take(30).ToList();\nvar links = new FilteredElementCollector(doc).OfClass(typeof(RevitLinkInstance)).Cast<RevitLinkInstance>().Where(l=>l.Name.ToLower().Contains(\"canopy\")||l.Name.ToLower().Contains(\"ifc\")).Select(l=>new{id=l.Id.IntegerValue,l.Name}).ToList();\nvar fams = new FilteredElementCollector(doc).OfClass(typeof(Family)).Cast<Family>().OrderByDescending(f=>f.Id.IntegerValue).Take(12).Select(f=>new{id=f.Id.IntegerValue,f.Name,cat=f.FamilyCategory?.Name,inst=f.GetFamilySymbolIds().Sum(s=>new FilteredElementCollector(doc).OfClass(typeof(FamilyInstance)).Cast<FamilyInstance>().Count(x=>x.Symbol.Id==s))}).ToList();\nvar gm = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_GenericModel).WhereElementIsNotElementType().OfClass(typeof(FamilyInstance)).Cast<FamilyInstance>().OrderByDescending(f=>f.Id.IntegerValue).Take(15).Select(f=>new{id=f.Id.IntegerValue,fam=f.Symbol.Family.Name,typ=f.Symbol.Name,group=f.GroupId.IntegerValue,bb=B(f.get_BoundingBox(null))}).ToList();\nreturn new{imports,directShapes=ds,links,recentFamilies=fams,recentGenericModels=gm};",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.158Z"
+}

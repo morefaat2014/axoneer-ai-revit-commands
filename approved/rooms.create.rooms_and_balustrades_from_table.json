@@ -1,0 +1,71 @@
+{
+  "definition": {
+    "commandId": "rooms.create.rooms_and_balustrades_from_table",
+    "name": "Create Rooms And Balustrades From Table",
+    "description": "Places railings and room separation lines along balcony edges and places named rooms from mm points, merging points that fall in an existing room.",
+    "aiDescription": "Places railings and room separation lines along balcony edges and places named rooms from mm points, merging points that fall in an existing room.",
+    "examples": [
+      "Add glass balustrades and room separation lines on the 8 Block C balcony edges, place named rooms (Level 2 to Level 3) with unit in Department, merging open-plan spaces, and flip the CH-2 door hand."
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Action",
+    "type": "Atomic",
+    "execution": "Modify",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "railingType",
+        "type": "String",
+        "description": "Script argument 'railingType'.",
+        "required": false,
+        "default": "Glass Panel - Bottom Fill"
+      },
+      {
+        "name": "balustrades",
+        "type": "Any",
+        "description": "Script argument 'balustrades'. Example: [[[-148,40111],[-148,43811]],[[-301,29210],[-301,32910]],[[-199,14180],[-800,141....",
+        "required": false
+      },
+      {
+        "name": "rooms",
+        "type": "Any",
+        "description": "Script argument 'rooms'. Example: [[3128,38713,\"Living & Dining\",\"U44 Type C\"],[14122,37994,\"Living & Dining\",\"U45....",
+        "required": false
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": true,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Confirm",
+    "confirmationRequired": true,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:rooms.create.rooms_and_balustrades_from_table",
+    "lastModifiedUtc": "2026-11-23T16:30:54.7479493Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Action",
+  "transactionMode": "auto",
+  "code": "var lvl=new FilteredElementCollector(doc).OfClass(typeof(Level)).Cast<Level>().First(l=>l.Name==\"Level 2\");\nvar top=new FilteredElementCollector(doc).OfClass(typeof(Level)).Cast<Level>().First(l=>l.Name==\"Level 3\");\nvar plan=new FilteredElementCollector(doc).OfClass(typeof(ViewPlan)).Cast<ViewPlan>().First(v=>!v.IsTemplate&&v.ViewType==ViewType.FloorPlan&&v.GenLevel!=null&&v.GenLevel.Id==lvl.Id);\nvar ch=doc.GetElement(new ElementId(350088)) as FamilyInstance; if(ch!=null&&ch.CanFlipHand) ch.flipHand();\nvar rt=new FilteredElementCollector(doc).OfClass(typeof(Autodesk.Revit.DB.Architecture.RailingType)).Cast<Element>().First(r=>r.Name==Tama.Args.Get(args,\"railingType\",\"Glass Panel - Bottom Fill\"));\nvar sp=SketchPlane.Create(doc,Plane.CreateByNormalAndOrigin(XYZ.BasisZ,new XYZ(0,0,lvl.Elevation)));\nvar rails=new List<int>(); int seps=0;\nforeach(var o in (object[])args[\"balustrades\"]){\n  var pts=((object[])o).Select(q=>{var a=(object[])q;return new XYZ(Convert.ToDouble(a[0])/304.8,Convert.ToDouble(a[1])/304.8,lvl.Elevation);}).ToList();\n  var loop=new CurveLoop(); var ca=new CurveArray();\n  for(int i=0;i<pts.Count-1;i++){ var l=Line.CreateBound(pts[i],pts[i+1]); loop.Append(l); ca.Append(l);}\n  var r=Autodesk.Revit.DB.Architecture.Railing.Create(doc,loop,rt.Id,lvl.Id);\n  r.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS).Set(\"Block C | balcony balustrade\"); rails.Add(r.Id.IntegerValue);\n  seps+=doc.Create.NewRoomBoundaryLines(sp,ca,plan).Size;\n}\ndoc.Regenerate();\nvar placed=new List<object>(); var merged=new List<string>(); var failed=new List<string>();\nforeach(var o in (object[])args[\"rooms\"]){ var a=(object[])o;\n  double x=Convert.ToDouble(a[0])/304.8,y=Convert.ToDouble(a[1])/304.8; string name=a[2].ToString(), unit=a[3].ToString();\n  var p=new XYZ(x,y,lvl.Elevation+1.0);\n  var ex=doc.GetRoomAtPoint(p);\n  if(ex!=null){ string en=ex.Name.Replace(\" \"+ex.Number,\"\");\n    var np=ex.get_Parameter(BuiltInParameter.ROOM_NAME);\n    if(name==\"Kitchen\" && np.AsString()==\"Living & Dining\") np.Set(\"Living, Dining & Kitchen\");\n    merged.Add(name+\" (\"+unit+\") -> \"+np.AsString()); continue; }\n  var rm=doc.Create.NewRoom(lvl,new UV(x,y));\n  if(rm==null||rm.Location==null){ failed.Add(name+\" \"+unit); continue; }\n  rm.get_Parameter(BuiltInParameter.ROOM_NAME).Set(name);\n  rm.get_Parameter(BuiltInParameter.ROOM_DEPARTMENT).Set(unit);\n  rm.get_Parameter(BuiltInParameter.ROOM_UPPER_LEVEL).Set(top.Id);\n  rm.get_Parameter(BuiltInParameter.ROOM_UPPER_OFFSET).Set(0);\n  rm.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS).Set(\"Block C\");\n  doc.Regenerate();\n  if(rm.Area<=0){ failed.Add(name+\" \"+unit+\" (unbounded)\"); }\n  placed.Add(new{name,unit,id=rm.Id.IntegerValue,area=Math.Round(rm.Area*0.09290304,2)});\n}\n// number rooms per unit\nforeach(var g in new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Rooms).Cast<Autodesk.Revit.DB.Architecture.Room>().Where(r=>r.LevelId==lvl.Id).GroupBy(r=>r.get_Parameter(BuiltInParameter.ROOM_DEPARTMENT).AsString()??\"\")){\n  int n=1; string pre=g.Key.StartsWith(\"U\")?g.Key.Split(' ')[0]:\"C\";\n  foreach(var r in g.OrderByDescending(r=>r.Area)){ r.Number=pre+\"-\"+(n++).ToString(\"00\"); } }\nreturn new{rails,separationLines=seps,placedCount=placed.Count,failed,merged,placed};",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.270Z"
+}

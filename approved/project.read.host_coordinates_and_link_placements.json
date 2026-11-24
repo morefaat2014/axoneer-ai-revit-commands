@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "project.read.host_coordinates_and_link_placements",
+    "name": "Host Coordinates And Link Placements",
+    "description": "Reports the active model's locations, base points and each link instance's placement and its link's active site.",
+    "aiDescription": "Reports the active model's locations, base points and each link instance's placement and its link's active site.",
+    "examples": [
+      "Reports the active model's locations, base points and each link instance's placement and its link's active site."
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:project.read.host_coordinates_and_link_placements",
+    "lastModifiedUtc": "2026-11-11T18:25:15.4144774Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "Func<XYZ,double[]> m = p => new[]{Math.Round(p.X*0.3048,4),Math.Round(p.Y*0.3048,4),Math.Round(p.Z*0.3048,4)};\nvar locs = new List<object>();\nforeach (ProjectLocation pl in doc.ProjectLocations) {\n  var pp = pl.GetProjectPosition(XYZ.Zero);\n  locs.Add(new { name = pl.Name, id = pl.Id.IntegerValue, active = doc.ActiveProjectLocation.Id == pl.Id,\n    ew = Math.Round(pp.EastWest*0.3048,4), ns = Math.Round(pp.NorthSouth*0.3048,4), elev = Math.Round(pp.Elevation*0.3048,4), angle = Math.Round(pp.Angle*180/Math.PI,6) });\n}\nvar bps = new FilteredElementCollector(doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().Select(b => new { survey = b.IsShared, internal_m = m(b.Position), shared_m = m(b.SharedPosition), pinned = b.Pinned }).ToList();\nvar links = new FilteredElementCollector(doc).OfClass(typeof(RevitLinkInstance)).Cast<RevitLinkInstance>().Select(li => {\n  var t = li.GetTransform(); var ld = li.GetLinkDocument();\n  string ldLoc = null;\n  if (ld != null) { var pp = ld.ActiveProjectLocation.GetProjectPosition(XYZ.Zero); ldLoc = ld.ActiveProjectLocation.Name + \" E\" + Math.Round(pp.EastWest*0.3048,4) + \" N\" + Math.Round(pp.NorthSouth*0.3048,4) + \" A\" + Math.Round(pp.Angle*180/Math.PI,6) + \" Z\" + Math.Round(pp.Elevation*0.3048,4) + \" sites=\" + ld.ProjectLocations.Size; }\n  return new { id = li.Id.IntegerValue, name = li.Name, pinned = li.Pinned, origin_m = m(t.Origin), rot = Math.Round(Math.Atan2(t.BasisX.Y,t.BasisX.X)*180/Math.PI,6), mirrored = t.BasisX.CrossProduct(t.BasisY).Z < 0, linkActiveSite = ldLoc,\n    owner = WorksharingUtils.GetCheckoutStatus(doc, li.Id).ToString() };\n}).ToList();\nreturn new { doc = doc.Title, path = doc.PathName, locations = locs, basePoints = bps, links };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.169Z"
+}

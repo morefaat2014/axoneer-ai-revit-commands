@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "lines.execute.rename_sketch_plane",
+    "name": "Rename Sketch Plane",
+    "description": "Rename the sketch plane that carries the new pavement lines (id 354941) to \"B2_Pavement\"; nothing else is changed.",
+    "aiDescription": "Rename the sketch plane that carries the new pavement lines (id 354941) to \"B2_Pavement\"; nothing else is changed.",
+    "examples": [
+      "Rename the sketch plane that carries the new pavement lines (id 354941) to \"B2_Pavement\"; nothing else is changed."
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Action",
+    "type": "Atomic",
+    "execution": "Modify",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": true,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Confirm",
+    "confirmationRequired": true,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:lines.execute.rename_sketch_plane",
+    "lastModifiedUtc": "2026-11-24T09:19:04.7133271Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Action",
+  "transactionMode": "auto",
+  "code": "var sp=doc.GetElement(new ElementId(354941)) as SketchPlane;\nstring err=\"\";\ntry{sp.Name=\"B2_Pavement\";}catch(Exception e){err=e.Message;}\ndoc.Regenerate();\nreturn new{name=sp.Name,err=err};",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.334Z"
+}

@@ -1,0 +1,58 @@
+{
+  "definition": {
+    "commandId": "project.read.shared_points_to_internal_with_levels_floortypes",
+    "name": "Convert Shared E/N to Internal + Levels and Floor Types",
+    "description": "Converts shared E/N points (m) to internal XY via the active site and lists levels and floor types.",
+    "aiDescription": "Converts shared E/N points (m) to internal XY via the active site and lists levels and floor types.",
+    "examples": [
+      "Converts shared E/N points (m) to internal XY via the active site and lists levels and floor types."
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "points",
+        "type": "Any",
+        "description": "Script argument 'points'. Example: [[246547.768,2713856.204],[246510.058,2713842.862],[246503.391,2713861.722],[246....",
+        "required": false
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:project.read.shared_points_to_internal_with_levels_floortypes",
+    "lastModifiedUtc": "2026-11-17T11:59:56.5377063Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var pts = new List<double[]>();\nforeach (var o in (object[])args[\"points\"]) { var a = (object[])o; pts.Add(new[]{ Convert.ToDouble(a[0]), Convert.ToDouble(a[1]) }); }\nvar pl = doc.ActiveProjectLocation;\nvar tf = pl.GetTotalTransform();\nvar inv = tf.Inverse;\nvar pp = pl.GetProjectPosition(XYZ.Zero);\nvar conv = pts.Select((p,i) => { var s = new XYZ(p[0]/0.3048, p[1]/0.3048, 0); var it = inv.OfPoint(s); return new { pt = \"P0\"+(i+1), internalX_m = Math.Round(it.X*0.3048,4), internalY_m = Math.Round(it.Y*0.3048,4) }; }).ToList();\nvar levels = new FilteredElementCollector(doc).OfClass(typeof(Level)).Cast<Level>().OrderBy(l=>l.Elevation).Select(l=> new { l.Name, elev_m = Math.Round(l.Elevation*0.3048,3), id = l.Id.IntegerValue }).ToList();\nvar ftypes = new FilteredElementCollector(doc).OfClass(typeof(FloorType)).Cast<FloorType>().Where(f=>!f.IsFoundationSlab).Select(f=> new { f.Name, id = f.Id.IntegerValue }).ToList();\nvar av = doc.ActiveView;\nreturn new { site = pl.Name, ew_m = Math.Round(pp.EastWest*0.3048,4), ns_m = Math.Round(pp.NorthSouth*0.3048,4), elev_m = Math.Round(pp.Elevation*0.3048,4), angle_deg = Math.Round(pp.Angle*180/Math.PI,6), activeView = av.Name, activeLevel = av.GenLevel?.Name, points = conv, levels, floorTypes = ftypes };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.221Z"
+}

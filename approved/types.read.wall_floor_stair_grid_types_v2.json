@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "types.read.wall_floor_stair_grid_types_v2",
+    "name": "Wall Floor Stair Grid Types",
+    "description": "Saved automatically from a script that ran successfully.",
+    "aiDescription": "Script kept automatically after it ran successfully. Review its metadata before relying on it.",
+    "examples": [
+      "run the saved script types.read.wall_floor_stair_grid_types_v2"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:types.read.wall_floor_stair_grid_types_v2",
+    "lastModifiedUtc": "2026-11-24T08:40:49.8300085Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var res = new Dictionary<string,object>();\nvar walls = new List<object>();\nforeach (WallType wt in new FilteredElementCollector(doc).OfClass(typeof(WallType)).Cast<WallType>()) {\n  string w = \"\"; try { var p = wt.get_Parameter(BuiltInParameter.WALL_ATTR_WIDTH_PARAM); if (p != null) w = Math.Round(p.AsDouble()*304.8,1).ToString(); } catch {}\n  walls.Add(new { id = wt.Id.IntegerValue, name = wt.Name, kind = wt.Kind.ToString(), widthMm = w });\n}\nvar floors = new List<object>();\nforeach (FloorType ft in new FilteredElementCollector(doc).OfClass(typeof(FloorType)).Cast<FloorType>()) floors.Add(new { id = ft.Id.IntegerValue, name = ft.Name });\nvar stairs = new List<object>();\nvar stairCat = Category.GetCategory(doc, BuiltInCategory.OST_Stairs);\nif (stairCat != null) {\n  foreach (ElementType st in new FilteredElementCollector(doc).OfClass(typeof(ElementType)).Cast<ElementType>().Where(t => t.Category != null && t.Category.Id.IntegerValue == stairCat.Id.IntegerValue)) {\n    var d = new Dictionary<string,string>();\n    foreach (string pn in new[]{\"Maximum Riser Height\",\"Minimum Tread Depth\",\"Minimum Run Width\"}) {\n      try { var p = st.LookupParameter(pn); if (p != null && p.StorageType == StorageType.Double) d[pn] = Math.Round(p.AsDouble()*304.8,1).ToString(); } catch {}\n    }\n    stairs.Add(new { id = st.Id.IntegerValue, name = st.Name, dimsMm = d });\n  }\n}\nvar grids = new List<object>();\nforeach (GridType gt in new FilteredElementCollector(doc).OfClass(typeof(GridType)).Cast<GridType>()) grids.Add(new { id = gt.Id.IntegerValue, name = gt.Name });\nres[\"wallTypes\"] = walls; res[\"floorTypes\"] = floors; res[\"stairTypes\"] = stairs; res[\"gridTypes\"] = grids;\nreturn res;",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.282Z"
+}

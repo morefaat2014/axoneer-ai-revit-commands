@@ -1,0 +1,76 @@
+{
+  "definition": {
+    "commandId": "openings.modify.fix_swings_and_add_infill_openings",
+    "name": "Fix Door Swings And Add Infill Openings",
+    "description": "Fix Block C door swings (flip facing on all 46 hinged doors, flip hand on 23), add 4 missing short walls and place the CH-2 door, U42 B2 balcony slider, one bath louvre and the 2-panel lobby glazed screen.",
+    "aiDescription": "Fix Block C door swings (flip facing on all 46 hinged doors, flip hand on 23), add 4 missing short walls and place the CH-2 door, U42 B2 balcony slider, one bath louvre and the 2-panel lobby glazed screen.",
+    "examples": [
+      "Fix Block C door swings (flip facing on all 46 hinged doors, flip hand on 23), add 4 missing short walls and place the CH-2 door, U42 B2 balcony slider, one bath louvre and the 2-panel lobby glazed screen."
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Action",
+    "type": "Atomic",
+    "execution": "Modify",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "flipFace",
+        "type": "IntegerArray",
+        "description": "Script argument 'flipFace'. Example: [349693,349695,349698,349701,349703,349704,349705,349706,349709,349711,349713,34....",
+        "required": false
+      },
+      {
+        "name": "flipHand",
+        "type": "IntegerArray",
+        "description": "Script argument 'flipHand'. Example: [349693,349695,349698,349701,349703,349704,349709,349713,349714,349715,349716,34....",
+        "required": false
+      },
+      {
+        "name": "items",
+        "type": "Any",
+        "description": "Script argument 'items'. Example: [[10001,21366,880,\"V\",2100,0,\"M_Single-Flush\",\"D-CH2-01\",\"-X\",\"-Y\"],[2400,16207,....",
+        "required": false
+      },
+      {
+        "name": "walls",
+        "type": "Any",
+        "description": "Script argument 'walls'. Example: [[2400,15205,2400,17110,\"BC_Concrete 200mm\",\"infill wall at U42 B2 balcony slide....",
+        "required": false
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": true,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Confirm",
+    "confirmationRequired": true,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:openings.modify.fix_swings_and_add_infill_openings",
+    "lastModifiedUtc": "2026-11-23T16:28:30.487113Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Action",
+  "transactionMode": "auto",
+  "code": "var lvl=new FilteredElementCollector(doc).OfClass(typeof(Level)).Cast<Level>().First(l=>l.Name==\"Level 2\");\nvar top=new FilteredElementCollector(doc).OfClass(typeof(Level)).Cast<Level>().First(l=>l.Name==\"Level 3\");\nvar flipFace=((object[])args[\"flipFace\"]).Select(o=>Convert.ToInt32(o)).ToList();\nvar flipHand=new HashSet<int>(((object[])args[\"flipHand\"]).Select(o=>Convert.ToInt32(o)));\nint ff=0,fh=0;\nforeach(var i in flipFace){ var fi=doc.GetElement(new ElementId(i)) as FamilyInstance; if(fi==null) continue; if(fi.CanFlipFacing){fi.flipFacing();ff++;} if(flipHand.Contains(i)&&fi.CanFlipHand){fi.flipHand();fh++;} }\nvar wts=new FilteredElementCollector(doc).OfClass(typeof(WallType)).Cast<WallType>().ToList();\nvar newWalls=new List<int>();\nforeach(var o in (object[])args[\"walls\"]){ var a=(object[])o;\n  var t=wts.First(w=>w.Name==a[4].ToString());\n  var ln=Line.CreateBound(new XYZ(Convert.ToDouble(a[0])/304.8,Convert.ToDouble(a[1])/304.8,lvl.Elevation),new XYZ(Convert.ToDouble(a[2])/304.8,Convert.ToDouble(a[3])/304.8,lvl.Elevation));\n  var w=Wall.Create(doc,ln,t.Id,lvl.Id,(top.Elevation-lvl.Elevation),0,false,false);\n  w.get_Parameter(BuiltInParameter.WALL_HEIGHT_TYPE).Set(top.Id); w.get_Parameter(BuiltInParameter.WALL_KEY_REF_PARAM).Set(0);\n  w.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS).Set(\"Block C | \"+a[5]); newWalls.Add(w.Id.IntegerValue);}\ndoc.Regenerate();\nvar syms=new FilteredElementCollector(doc).OfClass(typeof(FamilySymbol)).Cast<FamilySymbol>().ToList();\nFunc<string,string,FamilySymbol> sym=(f,n)=>{var s=syms.FirstOrDefault(x=>x.FamilyName==f&&x.Name==n); return s;};\nFunc<string,double,double,FamilySymbol> sized=(f,w,h)=>{ string n=\"BC \"+w+\" x \"+h+\"mm\"; var s=sym(f,n);\n  if(s==null){ s=(FamilySymbol)syms.First(x=>x.FamilyName==f).Duplicate(n);\n    var pw=s.get_Parameter(BuiltInParameter.DOOR_WIDTH)??s.get_Parameter(BuiltInParameter.WINDOW_WIDTH)??s.LookupParameter(\"Width\");\n    var ph=s.get_Parameter(BuiltInParameter.DOOR_HEIGHT)??s.get_Parameter(BuiltInParameter.WINDOW_HEIGHT)??s.LookupParameter(\"Height\");\n    if(pw!=null&&!pw.IsReadOnly)pw.Set(w/304.8); if(ph!=null&&!ph.IsReadOnly)ph.Set(h/304.8); syms.Add(s);}\n  if(!s.IsActive)s.Activate(); return s;};\nvar walls=new FilteredElementCollector(doc).OfClass(typeof(Wall)).Cast<Wall>().Where(w=>w.LevelId==lvl.Id).ToList();\nFunc<double,double,string,Wall> host=(x,y,dir)=>{ Wall best=null; double bd=1e9; var p=new XYZ(x,y,lvl.Elevation);\n  foreach(var w in walls){ var c=((LocationCurve)w.Location).Curve as Line; if(c==null) continue; bool isV=Math.Abs(c.Direction.Y)>0.9; if((dir==\"V\")!=isV) continue;\n    double t=(p-c.GetEndPoint(0)).DotProduct(c.Direction); if(t< -0.01||t>c.Length+0.01) continue; var r=c.Project(p); if(r.Distance<w.Width/2+0.2&&r.Distance<bd){bd=r.Distance;best=w;} } return best; };\nvar placed=new List<object>();\nforeach(var o in (object[])args[\"items\"]){ var a=(object[])o;\n  double x=Convert.ToDouble(a[0]),y=Convert.ToDouble(a[1]),w=Convert.ToDouble(a[2]),h=Convert.ToDouble(a[4]),sill=Convert.ToDouble(a[5]); string dir=a[3].ToString(),fam=a[6].ToString(),id=a[7].ToString(),sw=a[8].ToString();\n  var hw=host(x/304.8,y/304.8,dir); if(hw==null){placed.Add(new{id,err=\"no host\"});continue;}\n  var s=sized(fam,w,h); var pr=((LocationCurve)hw.Location).Curve.Project(new XYZ(x/304.8,y/304.8,lvl.Elevation)).XYZPoint;\n  var fi=doc.Create.NewFamilyInstance(new XYZ(pr.X,pr.Y,lvl.Elevation),s,hw,lvl,Autodesk.Revit.DB.Structure.StructuralType.NonStructural);\n  var sp=fi.get_Parameter(BuiltInParameter.INSTANCE_SILL_HEIGHT_PARAM); if(sp!=null&&!sp.IsReadOnly&&fi.Category.Id.IntegerValue==(int)BuiltInCategory.OST_Windows) sp.Set(sill/304.8);\n  doc.Regenerate();\n  XYZ sv=sw==\"+X\"?XYZ.BasisX:sw==\"-X\"?-XYZ.BasisX:sw==\"+Y\"?XYZ.BasisY:sw==\"-Y\"?-XYZ.BasisY:null;\n  if(sv!=null&&fi.FacingOrientation.DotProduct(sv)<0&&fi.CanFlipFacing) fi.flipFacing();\n  fi.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS).Set(\"Block C | \"+id+(sw!=\"\"?\" | swing \"+sw+\" hinge \"+a[9]:\"\"));\n  placed.Add(new{id,el=fi.Id.IntegerValue});}\nreturn new{flippedFacing=ff,flippedHand=fh,newWalls,placed};",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.267Z"
+}

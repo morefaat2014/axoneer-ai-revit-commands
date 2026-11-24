@@ -1,0 +1,59 @@
+{
+  "definition": {
+    "commandId": "project.read.sites_by_titles_any_doc",
+    "name": "Sites By Titles (Open Or Linked)",
+    "description": "Lists project sites of open or linked documents whose titles contain any of the given keys.",
+    "aiDescription": "Lists project sites of open or linked documents whose titles contain any of the given keys.",
+    "examples": [
+      "Lists project sites of open or linked documents whose titles contain any of the given keys."
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "titles",
+        "type": "String",
+        "description": "Script argument 'titles'. Example: \"5SW-ZZZ-RVT-ARC-000001-Coordinates,6BA-ZZZ-RVT-ARC-000001-Coordinates,6BA-ZZZ-R....",
+        "required": false,
+        "default": ""
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:project.read.sites_by_titles_any_doc",
+    "lastModifiedUtc": "2026-11-12T17:17:35.8013851Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var keys = Tama.Args.Get(args, \"titles\", \"\").Split(',').Select(s => s.Trim()).Where(s => s.Length > 0).ToList();\nvar res = new List<object>();\nforeach (Document d in app.Documents)\n{\n  if (d.IsFamilyDocument || !keys.Any(k => d.Title.Contains(k))) continue;\n  var locs = new List<object>();\n  foreach (ProjectLocation pl in d.ProjectLocations) {\n    var pp = pl.GetProjectPosition(XYZ.Zero);\n    locs.Add(new { name = pl.Name, active = d.ActiveProjectLocation.Id == pl.Id,\n      ew = Math.Round(pp.EastWest*0.3048,4), ns = Math.Round(pp.NorthSouth*0.3048,4), elev = Math.Round(pp.Elevation*0.3048,4), angle = Math.Round(pp.Angle*180/Math.PI,6) });\n  }\n  var pbp = new FilteredElementCollector(d).OfClass(typeof(BasePoint)).Cast<BasePoint>().First(b => !b.IsShared);\n  res.Add(new { title = d.Title, path = d.PathName, pbpInternalZ = Math.Round(pbp.Position.Z*0.3048,4), locations = locs });\n}\nreturn res;",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.202Z"
+}

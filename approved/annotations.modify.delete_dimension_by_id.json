@@ -1,0 +1,59 @@
+{
+  "definition": {
+    "commandId": "annotations.modify.delete_dimension_by_id",
+    "name": "Delete Dimension by Id",
+    "description": "Deletes the single 4.000 m dimension 12757195 in view \"Ground Floor GA Plan Copy 1\" (between setback line 12684567 and floor 12680010) so the floor corner can be moved.",
+    "aiDescription": "Deletes the single 4.000 m dimension 12757195 in view \"Ground Floor GA Plan Copy 1\" (between setback line 12684567 and floor 12680010) so the floor corner can be moved.",
+    "examples": [
+      "Deletes the single 4.000 m dimension 12757195 in view \"Ground Floor GA Plan Copy 1\" (between setback line 12684567 and floor 12680010) so the floor corner can be moved."
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Action",
+    "type": "Atomic",
+    "execution": "Modify",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "dimId",
+        "type": "Integer",
+        "description": "Script argument 'dimId'. Example: 12757195.",
+        "required": false,
+        "default": 0
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": true,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Confirm",
+    "confirmationRequired": true,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:annotations.modify.delete_dimension_by_id",
+    "lastModifiedUtc": "2026-11-22T08:51:03.6132003Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Action",
+  "transactionMode": "auto",
+  "code": "var id = new ElementId((int)Tama.Args.Get(args, \"dimId\", 0L));\nvar d = doc.GetElement(id) as Dimension;\nif (d == null) throw new Exception(\"Dimension not found.\");\nvar view = (doc.GetElement(d.OwnerViewId) as View)?.Name;\ndoc.Delete(id);\nreturn new { deleted = id.IntegerValue, view };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.249Z"
+}

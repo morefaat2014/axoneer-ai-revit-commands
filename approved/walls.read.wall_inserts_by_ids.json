@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "walls.read.wall_inserts_by_ids",
+    "name": "Wall Inserts By Ids",
+    "description": "Lists location line endpoints and hosted inserts (doors, windows, openings) for given wall ids.",
+    "aiDescription": "Lists location line endpoints and hosted inserts (doors, windows, openings) for given wall ids.",
+    "examples": [
+      "Lists location line endpoints and hosted inserts (doors, windows, openings) for given wall ids."
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:walls.read.wall_inserts_by_ids",
+    "lastModifiedUtc": "2026-11-17T09:42:07.5467521Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var res = new List<object>();\nforeach (var id in new long[]{360661,357571,362126,362430}) {\n  var w = doc.GetElement(new ElementId((int)id)) as Wall;\n  var lc = (w.Location as LocationCurve).Curve;\n  var ins = w.FindInserts(true,true,true,true).Select(i => { var e = doc.GetElement(i); var bb = e.get_BoundingBox(null);\n     return new { i = i.IntegerValue, cat = e.Category?.Name, n = e.Name, min = bb==null?null:new[]{Math.Round(bb.Min.X*0.3048,2),Math.Round(bb.Min.Y*0.3048,2),Math.Round(bb.Min.Z*0.3048,2)}, max= bb==null?null:new[]{Math.Round(bb.Max.X*0.3048,2),Math.Round(bb.Max.Y*0.3048,2),Math.Round(bb.Max.Z*0.3048,2)} }; }).ToList();\n  res.Add(new { id, p0 = new[]{Math.Round(lc.GetEndPoint(0).X*0.3048,3),Math.Round(lc.GetEndPoint(0).Y*0.3048,3)}, p1 = new[]{Math.Round(lc.GetEndPoint(1).X*0.3048,3),Math.Round(lc.GetEndPoint(1).Y*0.3048,3)}, ins });\n}\nreturn res;",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.217Z"
+}

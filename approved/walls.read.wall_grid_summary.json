@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "walls.read.wall_grid_summary",
+    "name": "Wall and Grid Summary",
+    "description": "Saved automatically from a script that ran successfully.",
+    "aiDescription": "Script kept automatically after it ran successfully. Review its metadata before relying on it.",
+    "examples": [
+      "run the saved script walls.read.wall_grid_summary"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:walls.read.wall_grid_summary",
+    "lastModifiedUtc": "2026-11-24T08:50:40.8323652Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var ws=new FilteredElementCollector(doc).OfClass(typeof(Wall)).Cast<Wall>().ToList();\nvar m=ws.Select(w=>{var b=w.get_BoundingBox(null);return b;}).ToList();\nreturn new{title=doc.Title,grids=new FilteredElementCollector(doc).OfClass(typeof(Grid)).GetElementCount(),walls=ws.GroupBy(w=>w.WallType.Name).Select(g=>g.Key+\":\"+g.Count()).ToList(),minX=m.Min(b=>b.Min.X)*304.8,maxX=m.Max(b=>b.Max.X)*304.8,minY=m.Min(b=>b.Min.Y)*304.8,maxY=m.Max(b=>b.Max.Y)*304.8,minZ=m.Min(b=>b.Min.Z)*304.8,maxZ=m.Max(b=>b.Max.Z)*304.8,first=ws.First(w=>w.Id.IntegerValue==353884).get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS).AsString(),last=ws.First(w=>w.Id.IntegerValue==353970).get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS).AsString(),warnings=doc.GetWarnings().Count};",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.285Z"
+}

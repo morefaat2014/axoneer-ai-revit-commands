@@ -1,0 +1,98 @@
+{
+  "definition": {
+    "commandId": "openings.create.doors_windows_from_table",
+    "name": "Create Doors And Windows From Table",
+    "description": "Places sized doors and windows into the nearest matching host wall from mm coordinate tables, loading optional library families.",
+    "aiDescription": "Places sized doors and windows into the nearest matching host wall from mm coordinate tables, loading optional library families.",
+    "examples": [
+      "Load standard door families if available, create sized door/window types, and place Block C doors (97) and windows (25) in their host walls on Level 2."
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Action",
+    "type": "Atomic",
+    "execution": "Modify",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "level",
+        "type": "String",
+        "description": "Script argument 'level'.",
+        "required": false,
+        "default": "Level 2"
+      },
+      {
+        "name": "doorHeight",
+        "type": "Number",
+        "description": "Script argument 'doorHeight'.",
+        "required": false,
+        "default": 2100
+      },
+      {
+        "name": "sillHeight",
+        "type": "Number",
+        "description": "Script argument 'sillHeight'.",
+        "required": false,
+        "default": 900
+      },
+      {
+        "name": "windowHeight",
+        "type": "Number",
+        "description": "Script argument 'windowHeight'.",
+        "required": false,
+        "default": 1500
+      },
+      {
+        "name": "doors",
+        "type": "Any",
+        "description": "Script argument 'doors'. Example: [[3700,46112,800,\"V\",\"+X\",\"-Y\",\"single\",\"D-ENS-44-01\"],[15304,46112,800,\"V\",\"-X\"....",
+        "required": false
+      },
+      {
+        "name": "familyCandidates",
+        "type": "StringArray",
+        "description": "Script argument 'familyCandidates'. Example: [\"Doors\\\\Residential\\\\M_Door-Exterior-Sliding-2_Panel.rfa\",\"Doors\\\\Residential\\\\....",
+        "required": false
+      },
+      {
+        "name": "windows",
+        "type": "Any",
+        "description": "Script argument 'windows'. Example: [[-48,45662,2400,\"V\",\"W-U44-B1\"],[-116,38110,2400,\"V\",\"W-U44-Living\"],[-116,3491....",
+        "required": false
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": true,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Confirm",
+    "confirmationRequired": true,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:openings.create.doors_windows_from_table",
+    "lastModifiedUtc": "2026-11-23T16:27:39.5575722Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Action",
+  "transactionMode": "auto",
+  "code": "var lvl=new FilteredElementCollector(doc).OfClass(typeof(Level)).Cast<Level>().First(l=>l.Name==Tama.Args.Get(args,\"level\",\"Level 2\"));\nstring lib=app.GetLibraryPaths().Where(k=>k.Key.Contains(\"Metric\")).Select(k=>k.Value).FirstOrDefault()??\"\";\nvar loadLog=new List<string>();\nforeach(var o in (object[])args[\"familyCandidates\"]){ var rel=o.ToString(); Family fam=null;\n  try{ bool ok=doc.LoadFamily(lib+rel, out fam); if(ok) loadLog.Add(\"loaded \"+rel);}catch(Exception){ }\n}\ndoc.Regenerate();\nvar syms=new FilteredElementCollector(doc).OfClass(typeof(FamilySymbol)).Cast<FamilySymbol>().ToList();\nvar doorCat=(int)BuiltInCategory.OST_Doors;\nvar doorSyms=syms.Where(s=>s.Category!=null&&s.Category.Id.IntegerValue==doorCat).ToList();\nFamilySymbol baseSingle=doorSyms.First(s=>s.FamilyName==\"M_Single-Flush\");\nFamilySymbol baseSlide=doorSyms.FirstOrDefault(s=>s.FamilyName.ToLower().Contains(\"slid\"));\nFamilySymbol baseBifold=doorSyms.FirstOrDefault(s=>s.FamilyName.ToLower().Contains(\"bifold\")||s.FamilyName.ToLower().Contains(\"bi-fold\"));\nFamilySymbol baseDouble=doorSyms.FirstOrDefault(s=>s.FamilyName.ToLower().Contains(\"double\"));\nFamilySymbol baseWin=syms.First(s=>s.FamilyName==\"M_Fixed\");\nvar cache=new Dictionary<string,FamilySymbol>();\nFunc<FamilySymbol,double,double,FamilySymbol> sized=(b,w,h)=>{\n  string n=\"BC \"+w+\" x \"+h+\"mm\"; string key=b.FamilyName+\"|\"+n; if(cache.ContainsKey(key)) return cache[key];\n  var ex=new FilteredElementCollector(doc).OfClass(typeof(FamilySymbol)).Cast<FamilySymbol>().FirstOrDefault(s=>s.FamilyName==b.FamilyName&&s.Name==n);\n  if(ex==null){ ex=(FamilySymbol)b.Duplicate(n);\n    var pw=ex.get_Parameter(BuiltInParameter.DOOR_WIDTH)??ex.get_Parameter(BuiltInParameter.WINDOW_WIDTH)??ex.LookupParameter(\"Width\");\n    var ph=ex.get_Parameter(BuiltInParameter.DOOR_HEIGHT)??ex.get_Parameter(BuiltInParameter.WINDOW_HEIGHT)??ex.LookupParameter(\"Height\");\n    if(pw!=null&&!pw.IsReadOnly) pw.Set(w/304.8); if(ph!=null&&!ph.IsReadOnly) ph.Set(h/304.8);}\n  if(!ex.IsActive) ex.Activate(); cache[key]=ex; return ex;};\nvar walls=new FilteredElementCollector(doc).OfClass(typeof(Wall)).Cast<Wall>().Where(w=>w.LevelId==lvl.Id && w.Location is LocationCurve).ToList();\nFunc<double,double,string,Wall> host=(x,y,dir)=>{ Wall best=null; double bd=1e9; var p=new XYZ(x,y,lvl.Elevation);\n  foreach(var w in walls){ var c=((LocationCurve)w.Location).Curve as Line; if(c==null) continue; var d=c.Direction;\n    bool isV=Math.Abs(d.Y)>0.9; if((dir==\"V\")!=isV) continue;\n    var a=c.GetEndPoint(0); double t=(p-a).DotProduct(d); if(t< -0.01||t>c.Length+0.01) continue;\n    var r=c.Project(p); if(r==null) continue;\n    double dist=r.Distance; double tol=w.Width/2+0.2; if(dist<tol&&dist<bd){bd=dist;best=w;} }\n  return best; };\nFunc<string,XYZ> vec=s=>s==\"+X\"?XYZ.BasisX:s==\"-X\"?-XYZ.BasisX:s==\"+Y\"?XYZ.BasisY:s==\"-Y\"?-XYZ.BasisY:null;\nvar placed=new List<object>(); var skipped=new List<object>(); var fallback=new List<string>();\ndouble dh=Tama.Args.Get(args,\"doorHeight\",2100.0);\nforeach(var o in (object[])args[\"doors\"]){ var a=(object[])o;\n  double x=Convert.ToDouble(a[0]),y=Convert.ToDouble(a[1]),w=Convert.ToDouble(a[2]); string dir=a[3].ToString(), sw=a[4].ToString(), hg=a[5].ToString(), kind=a[6].ToString(), id=a[7].ToString();\n  var hw=host(x/304.8,y/304.8,dir); if(hw==null){ skipped.Add(new{id,reason=\"no host wall\"}); continue; }\n  FamilySymbol b=baseSingle; string note=\"\";\n  if(kind==\"sliding\"){ if(baseSlide!=null) b=baseSlide; else note=\"PLACEHOLDER: sliding door family not loaded\"; }\n  else if(kind==\"cupboard\"&&w>1000){ if(baseBifold!=null) b=baseBifold; else if(baseDouble!=null) b=baseDouble; else note=\"PLACEHOLDER: cupboard/bifold family not loaded\"; }\n  else if(kind==\"double\"){ if(baseDouble!=null) b=baseDouble; else note=\"PLACEHOLDER: double door family not loaded\"; }\n  else if(kind==\"lift\") note=\"Lift landing door (placeholder)\";\n  var s=sized(b,w,dh);\n  var pr=((LocationCurve)hw.Location).Curve.Project(new XYZ(x/304.8,y/304.8,lvl.Elevation)).XYZPoint;\n  var fi=doc.Create.NewFamilyInstance(new XYZ(pr.X,pr.Y,lvl.Elevation),s,hw,lvl,Autodesk.Revit.DB.Structure.StructuralType.NonStructural);\n  doc.Regenerate();\n  var sv=vec(sw); if(sv!=null && fi.FacingOrientation.DotProduct(sv)>0 && fi.CanFlipFacing) fi.flipFacing();\n  fi.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS).Set(\"Block C | \"+id+\" | swing \"+sw+\" hinge \"+hg+(note!=\"\"?\" | \"+note:\"\"));\n  if(note.StartsWith(\"PLACEHOLDER\")) fallback.Add(id);\n  placed.Add(new{id,elementId=fi.Id.IntegerValue});\n}\ndouble sill=Tama.Args.Get(args,\"sillHeight\",900.0), wh=Tama.Args.Get(args,\"windowHeight\",1500.0);\nforeach(var o in (object[])args[\"windows\"]){ var a=(object[])o;\n  double x=Convert.ToDouble(a[0]),y=Convert.ToDouble(a[1]),w=Convert.ToDouble(a[2]); string dir=a[3].ToString(), id=a[4].ToString();\n  var hw=host(x/304.8,y/304.8,dir); if(hw==null){ skipped.Add(new{id,reason=\"no host wall\"}); continue; }\n  var s=sized(baseWin,w,wh);\n  var pr=((LocationCurve)hw.Location).Curve.Project(new XYZ(x/304.8,y/304.8,lvl.Elevation)).XYZPoint;\n  var fi=doc.Create.NewFamilyInstance(new XYZ(pr.X,pr.Y,lvl.Elevation),s,hw,lvl,Autodesk.Revit.DB.Structure.StructuralType.NonStructural);\n  var sp=fi.get_Parameter(BuiltInParameter.INSTANCE_SILL_HEIGHT_PARAM); if(sp!=null&&!sp.IsReadOnly) sp.Set(sill/304.8);\n  fi.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS).Set(\"Block C | \"+id);\n  placed.Add(new{id,elementId=fi.Id.IntegerValue});\n}\nreturn new{loadLog,families=new{slide=baseSlide!=null?baseSlide.FamilyName:null,bifold=baseBifold!=null?baseBifold.FamilyName:null,dbl=baseDouble!=null?baseDouble.FamilyName:null},placed=placed.Count,skipped,fallbackCount=fallback.Count,types=cache.Keys.ToList()};",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.263Z"
+}

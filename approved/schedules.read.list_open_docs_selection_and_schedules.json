@@ -1,0 +1,59 @@
+{
+  "definition": {
+    "commandId": "schedules.read.list_open_docs_selection_and_schedules",
+    "name": "List Open Docs, Selection and Matching Schedules",
+    "description": "Saved automatically from a script that ran successfully.",
+    "aiDescription": "Script kept automatically after it ran successfully. Review its metadata before relying on it.",
+    "examples": [
+      "run the saved script schedules.read.list_open_docs_selection_and_schedules"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "keyword",
+        "type": "String",
+        "description": "Script argument 'keyword'. Example: \"UNIT MATRIX\".",
+        "required": false,
+        "default": "UNIT MATRIX"
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:schedules.read.list_open_docs_selection_and_schedules",
+    "lastModifiedUtc": "2026-11-10T12:59:55.5539926Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var docs = new List<object>();\nforeach (Document d in app.Documents) docs.Add(new { d.Title, d.PathName, d.IsLinked, d.IsFamilyDocument });\nvar sel = uidoc.Selection.GetElementIds().Select(id => { var e = doc.GetElement(id); return new { id = id.IntegerValue, cat = e?.Category?.Name, name = e?.Name, cls = e?.GetType().Name }; }).ToList();\nvar kw = Tama.Args.Get(args, \"keyword\", \"UNIT MATRIX\").ToUpper();\nvar schedules = new FilteredElementCollector(doc).OfClass(typeof(ViewSchedule)).Cast<ViewSchedule>()\n  .Where(v => !v.IsTemplate && !v.IsTitleblockRevisionSchedule && !v.IsInternalKeynoteSchedule)\n  .Where(v => v.Name.ToUpper().Contains(kw))\n  .Select(v => new { id = v.Id.IntegerValue, v.Name, cat = v.Definition.CategoryId.IntegerValue, isKey = v.Definition.IsKeySchedule }).ToList();\nreturn new { docs, sel, schedules };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.153Z"
+}

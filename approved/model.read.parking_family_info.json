@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "model.read.parking_family_info",
+    "name": "Parking Family Info",
+    "description": "Saved automatically from a script that ran successfully.",
+    "aiDescription": "Script kept automatically after it ran successfully. Review its metadata before relying on it.",
+    "examples": [
+      "run the saved script model.read.parking_family_info"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:model.read.parking_family_info",
+    "lastModifiedUtc": "2026-11-24T08:57:25.3133084Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var s=doc.GetElement(new ElementId(12963)) as FamilySymbol;var f=s.Family;\nvar o=new Dictionary<string,object>();\no[\"place\"]=f.FamilyPlacementType.ToString();\no[\"params\"]=s.Parameters.Cast<Parameter>().Select(p=>p.Definition.Name+\"=\"+p.AsValueString()).ToList();\nvar ws=new FilteredElementCollector(doc).OfClass(typeof(Wall)).Cast<Wall>().Take(3).Select(w=>{var lc=w.Location as LocationCurve;var c=lc.Curve;return new{id=w.Id.IntegerValue,cm=w.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS).AsString(),s=new[]{c.GetEndPoint(0).X*304.8,c.GetEndPoint(0).Y*304.8},e=new[]{c.GetEndPoint(1).X*304.8,c.GetEndPoint(1).Y*304.8},t=w.Width*304.8,lvl=w.LevelId.IntegerValue,top=w.get_Parameter(BuiltInParameter.WALL_HEIGHT_TYPE).AsElementId().IntegerValue,rb=w.get_Parameter(BuiltInParameter.WALL_ATTR_ROOM_BOUNDING).AsInteger()};}).ToList();\no[\"walls\"]=ws;\nreturn o;",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.296Z"
+}

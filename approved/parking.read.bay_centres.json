@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "parking.read.bay_centres",
+    "name": "Parking Bay Centres",
+    "description": "Saved automatically from a script that ran successfully.",
+    "aiDescription": "Script kept automatically after it ran successfully. Review its metadata before relying on it.",
+    "examples": [
+      "run the saved script parking.read.bay_centres"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:parking.read.bay_centres",
+    "lastModifiedUtc": "2026-11-24T09:02:39.5840798Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var res=new List<object>();\nvar view=new FilteredElementCollector(doc).OfClass(typeof(ViewPlan)).Cast<ViewPlan>().First(v=>!v.IsTemplate&&v.GenLevel!=null&&v.GenLevel.Id.IntegerValue==311&&v.ViewType==ViewType.FloorPlan);\nvar fis=new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Parking).WhereElementIsNotElementType().Cast<FamilyInstance>().ToList();\nforeach(var fi in fis){\n double x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;int n=0;\n foreach(var g in fi.get_Geometry(new Options{View=view})){var gi=g as GeometryInstance; if(gi==null)continue; foreach(var it in gi.GetInstanceGeometry()){var c=it as Curve; if(c==null)continue; n++; foreach(var i in new[]{0,1}){var p=c.GetEndPoint(i);x0=Math.Min(x0,p.X);x1=Math.Max(x1,p.X);y0=Math.Min(y0,p.Y);y1=Math.Max(y1,p.Y);}}}\n var bb=fi.get_BoundingBox(null);\n res.Add(new object[]{fi.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS).AsString(),Math.Round((x0+x1)/2*304.8,1),Math.Round((y0+y1)/2*304.8,1),Math.Round((x1-x0)*304.8),Math.Round((y1-y0)*304.8),Math.Round((bb.Min.X+bb.Max.X)/2*304.8,1),Math.Round((bb.Min.Y+bb.Max.Y)/2*304.8,1),fi.Symbol.Id.IntegerValue,fi.LevelId.IntegerValue,n});\n}\nreturn res;",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.301Z"
+}

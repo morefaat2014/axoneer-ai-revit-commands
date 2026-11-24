@@ -1,0 +1,58 @@
+{
+  "definition": {
+    "commandId": "grids.create.from_table",
+    "name": "Create Grids From Table",
+    "description": "Create the 25 structural grids (01 to 47 and A to QQ) on the Mall model, using the 6.5mm Bubble grid type. Nothing else is changed.",
+    "aiDescription": "Create the 25 structural grids (01 to 47 and A to QQ) on the Mall model, using the 6.5mm Bubble grid type. Nothing else is changed.",
+    "examples": [
+      "Create the 25 structural grids (01 to 47 and A to QQ) on the Mall model, using the 6.5mm Bubble grid type. Nothing else is changed."
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Action",
+    "type": "Atomic",
+    "execution": "Modify",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "grids",
+        "type": "Any",
+        "description": "Script argument 'grids'. Example: [[\"01\",0,-3000,0,102240],[\"04\",9700,-3000,9700,102240],[\"06\",13800,-3000,13800,1....",
+        "required": false
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": true,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Confirm",
+    "confirmationRequired": true,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:grids.create.from_table",
+    "lastModifiedUtc": "2026-11-24T08:49:49.8856098Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Action",
+  "transactionMode": "auto",
+  "code": "double f=1.0/304.8;\nvar list=(IList<object>)args[\"grids\"];\nvar ids=new Dictionary<string,long>();\nvar gt=new ElementId(341);\nforeach(var o in list){\n var a=(IList<object>)o;\n string n=(string)a[0];\n double[] v=new double[4];\n for(int i=0;i<4;i++) v[i]=Convert.ToDouble(a[i+1])*f;\n var g=Grid.Create(doc, Line.CreateBound(new XYZ(v[0],v[1],0), new XYZ(v[2],v[3],0)));\n g.ChangeTypeId(gt);\n g.Name=n;\n ids[n]=g.Id.IntegerValue;\n}\nreturn ids;",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.283Z"
+}

@@ -1,0 +1,87 @@
+{
+  "definition": {
+    "commandId": "lines.modify.offset_setback_lines_from_floor_boundary",
+    "name": "Offset Setback Lines From Floor Boundary",
+    "description": "Repositions four model lines as a true inward offset of a floor's boundary (long and short side distances), with arcs concentric to the floor's arcs.",
+    "aiDescription": "Repositions four model lines as a true inward offset of a floor's boundary (long and short side distances), with arcs concentric to the floor's arcs.",
+    "examples": [
+      "set the setback lines 4 m from the long sides and 8 m from the short sides of this plot",
+      "offset the plot lines from the floor boundary"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Action",
+    "type": "Atomic",
+    "execution": "Modify",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "floorId",
+        "type": "Integer",
+        "description": "Script argument 'floorId'. Example: 12680042.",
+        "required": false,
+        "default": 0
+      },
+      {
+        "name": "longOffset",
+        "type": "Number",
+        "description": "Script argument 'longOffset'. Example: 4.",
+        "required": false,
+        "default": 4
+      },
+      {
+        "name": "shortOffset",
+        "type": "Number",
+        "description": "Script argument 'shortOffset'. Example: 8.",
+        "required": false,
+        "default": 8
+      },
+      {
+        "name": "maxMoveM",
+        "type": "Number",
+        "description": "Script argument 'maxMoveM'. Example: 0.5.",
+        "required": false,
+        "default": 0.5
+      },
+      {
+        "name": "ids",
+        "type": "IntegerArray",
+        "description": "Script argument 'ids'. Example: [12684586,12684587,12684588,12684589].",
+        "required": false
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": true,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Confirm",
+    "confirmationRequired": true,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:lines.modify.offset_setback_lines_from_floor_boundary",
+    "lastModifiedUtc": "2026-11-17T13:22:59.5824461Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Action",
+  "transactionMode": "auto",
+  "code": "var fid = Tama.Args.Get(args, \"floorId\", 0L);\ndouble dl = Tama.Args.Get(args, \"longOffset\", 4.0)/0.3048, ds = Tama.Args.Get(args, \"shortOffset\", 8.0)/0.3048;\ndouble maxMove = Tama.Args.Get(args, \"maxMoveM\", 0.5)/0.3048;\nvar floor = doc.GetElement(new ElementId((int)fid)) as Floor;\nvar sk = doc.GetElement(floor.SketchId) as Sketch;\nvar plot = new List<Curve>(); foreach (CurveArray ca in sk.Profile) { foreach (Curve c in ca) plot.Add(c); break; }\nint n = plot.Count; if (n != 4) throw new Exception(\"Expected 4 plot edges, found \" + n);\nFunc<XYZ,XYZ> flat = p => new XYZ(p.X, p.Y, 0);\nvar cen = plot.Select(c => flat(c.GetEndPoint(0))).Aggregate(XYZ.Zero, (a,b) => a+b) / n;\ndouble avgLen = plot.Average(c => c.GetEndPoint(0).DistanceTo(c.GetEndPoint(1)));\nvar offs = new List<Curve>();\nforeach (var c0 in plot) {\n  var c = c0.CreateTransformed(Transform.CreateTranslation(new XYZ(0,0,-c0.GetEndPoint(0).Z)));\n  double d = c.GetEndPoint(0).DistanceTo(c.GetEndPoint(1)) > avgLen ? dl : ds;\n  var o1 = c.CreateOffset(d, XYZ.BasisZ); var o2 = c.CreateOffset(-d, XYZ.BasisZ);\n  var pick = o1.Evaluate(0.5,true).DistanceTo(cen) < o2.Evaluate(0.5,true).DistanceTo(cen) ? o1 : o2;\n  var u = pick.Clone(); u.MakeUnbound(); offs.Add(u);\n}\nvar corners = new List<XYZ>();\nfor (int i = 0; i < n; i++) {\n  var a = offs[(i+n-1)%n]; var b = offs[i]; var orig = flat(plot[i].GetEndPoint(0));\n  IntersectionResultArray ira; var r = a.Intersect(b, out ira);\n  if (ira == null || ira.Size == 0) throw new Exception(\"No intersection at corner \" + i);\n  XYZ best = null; foreach (IntersectionResult ir in ira) if (best == null || ir.XYZPoint.DistanceTo(orig) < best.DistanceTo(orig)) best = ir.XYZPoint;\n  corners.Add(best);\n}\nvar newEdges = new List<Curve>();\nfor (int i = 0; i < n; i++) {\n  var p0 = corners[i]; var p1 = corners[(i+1)%n];\n  if (offs[i] is Arc) { var mid = offs[i].Project((p0+p1)/2).XYZPoint; newEdges.Add(Arc.Create(p0, p1, mid)); }\n  else newEdges.Add(Line.CreateBound(p0, p1));\n}\nvar inv = doc.ActiveProjectLocation.GetTotalTransform().Inverse;\nvar report = new List<object>();\nvar used = new HashSet<int>();\nforeach (var o in (object[])args[\"ids\"]) {\n  var ce = doc.GetElement(new ElementId(Convert.ToInt32(o))) as CurveElement;\n  var c = ce.GeometryCurve; double z = c.GetEndPoint(0).Z;\n  var m = flat(c.Evaluate(0.5,true));\n  int k = Enumerable.Range(0,n).Where(j => !used.Contains(j)).OrderBy(j => newEdges[j].Evaluate(0.5,true).DistanceTo(m)).First(); used.Add(k);\n  var e = newEdges[k]; var a0 = flat(c.GetEndPoint(0));\n  bool same = e.GetEndPoint(0).DistanceTo(a0) <= e.GetEndPoint(1).DistanceTo(a0);\n  var na = (same ? e.GetEndPoint(0) : e.GetEndPoint(1)) + new XYZ(0,0,z);\n  var nb = (same ? e.GetEndPoint(1) : e.GetEndPoint(0)) + new XYZ(0,0,z);\n  Curve nc = e is Arc ? (Curve)Arc.Create(na, nb, e.Evaluate(0.5,true) + new XYZ(0,0,z)) : Line.CreateBound(na, nb);\n  double mv = Math.Max(c.GetEndPoint(0).DistanceTo(na), c.GetEndPoint(1).DistanceTo(nb));\n  if (mv > maxMove) throw new Exception(\"Line \" + ce.Id.IntegerValue + \" would move \" + Math.Round(mv*304.8) + \" mm; aborted.\");\n  ce.SetGeometryCurve(nc, true);\n  var s0 = inv.OfPoint(na); var s1 = inv.OfPoint(nb);\n  report.Add(new { id = ce.Id.IntegerValue, type = nc.GetType().Name, offset_m = Math.Round((plot[k].GetEndPoint(0).DistanceTo(plot[k].GetEndPoint(1)) > avgLen ? dl : ds)*0.3048,1), moved_mm = Math.Round(mv*304.8,1), len_m = Math.Round(nc.Length*0.3048,3), sE = Math.Round(s0.X*0.3048,3), sN = Math.Round(s0.Y*0.3048,3), eE = Math.Round(s1.X*0.3048,3), eN = Math.Round(s1.Y*0.3048,3) });\n}\nreturn report;",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.242Z"
+}

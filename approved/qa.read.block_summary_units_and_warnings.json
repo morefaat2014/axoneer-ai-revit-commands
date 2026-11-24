@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "qa.read.block_summary_units_and_warnings",
+    "name": "Block Summary Units And Warnings",
+    "description": "Saved automatically from a script that ran successfully.",
+    "aiDescription": "Script kept automatically after it ran successfully. Review its metadata before relying on it.",
+    "examples": [
+      "run the saved script qa.read.block_summary_units_and_warnings"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:qa.read.block_summary_units_and_warnings",
+    "lastModifiedUtc": "2026-11-23T16:31:05.8190314Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var lvl=new FilteredElementCollector(doc).OfClass(typeof(Level)).Cast<Level>().First(l=>l.Name==\"Level 2\");\nvar rooms=new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Rooms).Cast<Autodesk.Revit.DB.Architecture.Room>().Where(r=>r.LevelId==lvl.Id).ToList();\nvar units=rooms.Where(r=>(r.get_Parameter(BuiltInParameter.ROOM_DEPARTMENT).AsString()??\"\").StartsWith(\"U\")).GroupBy(r=>r.get_Parameter(BuiltInParameter.ROOM_DEPARTMENT).AsString())\n .Select(g=>new{unit=g.Key,internalM2=Math.Round(g.Where(r=>r.get_Parameter(BuiltInParameter.ROOM_NAME).AsString()!=\"Balcony\").Sum(r=>r.Area)*0.09290304,1),balconyM2=Math.Round(g.Where(r=>r.get_Parameter(BuiltInParameter.ROOM_NAME).AsString()==\"Balcony\").Sum(r=>r.Area)*0.09290304,1),rooms=g.Count()}).OrderBy(u=>u.unit).ToList();\nFunc<BuiltInCategory,int> cnt=c=>new FilteredElementCollector(doc).OfCategory(c).WhereElementIsNotElementType().GetElementCount();\nvar stairs=new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Stairs).WhereElementIsNotElementType().OfClass(typeof(Autodesk.Revit.DB.Architecture.Stairs)).Cast<Element>().Select(s=>new{s.Id.IntegerValue,c=s.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS).AsString()}).ToList();\nvar warn=doc.GetWarnings().GroupBy(w=>w.GetDescriptionText()).Select(g=>new{text=g.Key,n=g.Count(),ids=g.SelectMany(w=>w.GetFailingElements()).Select(i=>i.IntegerValue).Take(12).ToList()}).ToList();\nreturn new{units,walls=cnt(BuiltInCategory.OST_Walls),doors=cnt(BuiltInCategory.OST_Doors),windows=cnt(BuiltInCategory.OST_Windows),floors=cnt(BuiltInCategory.OST_Floors),rooms=rooms.Count,railings=cnt(BuiltInCategory.OST_StairsRailing),stairs,warn};",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.273Z"
+}

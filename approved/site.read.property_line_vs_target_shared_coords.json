@@ -1,0 +1,58 @@
+{
+  "definition": {
+    "commandId": "site.read.property_line_vs_target_shared_coords",
+    "name": "Compare Property Line Corners to Target Shared Coordinates",
+    "description": "Lists property line corners in internal and current shared coordinates and their offset from target E/N points.",
+    "aiDescription": "Lists property line corners in internal and current shared coordinates and their offset from target E/N points.",
+    "examples": [
+      "Lists property line corners in internal and current shared coordinates and their offset from target E/N points."
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "targets",
+        "type": "Any",
+        "description": "Script argument 'targets'. Example: [[246541.102,2713875.06],[246503.391,2713861.722],[246496.721,2713880.567],[2465....",
+        "required": false
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:site.read.property_line_vs_target_shared_coords",
+    "lastModifiedUtc": "2026-11-17T12:13:35.7371408Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var targets = new List<XYZ>();\nforeach (var o in (object[])args[\"targets\"]) { var a = (object[])o; targets.Add(new XYZ(Convert.ToDouble(a[0]), Convert.ToDouble(a[1]), 0)); }\nvar pl = doc.ActiveProjectLocation;\nvar tf = pl.GetTotalTransform(); // shared -> internal\nvar inv = tf.Inverse;             // internal -> shared\nvar pp = pl.GetProjectPosition(XYZ.Zero);\nvar plines = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_SiteProperty).WhereElementIsNotElementType().ToElements();\nvar outList = new List<object>();\nforeach (var e in plines) {\n  var verts = new List<XYZ>();\n  var deps = e.GetDependentElements(new ElementClassFilter(typeof(CurveElement)));\n  foreach (var id in deps) { var ce = doc.GetElement(id) as CurveElement; if (ce == null) continue; var c = ce.GeometryCurve; foreach (var p in new[]{c.GetEndPoint(0), c.GetEndPoint(1)}) if (!verts.Any(v => v.DistanceTo(new XYZ(p.X,p.Y,0)) < 0.003)) verts.Add(new XYZ(p.X,p.Y,0)); }\n  // match each target to nearest vertex (current shared)\n  var matches = targets.Select((t,i) => {\n    var best = verts.OrderBy(v => { var s = inv.OfPoint(v); return Math.Pow(s.X*0.3048 - t.X,2)+Math.Pow(s.Y*0.3048 - t.Y,2); }).FirstOrDefault();\n    if (best == null) return null;\n    var s2 = inv.OfPoint(best);\n    return new { pt = \"P0\"+(i+1), intX_m = Math.Round(best.X*0.3048,4), intY_m = Math.Round(best.Y*0.3048,4), curE = Math.Round(s2.X*0.3048,3), curN = Math.Round(s2.Y*0.3048,3), dE_m = Math.Round(t.X - s2.X*0.3048,3), dN_m = Math.Round(t.Y - s2.Y*0.3048,3) };\n  }).ToList();\n  outList.Add(new { id = e.Id.IntegerValue, name = e.Name, vertexCount = verts.Count, matches });\n}\nreturn new { site = pl.Name, ew_m = Math.Round(pp.EastWest*0.3048,4), ns_m = Math.Round(pp.NorthSouth*0.3048,4), elev_m = Math.Round(pp.Elevation*0.3048,4), angle_deg = Math.Round(pp.Angle*180/Math.PI,6), propertyLines = outList };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.226Z"
+}

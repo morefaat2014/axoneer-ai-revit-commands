@@ -1,0 +1,59 @@
+{
+  "definition": {
+    "commandId": "project.action.rename_current_site",
+    "name": "Rename Current Site",
+    "description": "Renames the current project site (location) without changing its values.",
+    "aiDescription": "Renames the current project site (location) without changing its values.",
+    "examples": [
+      "rename the current site to 7-VI-096"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Action",
+    "type": "Atomic",
+    "execution": "Modify",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "newName",
+        "type": "String",
+        "description": "Script argument 'newName'. Example: \"7-VI-096 (6 BR TYPE A)\".",
+        "required": false,
+        "default": ""
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": true,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Confirm",
+    "confirmationRequired": true,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:project.action.rename_current_site",
+    "lastModifiedUtc": "2026-11-15T15:31:21.4051205Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Action",
+  "transactionMode": "auto",
+  "code": "string newName = Tama.Args.Get(args, \"newName\", \"\");\nvar act = doc.ActiveProjectLocation;\nforeach (ProjectLocation pl in doc.ProjectLocations) if (pl.Name == newName && pl.Id != act.Id) throw new Exception(\"A site with that name already exists.\");\nstring old = act.Name;\nact.Name = newName;\nreturn new { renamed = old + \" -> \" + act.Name };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.205Z"
+}

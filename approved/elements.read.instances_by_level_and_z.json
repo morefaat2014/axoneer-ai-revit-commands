@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "elements.read.instances_by_level_and_z",
+    "name": "Instances by Level and Z",
+    "description": "Saved automatically from a script that ran successfully.",
+    "aiDescription": "Script kept automatically after it ran successfully. Review its metadata before relying on it.",
+    "examples": [
+      "run the saved script elements.read.instances_by_level_and_z"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:elements.read.instances_by_level_and_z",
+    "lastModifiedUtc": "2026-11-24T10:39:40.7283946Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "Func<double,double> mm=x=>Math.Round(x*304.8);\nvar fi=new FilteredElementCollector(doc).OfClass(typeof(FamilyInstance)).Cast<FamilyInstance>().Where(f=>{var c=f.Category.Id.IntegerValue;return c==(int)BuiltInCategory.OST_Doors||c==(int)BuiltInCategory.OST_SpecialityEquipment||c==(int)BuiltInCategory.OST_Parking;}).GroupBy(f=>f.Category.Name+\" / \"+((doc.GetElement(f.LevelId)??f).Name)+\" / z \"+mm(((LocationPoint)f.Location).Point.Z)).Select(g=>g.Key+\": \"+g.Count()).ToList();\nvar st=new FilteredElementCollector(doc).OfClass(typeof(Autodesk.Revit.DB.Architecture.Stairs)).Cast<Autodesk.Revit.DB.Architecture.Stairs>().GroupBy(s=>mm(s.BaseElevation)+\"..\"+mm(s.TopElevation)+\" r\"+s.ActualRisersNumber).Select(g=>g.Key+\": \"+g.Count()).ToList();\nreturn new{fi,st,walls=new FilteredElementCollector(doc).OfClass(typeof(Wall)).GetElementCount(),warn=doc.GetWarnings().Count};",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.346Z"
+}

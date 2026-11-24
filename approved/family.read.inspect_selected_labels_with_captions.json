@@ -1,0 +1,52 @@
+{
+  "definition": {
+    "commandId": "family.read.inspect_selected_labels_with_captions",
+    "name": "Inspect Selected Labels With Captions",
+    "description": "Lists the selected labels in a family with their sample text, position and nearest caption text notes, plus the family parameters and current shared parameter file.",
+    "aiDescription": "Lists the selected labels in a family with their sample text, position and nearest caption text notes, plus the family parameters and current shared parameter file.",
+    "examples": [
+      "which parameters are on the selected labels?",
+      "show the selected labels and their captions"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:family.read.inspect_selected_labels_with_captions",
+    "lastModifiedUtc": "2026-11-16T17:22:12.3014972Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var sel = uidoc.Selection.GetElementIds().Select(id => doc.GetElement(id)).ToList();\nvar texts = new FilteredElementCollector(doc, doc.ActiveView.Id).OfClass(typeof(TextNote)).Cast<TextNote>()\n    .Select(t => new { t.Text, P = t.Coord }).ToList();\nvar labels = new List<object>();\nforeach (var e in sel)\n{\n    var te = e as TextElement;\n    XYZ pos = te != null ? te.Coord : null;\n    string lbl = null;\n    try { var p = e.get_Parameter(BuiltInParameter.ELEM_FAMILY_PARAM); lbl = p?.AsValueString(); } catch {}\n    string sample = te != null ? te.Text : null;\n    var near = pos == null ? null : texts.OrderBy(t => t.P.DistanceTo(pos)).Take(3)\n        .Select(t => new { text = t.Text.Trim(), dxMm = Math.Round((t.P.X - pos.X) * 304.8), dyMm = Math.Round((t.P.Y - pos.Y) * 304.8) }).ToList();\n    labels.Add(new {\n        id = e.Id.IntegerValue, cls = e.GetType().Name,\n        type = doc.GetElement(e.GetTypeId())?.Name,\n        sampleText = sample,\n        xMm = pos == null ? (double?)null : Math.Round(pos.X * 304.8), yMm = pos == null ? (double?)null : Math.Round(pos.Y * 304.8),\n        nearbyCaptions = near\n    });\n}\nvar fm = doc.FamilyManager;\nvar famParams = fm.Parameters.Cast<FamilyParameter>().Select(p => new { name = p.Definition.Name, shared = p.IsShared, guid = p.IsShared ? p.GUID.ToString() : null, instance = p.IsInstance }).ToList();\nreturn new { labels, famParams, sharedParamFile = app.SharedParametersFilename };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.211Z"
+}

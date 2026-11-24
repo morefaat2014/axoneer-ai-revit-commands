@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "qa.read.host_model_quality_lod_sample",
+    "name": "Host Model Quality And LOD Sample",
+    "description": "For the active model, reports key ARC category counts, parameter fill rates, generic types, warnings, duplicates, unplaced rooms and link load/pin status.",
+    "aiDescription": "For the active model, reports key ARC category counts, parameter fill rates, generic types, warnings, duplicates, unplaced rooms and link load/pin status.",
+    "examples": [
+      "For the active model, reports key ARC category counts, parameter fill rates, generic types, warnings, duplicates, unplaced rooms and link load/pin status."
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:qa.read.host_model_quality_lod_sample",
+    "lastModifiedUtc": "2026-11-12T11:20:35.3169225Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var d = doc;\nFunc<Element,string,bool> filled = (e,pn) => { var p = e.LookupParameter(pn); if (p==null || !p.HasValue) { var t = d.GetElement(e.GetTypeId()); if (t==null) return false; p = t.LookupParameter(pn); if (p==null||!p.HasValue) return false; }\n  var v = p.StorageType==StorageType.String ? p.AsString() : p.AsValueString(); return !string.IsNullOrWhiteSpace(v); };\nvar cats = new[]{BuiltInCategory.OST_Walls, BuiltInCategory.OST_Doors, BuiltInCategory.OST_Windows, BuiltInCategory.OST_Floors, BuiltInCategory.OST_Ceilings, BuiltInCategory.OST_Stairs, BuiltInCategory.OST_Railings, BuiltInCategory.OST_Rooms, BuiltInCategory.OST_Roofs, BuiltInCategory.OST_GenericModel};\nvar counts = cats.ToDictionary(c => c.ToString().Replace(\"OST_\",\"\"), c => new FilteredElementCollector(d).OfCategory(c).WhereElementIsNotElementType().GetElementCount());\nvar fill = new Dictionary<string,object>();\nforeach (var c in new[]{BuiltInCategory.OST_Walls, BuiltInCategory.OST_Doors, BuiltInCategory.OST_Windows, BuiltInCategory.OST_Floors, BuiltInCategory.OST_Ceilings}) {\n  var els = new FilteredElementCollector(d).OfCategory(c).WhereElementIsNotElementType().ToList(); if (els.Count==0) continue;\n  fill[c.ToString().Replace(\"OST_\",\"\")] = new[]{\"Type Mark\",\"Fire Rating\",\"OmniClass Number\",\"Assembly Code\",\"Description\",\"Mark\"}.ToDictionary(pn => pn, pn => Math.Round(100.0*els.Count(e=>filled(e,pn))/els.Count));\n}\nvar genericWalls = new FilteredElementCollector(d).OfCategory(BuiltInCategory.OST_Walls).WhereElementIsNotElementType().Count(e => { var t = d.GetElement(e.GetTypeId()); return t!=null && t.Name.ToLower().Contains(\"generic\"); });\nvar genericFloors = new FilteredElementCollector(d).OfCategory(BuiltInCategory.OST_Floors).WhereElementIsNotElementType().Count(e => { var t = d.GetElement(e.GetTypeId()); return t!=null && t.Name.ToLower().Contains(\"generic\"); });\nvar warns = d.GetWarnings();\nvar topWarn = warns.GroupBy(w => w.GetDescriptionText()).OrderByDescending(g=>g.Count()).Take(6).Select(g=>new{w=g.Key.Length>80?g.Key.Substring(0,80):g.Key,n=g.Count()}).ToList();\nvar rooms = new FilteredElementCollector(d).OfCategory(BuiltInCategory.OST_Rooms).Cast<SpatialElement>().ToList();\nvar dupInst = warns.Count(w => w.GetDescriptionText().Contains(\"identical instances\"));\nvar links = new FilteredElementCollector(d).OfClass(typeof(RevitLinkType)).Cast<RevitLinkType>().ToList();\nint notFound = links.Count(l => !RevitLinkType.IsLoaded(d, l.Id));\nvar unpinnedLinks = new FilteredElementCollector(d).OfClass(typeof(RevitLinkInstance)).Cast<RevitLinkInstance>().Count(l => !l.Pinned);\nreturn new { counts, genericWalls, genericFloors, fill, warnings = warns.Count, topWarn, dupInst, roomsTotal = rooms.Count, roomsUnplacedOrZero = rooms.Count(r => r.Area <= 0), linkTypes = links.Count, linkTypesNotLoaded = notFound, unpinnedLinkInstances = unpinnedLinks };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.196Z"
+}

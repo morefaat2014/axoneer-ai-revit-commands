@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "rooms.read.room_param_names",
+    "name": "Room Param Names",
+    "description": "Saved automatically from a script that ran successfully.",
+    "aiDescription": "Script kept automatically after it ran successfully. Review its metadata before relying on it.",
+    "examples": [
+      "run the saved script rooms.read.room_param_names"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:rooms.read.room_param_names",
+    "lastModifiedUtc": "2026-11-24T09:03:51.3023915Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var o=new Dictionary<string,object>();\no[\"names\"]=new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Rooms).Cast<Autodesk.Revit.DB.Architecture.Room>().OrderBy(r=>r.Number).Select(r=>r.Number+\"=\"+r.get_Parameter(BuiltInParameter.ROOM_NAME).AsString()).ToList();\no[\"tags\"]=new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_RoomTags).Select(t=>t.Id.IntegerValue+\"|\"+t.GetType().Name+\"|\"+t.OwnerViewId.IntegerValue).ToList();\nvar e=doc.GetElement(new ElementId(354909));\no[\"e909\"]=e==null?\"null\":(e.GetType().FullName+\"|\"+e.Id.IntegerValue+\"|\"+(e.Category==null?\"nocat\":e.Category.Name));\nreturn o;",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.306Z"
+}

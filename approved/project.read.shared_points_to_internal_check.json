@@ -1,0 +1,58 @@
+{
+  "definition": {
+    "commandId": "project.read.shared_points_to_internal_check",
+    "name": "Shared E/N to Internal (Transform Check)",
+    "description": "Saved automatically from a script that ran successfully.",
+    "aiDescription": "Script kept automatically after it ran successfully. Review its metadata before relying on it.",
+    "examples": [
+      "run the saved script project.read.shared_points_to_internal_check"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "points",
+        "type": "Any",
+        "description": "Script argument 'points'. Example: [[246547.768,2713856.204],[246510.058,2713842.862],[246503.391,2713861.722],[246....",
+        "required": false
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:project.read.shared_points_to_internal_check",
+    "lastModifiedUtc": "2026-11-17T12:00:09.2843609Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var pts = new List<double[]>();\nforeach (var o in (object[])args[\"points\"]) { var a = (object[])o; pts.Add(new[]{ Convert.ToDouble(a[0]), Convert.ToDouble(a[1]) }); }\nvar pl = doc.ActiveProjectLocation;\nvar tf = pl.GetTotalTransform();\nvar res = pts.Select((p,i) => {\n  var s = new XYZ(p[0]/0.3048, p[1]/0.3048, 0);\n  var c = tf.OfPoint(s); // candidate internal\n  var back = tf.Inverse.OfPoint(c);\n  var pp = pl.GetProjectPosition(new XYZ(c.X, c.Y, 0));\n  // reconstruct shared from internal using project position of origin as check\n  return new { pt = \"P0\"+(i+1), internalX_m = Math.Round(c.X*0.3048,4), internalY_m = Math.Round(c.Y*0.3048,4), roundTripE = Math.Round(back.X*0.3048,3), roundTripN = Math.Round(back.Y*0.3048,3) };\n}).ToList();\n// independent check: survey/base point shared report via ProjectLocation transform of origin\nvar originShared = tf.Inverse.OfPoint(XYZ.Zero);\nreturn new { points = res, originToShared_E = Math.Round(originShared.X*0.3048,4), originToShared_N = Math.Round(originShared.Y*0.3048,4), tfOrigin_m = new { x = Math.Round(tf.Origin.X*0.3048,3), y = Math.Round(tf.Origin.Y*0.3048,3) } };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.223Z"
+}

@@ -1,0 +1,59 @@
+{
+  "definition": {
+    "commandId": "project.read.coordinates_report_by_title",
+    "name": "Coordinates Report By Title",
+    "description": "Reports project locations, base/survey point positions and link placements for open or linked documents whose title contains a text.",
+    "aiDescription": "Reports project locations, base/survey point positions and link placements for open or linked documents whose title contains a text.",
+    "examples": [
+      "check the coordinates of the model ending with Coordinates-MR"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "titleContains",
+        "type": "String",
+        "description": "Script argument 'titleContains'. Example: \"MR\".",
+        "required": false,
+        "default": ""
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:project.read.coordinates_report_by_title",
+    "lastModifiedUtc": "2026-11-11T16:30:01.2150688Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "string f = Tama.Args.Get(args, \"titleContains\", \"\");\nvar res = new List<object>();\nvar titles = new List<string>();\nforeach (Document d in app.Documents)\n{\n    titles.Add(d.Title + (d.IsLinked ? \" [link]\" : \" [open]\"));\n    if (d.IsFamilyDocument || !d.Title.Contains(f)) continue;\n    var locs = new List<object>();\n    foreach (ProjectLocation pl in d.ProjectLocations)\n    {\n        var pp = pl.GetProjectPosition(XYZ.Zero);\n        locs.Add(new { name = pl.Name, id = pl.Id.IntegerValue, active = d.ActiveProjectLocation.Id == pl.Id,\n            ew = Math.Round(pp.EastWest*0.3048,4), ns = Math.Round(pp.NorthSouth*0.3048,4),\n            elev = Math.Round(pp.Elevation*0.3048,4), angle = Math.Round(pp.Angle*180/Math.PI,6) });\n    }\n    var bps = new FilteredElementCollector(d).OfClass(typeof(BasePoint)).Cast<BasePoint>().Select(b => new {\n        survey = b.IsShared, clipped = b.Clipped, pinned = b.Pinned,\n        internal_m = new[]{Math.Round(b.Position.X*0.3048,4),Math.Round(b.Position.Y*0.3048,4),Math.Round(b.Position.Z*0.3048,4)},\n        shared_m = new[]{Math.Round(b.SharedPosition.X*0.3048,4),Math.Round(b.SharedPosition.Y*0.3048,4),Math.Round(b.SharedPosition.Z*0.3048,4)},\n        ew_param = b.get_Parameter(BuiltInParameter.BASEPOINT_EASTWEST_PARAM)?.AsValueString(),\n        ns_param = b.get_Parameter(BuiltInParameter.BASEPOINT_NORTHSOUTH_PARAM)?.AsValueString(),\n        elev_param = b.get_Parameter(BuiltInParameter.BASEPOINT_ELEVATION_PARAM)?.AsValueString()\n    }).ToList();\n    var links = new FilteredElementCollector(d).OfClass(typeof(RevitLinkInstance)).Cast<RevitLinkInstance>().Select(li => {\n        var t = li.GetTransform();\n        return new { name = li.Name, origin_m = new[]{Math.Round(t.Origin.X*0.3048,4),Math.Round(t.Origin.Y*0.3048,4),Math.Round(t.Origin.Z*0.3048,4)},\n            rot = Math.Round(Math.Atan2(t.BasisX.Y,t.BasisX.X)*180/Math.PI,4), mirrored = t.BasisX.CrossProduct(t.BasisY).Z < 0 };\n    }).ToList();\n    res.Add(new { title = d.Title, path = d.PathName, linked = d.IsLinked, workshared = d.IsWorkshared, locations = locs, basePoints = bps, links });\n}\nreturn new { openDocs = titles, matches = res };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.165Z"
+}

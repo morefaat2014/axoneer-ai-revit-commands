@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "parking.modify.reset_bay_level_offset",
+    "name": "Reset Parking Bay Level Offset",
+    "description": "Set the height offset of the 261 parking bays placed today (Comments P-1 to P-261) to 0, so they sit on Basement 2 instead of 7.15 m below it. Plan positions do not change.",
+    "aiDescription": "Set the height offset of the 261 parking bays placed today (Comments P-1 to P-261) to 0, so they sit on Basement 2 instead of 7.15 m below it. Plan positions do not change.",
+    "examples": [
+      "Set the height offset of the 261 parking bays placed today (Comments P-1 to P-261) to 0, so they sit on Basement 2 instead of 7.15 m below it. Plan positions do not change."
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Action",
+    "type": "Atomic",
+    "execution": "Modify",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": true,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Confirm",
+    "confirmationRequired": true,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:parking.modify.reset_bay_level_offset",
+    "lastModifiedUtc": "2026-11-24T09:07:40.8022929Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Action",
+  "transactionMode": "auto",
+  "code": "var ps=new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Parking).OfClass(typeof(FamilyInstance)).Cast<FamilyInstance>().Where(f=>{var c=f.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS).AsString();return c!=null&&c.StartsWith(\"P-\");}).ToList();\nif(ps.Count!=261) throw new Exception(\"Expected 261, found \"+ps.Count);\nvar before=ps.ToDictionary(p=>p.Id.IntegerValue,p=>((LocationPoint)p.Location).Point);\nforeach(var p in ps) p.get_Parameter(BuiltInParameter.INSTANCE_FREE_HOST_OFFSET_PARAM).Set(0.0);\ndoc.Regenerate();\ndouble dxy=0; foreach(var p in ps){var a=((LocationPoint)p.Location).Point;var b=before[p.Id.IntegerValue];dxy=Math.Max(dxy,Math.Sqrt((a.X-b.X)*(a.X-b.X)+(a.Y-b.Y)*(a.Y-b.Y))*304.8);}\nreturn new{count=ps.Count,maxXYmoveMm=dxy,z=ps.Select(p=>Math.Round(((LocationPoint)p.Location).Point.Z*304.8)).Distinct().ToList()};",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.307Z"
+}

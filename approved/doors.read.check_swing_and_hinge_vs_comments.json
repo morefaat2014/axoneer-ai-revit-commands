@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "doors.read.check_swing_and_hinge_vs_comments",
+    "name": "Check Door Swing And Hinge",
+    "description": "Saved automatically from a script that ran successfully.",
+    "aiDescription": "Script kept automatically after it ran successfully. Review its metadata before relying on it.",
+    "examples": [
+      "run the saved script doors.read.check_swing_and_hinge_vs_comments"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:doors.read.check_swing_and_hinge_vs_comments",
+    "lastModifiedUtc": "2026-11-23T16:28:01.1428845Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var view=doc.ActiveView; var opt=new Options{View=view};\nvar res=new List<object>();\nforeach(var fi in new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Doors).WhereElementIsNotElementType().Cast<FamilyInstance>()){\n  var c=fi.LookupParameter(\"Comments\")?.AsString()??\"\"; if(!c.StartsWith(\"Block C\")) continue;\n  var parts=c.Split('|'); string id=parts[1].Trim(); string sw=\"\",hg=\"\";\n  if(parts.Length>2){ var t=parts[2].Trim().Split(' '); if(t.Length>=4){sw=t[1];hg=t[3];} }\n  if(sw==\"\"||hg.Contains(\"/\")) continue;\n  var lp=((LocationPoint)fi.Location).Point; XYZ hinge=null; XYZ mid=null;\n  foreach(var go in fi.get_Geometry(opt)){ var gi=go as GeometryInstance; if(gi==null) continue;\n    foreach(var g in gi.GetInstanceGeometry()){ var a=g as Arc; if(a!=null && a.Radius>1.5){ hinge=a.Center; mid=a.Evaluate(0.5,true); break;} } if(hinge!=null) break; }\n  if(hinge==null){ res.Add(new{id,ok=\"noarc\"}); continue; }\n  var h=hinge-lp; var m=mid-lp;\n  Func<string,XYZ> v=s=>s==\"+X\"?XYZ.BasisX:s==\"-X\"?-XYZ.BasisX:s==\"+Y\"?XYZ.BasisY:-XYZ.BasisY;\n  bool swingOk=m.DotProduct(v(sw))>0; bool hingeOk=h.DotProduct(v(hg))>0;\n  res.Add(new{id,el=fi.Id.IntegerValue,swingOk,hingeOk});\n}\nreturn new{total=res.Count,badSwing=res.Where(r=>r.GetType().GetProperty(\"swingOk\")!=null && !(bool)r.GetType().GetProperty(\"swingOk\").GetValue(r)).Count(), list=res};",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.265Z"
+}

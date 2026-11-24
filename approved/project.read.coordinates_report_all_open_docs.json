@@ -1,0 +1,52 @@
+{
+  "definition": {
+    "commandId": "project.read.coordinates_report_all_open_docs",
+    "name": "Coordinates Report All Open Docs",
+    "description": "Reports project locations, base points and link placement/shared site for every open and linked project document.",
+    "aiDescription": "Reports project locations, base points and link placement/shared site for every open and linked project document.",
+    "examples": [
+      "why can't this model be linked by shared coordinates",
+      "compare shared coordinates of open and linked models"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:project.read.coordinates_report_all_open_docs",
+    "lastModifiedUtc": "2026-11-11T15:05:04.0849255Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var res = new List<object>();\nforeach (Document d in app.Documents)\n{\n    if (d.IsFamilyDocument) continue;\n    var locs = new List<object>();\n    foreach (ProjectLocation pl in d.ProjectLocations)\n    {\n        ProjectPosition pp = null;\n        try { pp = pl.GetProjectPosition(XYZ.Zero); } catch {}\n        locs.Add(new {\n            name = pl.Name,\n            id = pl.Id.IntegerValue,\n            isActive = d.ActiveProjectLocation.Id == pl.Id,\n            ew_m = pp == null ? (double?)null : Math.Round(pp.EastWest*0.3048,4),\n            ns_m = pp == null ? (double?)null : Math.Round(pp.NorthSouth*0.3048,4),\n            elev_m = pp == null ? (double?)null : Math.Round(pp.Elevation*0.3048,4),\n            angle_deg = pp == null ? (double?)null : Math.Round(pp.Angle*180/Math.PI,6)\n        });\n    }\n    var bps = new FilteredElementCollector(d).OfClass(typeof(BasePoint)).Cast<BasePoint>()\n        .Select(b => new {\n            survey = b.IsShared,\n            pos_m = new[]{Math.Round(b.Position.X*0.3048,4),Math.Round(b.Position.Y*0.3048,4),Math.Round(b.Position.Z*0.3048,4)},\n            shared_m = new[]{Math.Round(b.SharedPosition.X*0.3048,4),Math.Round(b.SharedPosition.Y*0.3048,4),Math.Round(b.SharedPosition.Z*0.3048,4)},\n            pinned = b.Pinned, clipped = b.Clipped\n        }).ToList();\n    var links = new FilteredElementCollector(d).OfClass(typeof(RevitLinkInstance)).Cast<RevitLinkInstance>()\n        .Select(li => {\n            var t = li.GetTotalTransform();\n            var lt = d.GetElement(li.GetTypeId()) as RevitLinkType;\n            string attach = null; try { attach = lt.AttachmentType.ToString(); } catch {}\n            return new {\n                name = li.Name,\n                pinned = li.Pinned,\n                attachment = attach,\n                origin_m = new[]{Math.Round(t.Origin.X*0.3048,4),Math.Round(t.Origin.Y*0.3048,4),Math.Round(t.Origin.Z*0.3048,4)},\n                rot_deg = Math.Round(Math.Atan2(t.BasisX.Y,t.BasisX.X)*180/Math.PI,6),\n                sharedSite = li.LookupParameter(\"Shared Site\")?.AsValueString()\n            };\n        }).ToList();\n    res.Add(new {\n        title = d.Title,\n        path = d.PathName,\n        isLinked = d.IsLinked,\n        isWorkshared = d.IsWorkshared,\n        locations = locs,\n        basePoints = bps,\n        links = links\n    });\n}\nreturn res;",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.161Z"
+}

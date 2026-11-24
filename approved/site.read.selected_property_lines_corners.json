@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "site.read.selected_property_lines_corners",
+    "name": "Selected Property Lines Corner Coordinates",
+    "description": "Saved automatically from a script that ran successfully.",
+    "aiDescription": "Script kept automatically after it ran successfully. Review its metadata before relying on it.",
+    "examples": [
+      "run the saved script site.read.selected_property_lines_corners"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:site.read.selected_property_lines_corners",
+    "lastModifiedUtc": "2026-11-17T15:41:42.7124917Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var pl = doc.ActiveProjectLocation; var pp = pl.GetProjectPosition(XYZ.Zero);\nvar inv = pl.GetTotalTransform().Inverse;\nvar res = new List<object>();\nforeach (var id in uidoc.Selection.GetElementIds()) {\n  var e = doc.GetElement(id);\n  var verts = new List<XYZ>(); var segs = new List<string>();\n  foreach (var did in e.GetDependentElements(new ElementClassFilter(typeof(CurveElement)))) { var ce = doc.GetElement(did) as CurveElement; if (ce == null) continue; var c = ce.GeometryCurve; segs.Add(c is Arc ? \"A\" : \"L\"); foreach (var p in new[]{c.GetEndPoint(0), c.GetEndPoint(1)}) if (!verts.Any(v => v.DistanceTo(new XYZ(p.X,p.Y,0)) < 0.003)) verts.Add(new XYZ(p.X,p.Y,0)); }\n  var cs = verts.Select(v => { var s = inv.OfPoint(v); return new { intX = Math.Round(v.X*0.3048,4), intY = Math.Round(v.Y*0.3048,4), E = Math.Round(s.X*0.3048,3), N = Math.Round(s.Y*0.3048,3) }; }).ToList();\n  res.Add(new { id = e.Id.IntegerValue, name = e.Name, mark = e.get_Parameter(BuiltInParameter.ALL_MODEL_MARK)?.AsString(), workset = doc.GetWorksetTable().GetWorkset(e.WorksetId).Name, edges = string.Join(\"\", segs), corners = cs });\n}\nreturn new { site = pl.Name, ew = Math.Round(pp.EastWest*0.3048,4), ns = Math.Round(pp.NorthSouth*0.3048,4), elev = Math.Round(pp.Elevation*0.3048,4), angle = Math.Round(pp.Angle*180/Math.PI,6), propertyLines = res };",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.246Z"
+}

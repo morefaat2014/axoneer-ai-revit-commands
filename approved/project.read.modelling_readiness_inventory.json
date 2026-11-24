@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "project.read.modelling_readiness_inventory",
+    "name": "Modelling Readiness Inventory",
+    "description": "Saved automatically from a script that ran successfully.",
+    "aiDescription": "Script kept automatically after it ran successfully. Review its metadata before relying on it.",
+    "examples": [
+      "run the saved script project.read.modelling_readiness_inventory"
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:project.read.modelling_readiness_inventory",
+    "lastModifiedUtc": "2026-11-24T08:37:37.3045953Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var lv=new FilteredElementCollector(doc).OfClass(typeof(Level)).Cast<Level>().OrderBy(l=>l.Elevation).Select(l=>l.Id.IntegerValue+\" \"+l.Name+\" \"+Math.Round(l.Elevation*304.8)).ToList();\nvar cats=new[]{\"Doors\",\"Windows\",\"Parking\",\"Plumbing Fixtures\",\"Specialty Equipment\",\"Generic Models\",\"Columns\",\"Structural Columns\",\"Furniture\",\"Casework\",\"Mechanical Equipment\",\"Vertical Circulation\"};\nvar sy=new FilteredElementCollector(doc).OfClass(typeof(FamilySymbol)).Cast<FamilySymbol>().Where(s=>s.Category!=null&&cats.Contains(s.Category.Name)).Select(s=>{Func<string,string> g=n=>{var p=s.LookupParameter(n);return p==null?\"\":\" \"+n+\"=\"+p.AsValueString();};return s.Id.IntegerValue+\"|\"+s.Category.Name+\"|\"+s.Family.Name+\"|\"+s.Name+\"|\"+s.Family.FamilyPlacementType+g(\"Width\")+g(\"Length\")+g(\"Depth\")+g(\"Height\");}).ToList();\nvar wt=new FilteredElementCollector(doc).OfClass(typeof(WallType)).Cast<WallType>().Select(w=>w.Id.IntegerValue+\" \"+w.Name+\" \"+w.Kind+\" \"+Math.Round(w.Width*304.8)).ToList();\nvar st=new FilteredElementCollector(doc).OfClass(typeof(Autodesk.Revit.DB.Architecture.StairsType)).Cast<Autodesk.Revit.DB.Architecture.StairsType>().Select(s=>s.Id.IntegerValue+\" \"+s.Name+\" maxR \"+Math.Round(s.MaxRiserHeight*304.8)+\" minT \"+Math.Round(s.MinTreadDepth*304.8)+\" minW \"+Math.Round(s.MinRunWidth*304.8)).ToList();\nvar inst=new FilteredElementCollector(doc).WhereElementIsNotElementType().Where(e=>e.Category!=null&&e.Category.CategoryType==CategoryType.Model&&!(e is Material)).Select(e=>{var b=e.get_BoundingBox(null);return e.Id.IntegerValue+\"|\"+e.Category.Name+\"|\"+e.Name+(b==null?\"\":\"|\"+Math.Round(b.Min.X*304.8)+\",\"+Math.Round(b.Min.Y*304.8)+\",\"+Math.Round(b.Min.Z*304.8)+\" > \"+Math.Round(b.Max.X*304.8)+\",\"+Math.Round(b.Max.Y*304.8)+\",\"+Math.Round(b.Max.Z*304.8));}).Take(150).ToList();\nvar gr=new FilteredElementCollector(doc).OfClass(typeof(Grid)).Select(g=>g.Name).ToList();\nvar ph=doc.Phases.Cast<Phase>().Select(p=>p.Name).ToList();\nreturn new{lv,sy,wt,st,inst,gr,ph};",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.276Z"
+}

@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "parking.modify.lower_parking_surface",
+    "name": "Lower Parking Surface",
+    "description": "Set the parking surface to -7300: lower the 261 parking bays by 150 mm, extend the 87 wall bases down 150 mm, lower the base of the Parking and Ramp rooms 150 mm, and extend the Basement 2 plan view range down 200 mm so the bays stay visible. Doors, elevators and stairs stay at -7150.",
+    "aiDescription": "Set the parking surface to -7300: lower the 261 parking bays by 150 mm, extend the 87 wall bases down 150 mm, lower the base of the Parking and Ramp rooms 150 mm, and extend the Basement 2 plan view range down 200 mm so the bays stay visible. Doors, elevators and stairs stay at -7150.",
+    "examples": [
+      "Set the parking surface to -7300: lower the 261 parking bays by 150 mm, extend the 87 wall bases down 150 mm, lower the base of the Parking and Ramp rooms 150 mm, and extend the Basement 2 plan view range down 200 mm so the bays stay visible. Doors, elevators and stairs stay at -7150."
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Action",
+    "type": "Atomic",
+    "execution": "Modify",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": true,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Confirm",
+    "confirmationRequired": true,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:parking.modify.lower_parking_surface",
+    "lastModifiedUtc": "2026-11-24T09:08:17.3730475Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Action",
+  "transactionMode": "auto",
+  "code": "double o=-150/304.8;\nvar others=new FilteredElementCollector(doc).OfClass(typeof(FamilyInstance)).Cast<FamilyInstance>().Where(f=>f.Category!=null&&(f.Category.Id.IntegerValue==(int)BuiltInCategory.OST_Doors||f.Category.Id.IntegerValue==(int)BuiltInCategory.OST_SpecialityEquipment)).ToList();\nvar z0=others.ToDictionary(f=>f.Id.IntegerValue,f=>f.get_BoundingBox(null).Min.Z);\nvar ps=new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Parking).OfClass(typeof(FamilyInstance)).Cast<FamilyInstance>().Where(f=>(f.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS).AsString()??\"\").StartsWith(\"P-\")).ToList();\nvar ws=new FilteredElementCollector(doc).OfClass(typeof(Wall)).Cast<Wall>().Where(w=>w.WallType.Name.StartsWith(\"B2_\")).ToList();\nvar rs=new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Rooms).WhereElementIsNotElementType().Where(r=>{var n=r.get_Parameter(BuiltInParameter.ROOM_NAME).AsString();return n==\"Parking\"||n==\"Ramp\";}).ToList();\nif(ps.Count!=261||ws.Count!=87||rs.Count!=2) throw new Exception(\"Unexpected counts \"+ps.Count+\"/\"+ws.Count+\"/\"+rs.Count);\nforeach(var p in ps)p.get_Parameter(BuiltInParameter.INSTANCE_FREE_HOST_OFFSET_PARAM).Set(o);\nforeach(var w in ws)w.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET).Set(o);\nforeach(var r in rs)r.get_Parameter(BuiltInParameter.ROOM_LOWER_OFFSET).Set(o);\nvar v=(ViewPlan)doc.GetElement(new ElementId(312));\nif(v.ViewTemplateId!=ElementId.InvalidElementId) throw new Exception(\"View has a template\");\nvar vr=v.GetViewRange();vr.SetOffset(PlanViewPlane.ViewDepthPlane,-200/304.8);vr.SetOffset(PlanViewPlane.BottomClipPlane,-200/304.8);v.SetViewRange(vr);\ndoc.Regenerate();\nvar moved=others.Where(f=>Math.Abs(f.get_BoundingBox(null).Min.Z-z0[f.Id.IntegerValue])>0.001).ToList();\nif(moved.Count>0) throw new Exception(\"Doors/lifts moved: \"+moved.Count);\nreturn new{ps=ps.Count,ws=ws.Count,rs=rs.Count,unmoved=others.Count};",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.311Z"
+}

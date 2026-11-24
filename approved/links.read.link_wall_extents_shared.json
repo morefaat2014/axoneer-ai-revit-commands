@@ -1,0 +1,51 @@
+{
+  "definition": {
+    "commandId": "links.read.link_wall_extents_shared",
+    "name": "Link Wall Extents In Shared Coordinates",
+    "description": "Reports wall extents of named link instances in shared E/N coordinates and each link's own shared position.",
+    "aiDescription": "Reports wall extents of named link instances in shared E/N coordinates and each link's own shared position.",
+    "examples": [
+      "Reports wall extents of named link instances in shared E/N coordinates and each link's own shared position."
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Query",
+    "type": "Atomic",
+    "execution": "Read",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": false,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Trusted",
+    "confirmationRequired": false,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:links.read.link_wall_extents_shared",
+    "lastModifiedUtc": "2026-11-12T10:36:18.7740972Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Query",
+  "transactionMode": "auto",
+  "code": "var tr = doc.ActiveProjectLocation.GetTotalTransform().Inverse;\nvar res = new List<object>();\nforeach (var li in new FilteredElementCollector(doc).OfClass(typeof(RevitLinkInstance)).Cast<RevitLinkInstance>()) {\n  var nm = doc.GetElement(li.GetTypeId()).Name;\n  if (!(nm.Contains(\"Building 03 Shell\") || nm.Contains(\"Building 03 Internal\"))) continue;\n  var ld = li.GetLinkDocument(); if (ld == null) continue;\n  var t = li.GetTotalTransform();\n  double minX=double.MaxValue,minY=double.MaxValue,maxX=double.MinValue,maxY=double.MinValue; int n=0;\n  foreach (var w in new FilteredElementCollector(ld).OfCategory(BuiltInCategory.OST_Walls).WhereElementIsNotElementType()) {\n    var bb = w.get_BoundingBox(null); if (bb==null) continue; n++;\n    foreach (var p in new[]{bb.Min, bb.Max}) { var q = tr.OfPoint(t.OfPoint(p)); minX=Math.Min(minX,q.X);minY=Math.Min(minY,q.Y);maxX=Math.Max(maxX,q.X);maxY=Math.Max(maxY,q.Y);} }\n  var lp = ld.ActiveProjectLocation.GetProjectPosition(XYZ.Zero);\n  res.Add(new { nm, walls = n, sharedE = new[]{ Math.Round(minX*0.3048,1), Math.Round(maxX*0.3048,1)}, sharedN = new[]{Math.Round(minY*0.3048,1), Math.Round(maxY*0.3048,1)},\n    linkSite = ld.ActiveProjectLocation.Name, linkOriginEN = new { E = Math.Round(lp.EastWest*0.3048,3), N = Math.Round(lp.NorthSouth*0.3048,3), ang = Math.Round(lp.Angle*180/Math.PI,3) } });\n}\nreturn res;",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.192Z"
+}

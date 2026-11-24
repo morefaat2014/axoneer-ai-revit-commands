@@ -1,0 +1,58 @@
+{
+  "definition": {
+    "commandId": "parking.execute.place_bays_from_table",
+    "name": "Place Parking Bays From Table",
+    "description": "Place 261 M_Parking Space (4800 x 2400mm - 90 deg) parking bays on level Basement 2 at the positions in basement2_layout.json, rotated so the open end faces the aisle, with Comments set to each bay id (P-1 to P-261).",
+    "aiDescription": "Place 261 M_Parking Space (4800 x 2400mm - 90 deg) parking bays on level Basement 2 at the positions in basement2_layout.json, rotated so the open end faces the aisle, with Comments set to each bay id (P-1 to P-261).",
+    "examples": [
+      "Place 261 M_Parking Space (4800 x 2400mm - 90 deg) parking bays on level Basement 2 at the positions in basement2_layout.json, rotated so the open end faces the aisle, with Comments set to each bay id (P-1 to P-261)."
+    ],
+    "discipline": "ALL",
+    "category": "Generated",
+    "subcategory": "Action",
+    "type": "Atomic",
+    "execution": "Modify",
+    "linkAware": false,
+    "inputs": [],
+    "optionalInputs": [
+      {
+        "name": "bays",
+        "type": "Any",
+        "description": "Script argument 'bays'. Example: [[\"P-1\",1365,97682,0],[\"P-2\",3865,97682,0],[\"P-3\",7870,97682,0],[\"P-4\",10370,976....",
+        "required": false
+      }
+    ],
+    "output": {
+      "type": "Any",
+      "description": "Whatever the stored script returns"
+    },
+    "revitCategories": [],
+    "requiredParameters": [],
+    "permissions": {
+      "readModel": true,
+      "writeModel": true,
+      "readFiles": false,
+      "writeFiles": false,
+      "network": false,
+      "viewState": false,
+      "worksets": false
+    },
+    "trust": "Confirm",
+    "confirmationRequired": true,
+    "dependencies": [],
+    "minRevitVersion": 2021,
+    "maxRevitVersion": 0,
+    "status": "Approved",
+    "version": "1.0.0",
+    "author": "mrafaatFK2S3",
+    "source": "AiGenerated",
+    "codeReference": "user-library:parking.execute.place_bays_from_table",
+    "lastModifiedUtc": "2026-11-24T09:02:32.1393062Z",
+    "allowAdditionalArguments": true
+  },
+  "mode": "Action",
+  "transactionMode": "auto",
+  "code": "var sym=doc.GetElement(new ElementId(12963)) as FamilySymbol;\nif(!sym.IsActive){sym.Activate();doc.Regenerate();}\nvar lvl=doc.GetElement(new ElementId(311)) as Level;\ndouble k=1/304.8;\nvar bays=args[\"bays\"] as object[];\nvar created=new List<int>();\nforeach(var o in bays){\n var a=o as object[];\n string id=Convert.ToString(a[0]);double x=Convert.ToDouble(a[1]),y=Convert.ToDouble(a[2]),t=Convert.ToDouble(a[3]);\n var p=new XYZ(x*k,y*k,lvl.Elevation);\n var fi=doc.Create.NewFamilyInstance(p,sym,lvl,Autodesk.Revit.DB.Structure.StructuralType.NonStructural);\n if(Math.Abs(t)>0.001)ElementTransformUtils.RotateElement(doc,fi.Id,Line.CreateBound(p,p+XYZ.BasisZ),t*Math.PI/180.0);\n fi.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS).Set(id);\n created.Add(fi.Id.IntegerValue);\n}\nreturn new{count=created.Count,first=created.First(),last=created.Last()};",
+  "approvedBy": "Axoneer review",
+  "approvedUtc": "2026-11-24T12:28:17.299Z"
+}
