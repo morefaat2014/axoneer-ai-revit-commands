@@ -2,10 +2,10 @@
   "definition": {
     "commandId": "lines.read.setback_offset_from_plot_dry_run",
     "name": "Setback Offset From Plot (Dry Run)",
-    "description": "Saved automatically from a script that ran successfully.",
-    "aiDescription": "Script kept automatically after it ran successfully. Review its metadata before relying on it.",
+    "description": "Dry run: works out setback lines at given distances inside a plot (shared E/N metres) and the present distance of existing lines.",
+    "aiDescription": "Dry run: works out setback lines at given distances inside a plot (shared E/N metres) and the present distance of existing lines.",
     "examples": [
-      "run the saved script lines.read.setback_offset_from_plot_dry_run"
+      "work out the setback lines of this plot without changing anything"
     ],
     "discipline": "ALL",
     "category": "Generated",
@@ -18,27 +18,27 @@
       {
         "name": "longOffset",
         "type": "Number",
-        "description": "Script argument 'longOffset'. Example: 4.",
+        "description": "Script argument 'longOffset'.",
         "required": false,
         "default": 4
       },
       {
         "name": "shortOffset",
         "type": "Number",
-        "description": "Script argument 'shortOffset'. Example: 8.",
+        "description": "Script argument 'shortOffset'.",
         "required": false,
         "default": 8
       },
       {
         "name": "ids",
         "type": "IntegerArray",
-        "description": "Script argument 'ids'. Example: [12684896,12684897,12684898,12684899].",
+        "description": "Script argument 'ids'.",
         "required": false
       },
       {
         "name": "plot",
         "type": "Any",
-        "description": "Script argument 'plot'. Example: [[246541.102,2713875.06],[246534.412,2713893.918],[246496.721,2713880.567],[2465....",
+        "description": "Script argument 'plot'.",
         "required": false
       }
     ],
@@ -63,7 +63,7 @@
     "minRevitVersion": 2021,
     "maxRevitVersion": 0,
     "status": "Approved",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "mrafaatFK2S3",
     "source": "AiGenerated",
     "codeReference": "user-library:lines.read.setback_offset_from_plot_dry_run",
@@ -72,7 +72,7 @@
   },
   "mode": "Query",
   "transactionMode": "auto",
-  "code": "// plot given in sketch order: P01 -> P04 (short) -> P03 (long) -> P02 (short) -> P01 (long), all in shared metres\nvar P = new List<double[]>();\nforeach (var o in (object[])args[\"plot\"]) { var a = (object[])o; P.Add(new[]{ Convert.ToDouble(a[0]), Convert.ToDouble(a[1]) }); }\ndouble dl = Tama.Args.Get(args, \"longOffset\", 4.0), ds = Tama.Args.Get(args, \"shortOffset\", 8.0);\nint n = P.Count;\n// signed area for orientation\ndouble A = 0; for (int i=0;i<n;i++){ var p=P[i]; var q=P[(i+1)%n]; A += p[0]*q[1]-q[0]*p[1]; }\ndouble sgn = A > 0 ? 1 : -1; // CCW -> inward normal is left\nvar lens = new List<double>(); for (int i=0;i<n;i++){ var p=P[i]; var q=P[(i+1)%n]; lens.Add(Math.Sqrt(Math.Pow(q[0]-p[0],2)+Math.Pow(q[1]-p[1],2))); }\ndouble avg = lens.Average();\n// offset each edge line inward\nvar offs = new List<double[]>(); // point + dir\nfor (int i=0;i<n;i++){ var p=P[i]; var q=P[(i+1)%n]; double dx=q[0]-p[0], dy=q[1]-p[1], L=Math.Sqrt(dx*dx+dy*dy); dx/=L; dy/=L; double nx=-dy*sgn, ny=dx*sgn; double d = lens[i] > avg ? dl : ds; offs.Add(new[]{ p[0]+nx*d, p[1]+ny*d, dx, dy, d }); }\nFunc<double[],double[],double[]> isect = (a,b) => { double den = a[2]*b[3]-a[3]*b[2]; double t = ((b[0]-a[0])*b[3]-(b[1]-a[1])*b[2])/den; return new[]{ a[0]+a[2]*t, a[1]+a[3]*t }; };\nvar corners = new List<double[]>(); for (int i=0;i<n;i++) corners.Add(isect(offs[(i+n-1)%n], offs[i])); // corner i = start of offset edge i\nvar edges = new List<object>();\nfor (int i=0;i<n;i++){ var a=corners[i]; var b=corners[(i+1)%n]; edges.Add(new { edge = i, offset_m = offs[i][4], sE = Math.Round(a[0],3), sN = Math.Round(a[1],3), eE = Math.Round(b[0],3), eN = Math.Round(b[1],3), chord_m = Math.Round(Math.Sqrt(Math.Pow(b[0]-a[0],2)+Math.Pow(b[1]-a[1],2)),3) }); }\n// current distances of existing setback lines to plot edges\nvar inv = doc.ActiveProjectLocation.GetTotalTransform().Inverse;\nvar cur = new List<object>();\nforeach (var o in (object[])args[\"ids\"]) { var ce = doc.GetElement(new ElementId(Convert.ToInt32(o))) as CurveElement; var c = ce.GeometryCurve; var m = inv.OfPoint(c.Evaluate(0.5,true)); double mx=m.X*0.3048, my=m.Y*0.3048;\n  var dists = new List<double>(); for (int i=0;i<n;i++){ var p=P[i]; var q=P[(i+1)%n]; double dx=q[0]-p[0], dy=q[1]-p[1], L=Math.Sqrt(dx*dx+dy*dy); dists.Add(Math.Abs(((mx-p[0])*dy-(my-p[1])*dx)/L)); }\n  int k = dists.IndexOf(dists.Min()); cur.Add(new { id = ce.Id.IntegerValue, nearestPlotEdge = k, distanceNow_m = Math.Round(dists[k],3) }); }\nreturn new { plotEdgeLengths = lens.Select(l=>Math.Round(l,3)), proposed = edges, current = cur };",
+  "code": "// plot corners in order, in shared metres\nvar P = new List<double[]>();\nforeach (var o in (object[])args[\"plot\"]) { var a = (object[])o; P.Add(new[]{ Convert.ToDouble(a[0]), Convert.ToDouble(a[1]) }); }\ndouble dl = Tama.Args.Get(args, \"longOffset\", 4.0), ds = Tama.Args.Get(args, \"shortOffset\", 8.0);\nint n = P.Count;\n// signed area for orientation\ndouble A = 0; for (int i=0;i<n;i++){ var p=P[i]; var q=P[(i+1)%n]; A += p[0]*q[1]-q[0]*p[1]; }\ndouble sgn = A > 0 ? 1 : -1; // CCW -> inward normal is left\nvar lens = new List<double>(); for (int i=0;i<n;i++){ var p=P[i]; var q=P[(i+1)%n]; lens.Add(Math.Sqrt(Math.Pow(q[0]-p[0],2)+Math.Pow(q[1]-p[1],2))); }\ndouble avg = lens.Average();\n// offset each edge line inward\nvar offs = new List<double[]>(); // point + dir\nfor (int i=0;i<n;i++){ var p=P[i]; var q=P[(i+1)%n]; double dx=q[0]-p[0], dy=q[1]-p[1], L=Math.Sqrt(dx*dx+dy*dy); dx/=L; dy/=L; double nx=-dy*sgn, ny=dx*sgn; double d = lens[i] > avg ? dl : ds; offs.Add(new[]{ p[0]+nx*d, p[1]+ny*d, dx, dy, d }); }\nFunc<double[],double[],double[]> isect = (a,b) => { double den = a[2]*b[3]-a[3]*b[2]; double t = ((b[0]-a[0])*b[3]-(b[1]-a[1])*b[2])/den; return new[]{ a[0]+a[2]*t, a[1]+a[3]*t }; };\nvar corners = new List<double[]>(); for (int i=0;i<n;i++) corners.Add(isect(offs[(i+n-1)%n], offs[i])); // corner i = start of offset edge i\nvar edges = new List<object>();\nfor (int i=0;i<n;i++){ var a=corners[i]; var b=corners[(i+1)%n]; edges.Add(new { edge = i, offset_m = offs[i][4], sE = Math.Round(a[0],3), sN = Math.Round(a[1],3), eE = Math.Round(b[0],3), eN = Math.Round(b[1],3), chord_m = Math.Round(Math.Sqrt(Math.Pow(b[0]-a[0],2)+Math.Pow(b[1]-a[1],2)),3) }); }\n// current distances of existing setback lines to plot edges\nvar inv = doc.ActiveProjectLocation.GetTotalTransform().Inverse;\nvar cur = new List<object>();\nforeach (var o in (object[])args[\"ids\"]) { var ce = doc.GetElement(new ElementId(Convert.ToInt32(o))) as CurveElement; var c = ce.GeometryCurve; var m = inv.OfPoint(c.Evaluate(0.5,true)); double mx=m.X*0.3048, my=m.Y*0.3048;\n  var dists = new List<double>(); for (int i=0;i<n;i++){ var p=P[i]; var q=P[(i+1)%n]; double dx=q[0]-p[0], dy=q[1]-p[1], L=Math.Sqrt(dx*dx+dy*dy); dists.Add(Math.Abs(((mx-p[0])*dy-(my-p[1])*dx)/L)); }\n  int k = dists.IndexOf(dists.Min()); cur.Add(new { id = ce.Id.IntegerValue, nearestPlotEdge = k, distanceNow_m = Math.Round(dists[k],3) }); }\nreturn new { plotEdgeLengths = lens.Select(l=>Math.Round(l,3)), proposed = edges, current = cur };",
   "approvedBy": "Axoneer review",
-  "approvedUtc": "2026-11-24T12:28:17.239Z"
+  "approvedUtc": "2026-11-24T12:47:18.756Z"
 }

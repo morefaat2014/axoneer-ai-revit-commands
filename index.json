@@ -1,7 +1,7 @@
 {
   "format": 1,
-  "catalogVersion": "20261124-124119",
-  "generatedUtc": "2026-11-24T12:41:19.169Z",
+  "catalogVersion": "20261124-124720",
+  "generatedUtc": "2026-11-24T12:47:20.502Z",
   "commands": [
     {
       "commandId": "annotations.modify.delete_dimension_by_id",
@@ -132,23 +132,23 @@
     {
       "commandId": "floors.create.floors_from_polygons",
       "file": "approved/floors.create.floors_from_polygons.json",
-      "sha256": "5f63296df1a2d38841b16e60e039a927308f695fc58bba9f0f42717e27f92f6f",
-      "sizeBytes": 4514,
-      "version": "1.0.0"
+      "sha256": "cc6a1b9ee6a6a30305ec98260d0865352a61db0db73920340f665f937574fd73",
+      "sizeBytes": 4377,
+      "version": "1.0.1"
     },
     {
       "commandId": "floors.modify.move_floor_sketch_corner_to_shared_point",
       "file": "approved/floors.modify.move_floor_sketch_corner_to_shared_point.json",
-      "sha256": "9e3f6aff3b24261aed44ba472b5cf295094441b9cedc3347e2fb251963fec2b8",
-      "sizeBytes": 5289,
-      "version": "1.0.0"
+      "sha256": "737a03ff6b86cb17febb905151eb4d05e4871025fac47944be52f91a2b0c916e",
+      "sizeBytes": 5213,
+      "version": "1.0.1"
     },
     {
       "commandId": "floors.read.floor_sketch_in_shared_coordinates",
       "file": "approved/floors.read.floor_sketch_in_shared_coordinates.json",
-      "sha256": "43d45057d4ff9703fa34b16dfd8ee087ee2de237345a82fcb2a4b3d09d984737",
-      "sizeBytes": 3897,
-      "version": "1.0.0"
+      "sha256": "34d125df19d12b899093daceb02ec71b58c6e1fa1f8bb4bca049ea44ccc5f71f",
+      "sizeBytes": 3784,
+      "version": "1.0.1"
     },
     {
       "commandId": "grids.create.from_table",
@@ -174,16 +174,16 @@
     {
       "commandId": "lines.modify.offset_setback_lines_from_floor_boundary",
       "file": "approved/lines.modify.offset_setback_lines_from_floor_boundary.json",
-      "sha256": "3c92f01403403d0a30c636baddb5856e7a0ce7cc912d0a9b49add8eedb08f7fe",
-      "sizeBytes": 6430,
-      "version": "1.0.0"
+      "sha256": "f25e052e100a9a1eeeefbaa4fb8c40cc9842ac205564193cadaa37c329259986",
+      "sizeBytes": 6325,
+      "version": "1.0.1"
     },
     {
       "commandId": "lines.modify.realign_setback_line_to_floor_edge",
       "file": "approved/lines.modify.realign_setback_line_to_floor_edge.json",
-      "sha256": "dab8cc14cf4e897377a6b5628ab2891ad2d4693cf79beecf45a6e84c71c6da37",
-      "sizeBytes": 6311,
-      "version": "1.0.0"
+      "sha256": "d7ca537e581f97c52d480dce80b508e3edf280cee06daabd1b290bf06d9aa80f",
+      "sizeBytes": 5998,
+      "version": "1.0.1"
     },
     {
       "commandId": "lines.modify.refit_setback_lines_keep_offsets",
@@ -195,9 +195,9 @@
     {
       "commandId": "lines.modify.snap_curves_to_shared_corners",
       "file": "approved/lines.modify.snap_curves_to_shared_corners.json",
-      "sha256": "1ad804e0a87a2cfa102b176247da9daa6f176ca2fc2192f2a40da4bf4229350f",
-      "sizeBytes": 4028,
-      "version": "1.0.0"
+      "sha256": "ee22c6b644029e22b022ac3aad26be629be84369dd03f8323e60e6d523544385",
+      "sizeBytes": 3872,
+      "version": "1.0.1"
     },
     {
       "commandId": "lines.read.check_sketch_plane",
@@ -209,23 +209,23 @@
     {
       "commandId": "lines.read.curve_elements_in_shared_coordinates",
       "file": "approved/lines.read.curve_elements_in_shared_coordinates.json",
-      "sha256": "50e206eefe9698238611f460de7f4e239d654bb9b20a421e9beacd4a801e91e5",
-      "sizeBytes": 2827,
-      "version": "1.0.0"
+      "sha256": "92e9082613bfefc1fb0799d32b5f04746bb5ee22b4daaa90d694b67c24dd8c4a",
+      "sizeBytes": 2721,
+      "version": "1.0.1"
     },
     {
       "commandId": "lines.read.setback_lines_vs_plot_edges",
       "file": "approved/lines.read.setback_lines_vs_plot_edges.json",
-      "sha256": "be1862150ab8db4751bca2af242a20075eee42fb92a05edde975f0d34662983a",
-      "sizeBytes": 3456,
-      "version": "1.0.0"
+      "sha256": "72b28238d0b970cda4d1e55604018fa6040defacaff8fb7844d347f89e6a2494",
+      "sizeBytes": 3370,
+      "version": "1.0.1"
     },
     {
       "commandId": "lines.read.setback_offset_from_plot_dry_run",
       "file": "approved/lines.read.setback_offset_from_plot_dry_run.json",
-      "sha256": "e19f842ca1a162c378958c767a938e1f696395161df6501e6e3cbef52b9f339e",
-      "sizeBytes": 4970,
-      "version": "1.0.0"
+      "sha256": "f518c7c460aad7dec86d34556f87c2dbf06db2b4438e0bc4908472e73d686822",
+      "sizeBytes": 4841,
+      "version": "1.0.1"
     },
     {
       "commandId": "lines.read.setback_offsets_for_plots",
@@ -405,9 +405,9 @@
     {
       "commandId": "project.action.rename_current_site",
       "file": "approved/project.action.rename_current_site.json",
-      "sha256": "ff883eb0042daf1c4de3307d3fb609d1fce8d854cade3950be758a29867a60c9",
-      "sizeBytes": 2060,
-      "version": "1.0.0"
+      "sha256": "54464b7ea93d6e5389389c788ba79c9ac9c6af6985e60f48aa975ee6fba1ddfb",
+      "sizeBytes": 1987,
+      "version": "1.0.1"
     },
     {
       "commandId": "project.action.set_mirrored_site_angle",
@@ -419,23 +419,23 @@
     {
       "commandId": "project.action.set_secondary_site_position",
       "file": "approved/project.action.set_secondary_site_position.json",
-      "sha256": "52aefe3e234fb307779ff020cb80a87931650b2dcefce42ec4f4d280568b264a",
-      "sizeBytes": 4657,
-      "version": "1.0.0"
+      "sha256": "cfa98db9f20830c88c5c387e21ec66a0e0bae4300c0d3fba510ea31efe4bea4a",
+      "sizeBytes": 4529,
+      "version": "1.0.1"
     },
     {
       "commandId": "project.action.set_site_elevation_at_zero",
       "file": "approved/project.action.set_site_elevation_at_zero.json",
-      "sha256": "fa31f66cd1acedb38a5b411748d12da1a0aa8c92dd19a5863ee39d0be01cc1fb",
-      "sizeBytes": 3102,
-      "version": "1.0.0"
+      "sha256": "e3114bc05997462d2ea4d71c895409d725758368710996f1d1174592b3fb68bf",
+      "sizeBytes": 3080,
+      "version": "1.0.1"
     },
     {
       "commandId": "project.action.translate_site_to_match_property_line",
       "file": "approved/project.action.translate_site_to_match_property_line.json",
-      "sha256": "c704bda5281b5a4fec20f69699221122aece593e3d73ce838ac81c4d86f9b959",
-      "sizeBytes": 4723,
-      "version": "1.0.0"
+      "sha256": "ca3049b5f9e63f2282effda3969cdc7c074c3b9db8bbedc93899a89a7ce8e771",
+      "sizeBytes": 4598,
+      "version": "1.0.1"
     },
     {
       "commandId": "project.read.category_counts_by_level",
@@ -538,23 +538,23 @@
     {
       "commandId": "project.read.shared_points_to_internal_check",
       "file": "approved/project.read.shared_points_to_internal_check.json",
-      "sha256": "3656feb4d453b2610abc38fb92aa186a3af1d9606dc2d6a4aabd15a14cc94883",
-      "sizeBytes": 2955,
-      "version": "1.0.0"
+      "sha256": "6a32465c41ab974dd1998bff9e98514db04f408e4625fa9a1d442ea299d726b5",
+      "sizeBytes": 2913,
+      "version": "1.0.1"
     },
     {
       "commandId": "project.read.shared_points_to_internal_with_levels_floortypes",
       "file": "approved/project.read.shared_points_to_internal_with_levels_floortypes.json",
-      "sha256": "555f8292ac54d8729eceea20f258c4decc45a5dc31b97769be8f6dc7a352c66b",
-      "sizeBytes": 3212,
-      "version": "1.0.0"
+      "sha256": "0b79855f5a0ee6bde2830a3157c987b37cc881f655fa6c1ef0ff4efdef371bf1",
+      "sizeBytes": 3118,
+      "version": "1.0.1"
     },
     {
       "commandId": "project.read.sites_by_titles_any_doc",
       "file": "approved/project.read.sites_by_titles_any_doc.json",
-      "sha256": "790cd1eb735514245a7975d678b0c73fe3b545dec2e8dca22a01aabb214875d2",
-      "sizeBytes": 2794,
-      "version": "1.0.0"
+      "sha256": "4f92774e1eac119f14e21c81a28895d512798f8d9d65da499c7a508fb16da3a8",
+      "sizeBytes": 2699,
+      "version": "1.0.1"
     },
     {
       "commandId": "project.read.type_inventory_floors_stairs_railings",
@@ -573,9 +573,9 @@
     {
       "commandId": "qa.read.handover_doc_audit",
       "file": "approved/qa.read.handover_doc_audit.json",
-      "sha256": "760a44081df825fa6d9551ca39409acdc95097bc5783c5ba507a8bdd8f4ef3a3",
+      "sha256": "f9f59545b1bca0c3acf2d098fe31cd8d0dd6de5c04af66dd02281111c1faf59b",
       "sizeBytes": 4025,
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "commandId": "qa.read.host_model_quality_lod_sample",
@@ -643,9 +643,9 @@
     {
       "commandId": "site.read.property_line_vs_target_shared_coords",
       "file": "approved/site.read.property_line_vs_target_shared_coords.json",
-      "sha256": "fa18b303ac4e00b3634ddd8fd5b4b2c844d410ffe925f6cc34a9ee9bad5357c7",
-      "sizeBytes": 3859,
-      "version": "1.0.0"
+      "sha256": "f9717c3c72d8e3694ccaece276ccd8f6b4256e63bc01b4d3ca86b1582853481f",
+      "sizeBytes": 3765,
+      "version": "1.0.1"
     },
     {
       "commandId": "site.read.selected_property_lines_corners",

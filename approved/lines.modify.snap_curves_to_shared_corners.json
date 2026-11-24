@@ -19,20 +19,20 @@
       {
         "name": "searchRadiusM",
         "type": "Number",
-        "description": "Script argument 'searchRadiusM'. Example: 0.1.",
+        "description": "Script argument 'searchRadiusM'.",
         "required": false,
         "default": 0.1
       },
       {
         "name": "corners",
         "type": "Any",
-        "description": "Script argument 'corners'. Example: [[246532.222,2713876.162],[246528.208,2713887.477],[246505.597,2713879.467],[246....",
+        "description": "Script argument 'corners'.",
         "required": false
       },
       {
         "name": "ids",
         "type": "IntegerArray",
-        "description": "Script argument 'ids'. Example: [12684896,12684897,12684898,12684899].",
+        "description": "Script argument 'ids'.",
         "required": false
       }
     ],
@@ -57,7 +57,7 @@
     "minRevitVersion": 2021,
     "maxRevitVersion": 0,
     "status": "Approved",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "mrafaatFK2S3",
     "source": "AiGenerated",
     "codeReference": "user-library:lines.modify.snap_curves_to_shared_corners",
@@ -68,5 +68,5 @@
   "transactionMode": "auto",
   "code": "var rad = Tama.Args.Get(args, \"searchRadiusM\", 0.1) / 0.3048;\nvar tf = doc.ActiveProjectLocation.GetTotalTransform(); var inv = tf.Inverse;\nvar tgts = new List<XYZ>();\nforeach (var o in (object[])args[\"corners\"]) { var a = (object[])o; tgts.Add(tf.OfPoint(new XYZ(Convert.ToDouble(a[0])/0.3048, Convert.ToDouble(a[1])/0.3048, 0))); }\nvar report = new List<object>();\nforeach (var o in (object[])args[\"ids\"]) {\n  var ce = doc.GetElement(new ElementId(Convert.ToInt32(o))) as CurveElement;\n  var c = ce.GeometryCurve; var a = c.GetEndPoint(0); var b = c.GetEndPoint(1);\n  Func<XYZ,XYZ> snap = p => { var t = tgts.OrderBy(q => new XYZ(q.X-p.X, q.Y-p.Y, 0).GetLength()).First(); if (new XYZ(t.X-p.X, t.Y-p.Y, 0).GetLength() > rad) throw new Exception(\"No target corner near an end of \" + ce.Id.IntegerValue); return new XYZ(t.X, t.Y, p.Z); };\n  var na = snap(a); var nb = snap(b);\n  Curve nc;\n  if (c is Arc) {\n    var mid = c.Evaluate(0.5, true); var cm = (a + b) / 2;\n    double sag = (mid - cm).DotProduct(XYZ.BasisZ.CrossProduct((b - a).Normalize()));\n    var nm = (na + nb) / 2 + XYZ.BasisZ.CrossProduct((nb - na).Normalize()) * sag;\n    nc = Math.Abs(sag) < 1e-9 ? (Curve)Line.CreateBound(na, nb) : Arc.Create(na, nb, nm);\n  } else nc = Line.CreateBound(na, nb);\n  ce.SetGeometryCurve(nc, true);\n  var s0 = inv.OfPoint(na); var s1 = inv.OfPoint(nb);\n  report.Add(new { id = ce.Id.IntegerValue, type = c.GetType().Name, moved_mm = Math.Round(Math.Max(a.DistanceTo(na), b.DistanceTo(nb))*304.8,1), sE = Math.Round(s0.X*0.3048,3), sN = Math.Round(s0.Y*0.3048,3), eE = Math.Round(s1.X*0.3048,3), eN = Math.Round(s1.Y*0.3048,3), len_m = Math.Round(nc.Length*0.3048,3) });\n}\nreturn report;",
   "approvedBy": "Axoneer review",
-  "approvedUtc": "2026-11-24T12:28:17.240Z"
+  "approvedUtc": "2026-11-24T12:47:18.747Z"
 }

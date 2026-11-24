@@ -19,35 +19,35 @@
       {
         "name": "locationName",
         "type": "String",
-        "description": "Script argument 'locationName'. Example: \"5 BR TYPE A (5 BR TYPE A-MIRROR)\".",
+        "description": "Script argument 'locationName'.",
         "required": false,
         "default": ""
       },
       {
         "name": "ew",
         "type": "Number",
-        "description": "Script argument 'ew'. Example: 246424.7168.",
+        "description": "Script argument 'ew'.",
         "required": false,
         "default": 0
       },
       {
         "name": "ns",
         "type": "Number",
-        "description": "Script argument 'ns'. Example: 2713744.5936.",
+        "description": "Script argument 'ns'.",
         "required": false,
         "default": 0
       },
       {
         "name": "elevation",
         "type": "Number",
-        "description": "Script argument 'elevation'. Example: 3.951.",
+        "description": "Script argument 'elevation'.",
         "required": false,
         "default": 0
       },
       {
         "name": "angleDeg",
         "type": "Number",
-        "description": "Script argument 'angleDeg'. Example: 94.246703.",
+        "description": "Script argument 'angleDeg'.",
         "required": false,
         "default": 0
       }
@@ -73,7 +73,7 @@
     "minRevitVersion": 2021,
     "maxRevitVersion": 0,
     "status": "Approved",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "mrafaatFK2S3",
     "source": "AiGenerated",
     "codeReference": "user-library:project.action.set_secondary_site_position",
@@ -84,5 +84,5 @@
   "transactionMode": "auto",
   "code": "double ft = 0.3048;\nstring name = Tama.Args.Get(args, \"locationName\", \"\");\ndouble ew = Tama.Args.Get(args, \"ew\", 0.0), ns = Tama.Args.Get(args, \"ns\", 0.0), el = Tama.Args.Get(args, \"elevation\", 0.0), ang = Tama.Args.Get(args, \"angleDeg\", 0.0);\n\nProjectLocation target = null;\nforeach (ProjectLocation pl in doc.ProjectLocations) if (pl.Name == name) target = pl;\nif (target == null) throw new Exception(\"Location not found: \" + name);\nif (target.Id == doc.ActiveProjectLocation.Id) throw new Exception(\"Target is the current site - refused.\");\nif (WorksharingUtils.GetCheckoutStatus(doc, target.Id) == CheckoutStatus.OwnedByOtherUser) throw new Exception(\"Site owned by another user.\");\n\nvar act = doc.ActiveProjectLocation;\nvar actBefore = act.GetProjectPosition(XYZ.Zero);\nvar sp = new FilteredElementCollector(doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().First(b => b.IsShared);\nvar spBefore = sp.SharedPosition;\nvar oldPos = target.GetProjectPosition(XYZ.Zero);\n\nvar pp = target.GetProjectPosition(XYZ.Zero);\npp.EastWest = ew / ft; pp.NorthSouth = ns / ft; pp.Elevation = el / ft; pp.Angle = ang * Math.PI / 180;\ntarget.SetProjectPosition(XYZ.Zero, pp);\ndoc.Regenerate();\n\nvar a2 = act.GetProjectPosition(XYZ.Zero);\nif (Math.Abs(a2.EastWest-actBefore.EastWest)+Math.Abs(a2.NorthSouth-actBefore.NorthSouth)+Math.Abs(a2.Elevation-actBefore.Elevation) > 0.003 || Math.Abs(a2.Angle-actBefore.Angle) > 1e-8)\n  throw new Exception(\"Current site changed - rolled back.\");\nif (sp.SharedPosition.DistanceTo(spBefore) > 0.003) throw new Exception(\"Survey point changed - rolled back.\");\n\nvar n = target.GetProjectPosition(XYZ.Zero);\nFunc<ProjectPosition, object> f = p => new { ew = Math.Round(p.EastWest*ft,4), ns = Math.Round(p.NorthSouth*ft,4), elev = Math.Round(p.Elevation*ft,4), angle = Math.Round(p.Angle*180/Math.PI,6) };\nreturn new { site = target.Name, before = f(oldPos), after = f(n), currentSite = act.Name, currentUnchanged = f(a2) };",
   "approvedBy": "Axoneer review",
-  "approvedUtc": "2026-11-24T12:28:17.171Z"
+  "approvedUtc": "2026-11-24T12:47:18.785Z"
 }

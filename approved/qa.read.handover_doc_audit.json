@@ -33,10 +33,10 @@
     "trust": "Trusted",
     "confirmationRequired": false,
     "dependencies": [],
-    "minRevitVersion": 2021,
+    "minRevitVersion": 2022,
     "maxRevitVersion": 0,
     "status": "Approved",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "mrafaatFK2S3",
     "source": "AiGenerated",
     "codeReference": "user-library:qa.read.handover_doc_audit",
@@ -47,5 +47,5 @@
   "transactionMode": "auto",
   "code": "var pi = doc.ProjectInformation;\nvar piParams = new List<object>();\nforeach (Parameter p in pi.Parameters) {\n  string v = p.StorageType == StorageType.String ? p.AsString() : p.AsValueString();\n  if (!string.IsNullOrWhiteSpace(v)) piParams.Add(new { n = p.Definition.Name, v });\n}\nvar revs = new FilteredElementCollector(doc).OfClass(typeof(Revision)).Cast<Revision>()\n  .Select(r => new { seq = r.SequenceNumber, date = r.RevisionDate, desc = r.Description, issued = r.Issued }).ToList();\nvar tbs = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_TitleBlocks).WhereElementIsNotElementType()\n  .Cast<FamilyInstance>().GroupBy(t => t.Symbol.FamilyName + \" : \" + t.Symbol.Name).Select(g => new { tb = g.Key, n = g.Count() }).ToList();\nvar tbYesNo = new List<object>();\nvar tb1 = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_TitleBlocks).WhereElementIsNotElementType().FirstElement();\nif (tb1 != null) foreach (Parameter p in tb1.Parameters) if (p.StorageType == StorageType.Integer && p.Definition.GetDataType() == SpecTypeId.Boolean.YesNo) tbYesNo.Add(new { n = p.Definition.Name, v = p.AsInteger() });\nvar cad = new FilteredElementCollector(doc).OfClass(typeof(ImportInstance)).Cast<ImportInstance>()\n  .GroupBy(i => (i.Category != null ? i.Category.Name : \"?\") + \"|linked:\" + i.IsLinked + \"|viewSpecific:\" + i.ViewSpecific).Select(g => new { k = g.Key, n = g.Count() }).ToList();\nvar schedOnSheets = new FilteredElementCollector(doc).OfClass(typeof(ScheduleSheetInstance)).Cast<ScheduleSheetInstance>().Count(s => !s.IsTitleblockRevisionSchedule);\nvar inPlace = new FilteredElementCollector(doc).OfClass(typeof(FamilyInstance)).Cast<FamilyInstance>().Count(f => f.Symbol.Family.IsInPlace);\nvar modelCats = new FilteredElementCollector(doc).WhereElementIsNotElementType().Where(e => e.Category != null && e.Category.CategoryType == CategoryType.Model && !(e is RevitLinkInstance))\n  .GroupBy(e => e.Category.Name).Select(g => new { c = g.Key, n = g.Count() }).OrderByDescending(x => x.n).Take(15).ToList();\nreturn new { piParams, revs, tbs, tbYesNo, cad, schedOnSheets, inPlace, modelCats };",
   "approvedBy": "Axoneer review",
-  "approvedUtc": "2026-11-24T12:28:17.176Z"
+  "approvedUtc": "2026-11-24T12:47:18.816Z"
 }

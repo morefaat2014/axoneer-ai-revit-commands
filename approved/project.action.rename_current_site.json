@@ -5,7 +5,7 @@
     "description": "Renames the current project site (location) without changing its values.",
     "aiDescription": "Renames the current project site (location) without changing its values.",
     "examples": [
-      "rename the current site to 7-VI-096"
+      "rename the current site"
     ],
     "discipline": "ALL",
     "category": "Generated",
@@ -13,16 +13,15 @@
     "type": "Atomic",
     "execution": "Modify",
     "linkAware": false,
-    "inputs": [],
-    "optionalInputs": [
+    "inputs": [
       {
         "name": "newName",
         "type": "String",
-        "description": "Script argument 'newName'. Example: \"7-VI-096 (6 BR TYPE A)\".",
-        "required": false,
-        "default": ""
+        "description": "Script argument 'newName'.",
+        "required": true
       }
     ],
+    "optionalInputs": [],
     "output": {
       "type": "Any",
       "description": "Whatever the stored script returns"
@@ -44,7 +43,7 @@
     "minRevitVersion": 2021,
     "maxRevitVersion": 0,
     "status": "Approved",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "mrafaatFK2S3",
     "source": "AiGenerated",
     "codeReference": "user-library:project.action.rename_current_site",
@@ -55,5 +54,5 @@
   "transactionMode": "auto",
   "code": "string newName = Tama.Args.Get(args, \"newName\", \"\");\nvar act = doc.ActiveProjectLocation;\nforeach (ProjectLocation pl in doc.ProjectLocations) if (pl.Name == newName && pl.Id != act.Id) throw new Exception(\"A site with that name already exists.\");\nstring old = act.Name;\nact.Name = newName;\nreturn new { renamed = old + \" -> \" + act.Name };",
   "approvedBy": "Axoneer review",
-  "approvedUtc": "2026-11-24T12:28:17.205Z"
+  "approvedUtc": "2026-11-24T12:47:18.778Z"
 }

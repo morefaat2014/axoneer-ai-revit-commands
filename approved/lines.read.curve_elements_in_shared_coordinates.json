@@ -2,10 +2,10 @@
   "definition": {
     "commandId": "lines.read.curve_elements_in_shared_coordinates",
     "name": "Curve Elements in Shared Coordinates",
-    "description": "Saved automatically from a script that ran successfully.",
-    "aiDescription": "Script kept automatically after it ran successfully. Review its metadata before relying on it.",
+    "description": "Lists the ends of given model lines in shared E/N metres, with length, style, pin state and checkout status.",
+    "aiDescription": "Lists the ends of given model lines in shared E/N metres, with length, style, pin state and checkout status.",
     "examples": [
-      "run the saved script lines.read.curve_elements_in_shared_coordinates"
+      "show these lines in shared coordinates"
     ],
     "discipline": "ALL",
     "category": "Generated",
@@ -18,13 +18,13 @@
       {
         "name": "ids",
         "type": "IntegerArray",
-        "description": "Script argument 'ids'. Example: [12684896,12684897,12684898,12684899].",
+        "description": "Script argument 'ids'.",
         "required": false
       },
       {
         "name": "plot",
         "type": "Any",
-        "description": "Script argument 'plot'. Example: [[246541.102,2713875.06],[246503.391,2713861.722],[246496.721,2713880.567],[2465....",
+        "description": "Script argument 'plot'.",
         "required": false
       }
     ],
@@ -49,7 +49,7 @@
     "minRevitVersion": 2021,
     "maxRevitVersion": 0,
     "status": "Approved",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "mrafaatFK2S3",
     "source": "AiGenerated",
     "codeReference": "user-library:lines.read.curve_elements_in_shared_coordinates",
@@ -60,5 +60,5 @@
   "transactionMode": "auto",
   "code": "var inv = doc.ActiveProjectLocation.GetTotalTransform().Inverse;\nvar res = new List<object>();\nforeach (var o in (object[])args[\"ids\"]) {\n  var ce = doc.GetElement(new ElementId(Convert.ToInt32(o))) as CurveElement;\n  var c = ce.GeometryCurve; var a = inv.OfPoint(c.GetEndPoint(0)); var b = inv.OfPoint(c.GetEndPoint(1));\n  var st = WorksharingUtils.GetCheckoutStatus(doc, ce.Id).ToString();\n  res.Add(new { id = ce.Id.IntegerValue, type = c.GetType().Name, len_m = Math.Round(c.Length*0.3048,3), sE = Math.Round(a.X*0.3048,3), sN = Math.Round(a.Y*0.3048,3), eE = Math.Round(b.X*0.3048,3), eN = Math.Round(b.Y*0.3048,3), style = ce.LineStyle?.Name, sketchPlane = ce.SketchPlane?.Name, pinned = ce.Pinned, checkout = st, ownerView = ce.OwnerViewId.IntegerValue });\n}\nreturn new { doc = doc.Title, lines = res };",
   "approvedBy": "Axoneer review",
-  "approvedUtc": "2026-11-24T12:28:17.237Z"
+  "approvedUtc": "2026-11-24T12:47:18.750Z"
 }

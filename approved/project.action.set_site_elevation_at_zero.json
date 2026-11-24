@@ -5,7 +5,7 @@
     "description": "Sets the shared elevation at internal Z=0 of a named project location (site) to a target value in metres, keeping angle and E/W, N/S unchanged.",
     "aiDescription": "Sets the shared elevation at internal Z=0 of a named project location (site) to a target value in metres, keeping angle and E/W, N/S unchanged.",
     "examples": [
-      "set the zero level elevation of site 7-VI-097 to 3.507 m"
+      "set the zero level elevation of a named site to 3.5 m"
     ],
     "discipline": "ALL",
     "category": "Generated",
@@ -13,23 +13,21 @@
     "type": "Atomic",
     "execution": "Modify",
     "linkAware": false,
-    "inputs": [],
-    "optionalInputs": [
+    "inputs": [
       {
         "name": "siteKey",
         "type": "String",
-        "description": "Script argument 'siteKey'. Example: \"7-VI-097\".",
-        "required": false,
-        "default": "7-VI-097"
+        "description": "Script argument 'siteKey'.",
+        "required": true
       },
       {
         "name": "elevationMetres",
         "type": "Number",
-        "description": "Script argument 'elevationMetres'. Example: 3.507.",
-        "required": false,
-        "default": 3.507
+        "description": "Script argument 'elevationMetres'.",
+        "required": true
       }
     ],
+    "optionalInputs": [],
     "output": {
       "type": "Any",
       "description": "Whatever the stored script returns"
@@ -51,7 +49,7 @@
     "minRevitVersion": 2021,
     "maxRevitVersion": 0,
     "status": "Approved",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "mrafaatFK2S3",
     "source": "AiGenerated",
     "codeReference": "user-library:project.action.set_site_elevation_at_zero",
@@ -60,7 +58,7 @@
   },
   "mode": "Action",
   "transactionMode": "auto",
-  "code": "string siteKey = Tama.Args.Get(args, \"siteKey\", \"7-VI-097\");\ndouble targetM = Tama.Args.Get(args, \"elevationMetres\", 3.507);\ndouble targetFt = targetM / 0.3048;\n\nvar locs = doc.ProjectLocations.Cast<ProjectLocation>().Where(l => l.Name.Contains(siteKey)).ToList();\nif (locs.Count != 1) throw new Exception(\"Expected exactly one site matching '\" + siteKey + \"', found \" + locs.Count);\nvar loc = locs[0];\n\nProjectPosition pp = loc.GetProjectPosition(XYZ.Zero);\ndouble beforeM = pp.Elevation * 0.3048;\ndouble ew = pp.EastWest, ns = pp.NorthSouth, ang = pp.Angle;\n\npp.Elevation = targetFt;\nloc.SetProjectPosition(XYZ.Zero, pp);\n\nProjectPosition after = loc.GetProjectPosition(XYZ.Zero);\nreturn new {\n  site = loc.Name,\n  elevationBeforeM = beforeM,\n  elevationAfterM = after.Elevation * 0.3048,\n  eastWestUnchanged = Math.Abs(after.EastWest - ew) < 1e-9,\n  northSouthUnchanged = Math.Abs(after.NorthSouth - ns) < 1e-9,\n  angleUnchanged = Math.Abs(after.Angle - ang) < 1e-9\n};",
+  "code": "string siteKey = Tama.Args.Get(args, \"siteKey\", \"\");\nif (siteKey.Trim().Length == 0) throw new Exception(\"Give the site name (siteKey).\");\ndouble targetM = Tama.Args.Get(args, \"elevationMetres\", 0.0);\ndouble targetFt = targetM / 0.3048;\n\nvar locs = doc.ProjectLocations.Cast<ProjectLocation>().Where(l => l.Name.Contains(siteKey)).ToList();\nif (locs.Count != 1) throw new Exception(\"Expected exactly one site matching '\" + siteKey + \"', found \" + locs.Count);\nvar loc = locs[0];\n\nProjectPosition pp = loc.GetProjectPosition(XYZ.Zero);\ndouble beforeM = pp.Elevation * 0.3048;\ndouble ew = pp.EastWest, ns = pp.NorthSouth, ang = pp.Angle;\n\npp.Elevation = targetFt;\nloc.SetProjectPosition(XYZ.Zero, pp);\n\nProjectPosition after = loc.GetProjectPosition(XYZ.Zero);\nreturn new {\n  site = loc.Name,\n  elevationBeforeM = beforeM,\n  elevationAfterM = after.Elevation * 0.3048,\n  eastWestUnchanged = Math.Abs(after.EastWest - ew) < 1e-9,\n  northSouthUnchanged = Math.Abs(after.NorthSouth - ns) < 1e-9,\n  angleUnchanged = Math.Abs(after.Angle - ang) < 1e-9\n};",
   "approvedBy": "Axoneer review",
-  "approvedUtc": "2026-11-24T12:28:17.151Z"
+  "approvedUtc": "2026-11-24T12:47:18.788Z"
 }
