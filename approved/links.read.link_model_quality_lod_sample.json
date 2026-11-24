@@ -2,10 +2,10 @@
   "definition": {
     "commandId": "links.read.link_model_quality_lod_sample",
     "name": "Link Model Quality And LOD Sample",
-    "description": "For named linked models, reports element counts by key ARC category, parameter fill rates, generic walls, in-place families, CAD imports, warnings and unplaced rooms.",
-    "aiDescription": "For named linked models, reports element counts by key ARC category, parameter fill rates, generic walls, in-place families, CAD imports, warnings and unplaced rooms.",
+    "description": "For loaded links (all, or those whose name contains one of the given texts), reports element counts by key category, parameter fill rates, generic walls, in-place families, CAD imports, warnings and unplaced rooms.",
+    "aiDescription": "For loaded links (all, or those whose name contains one of the given texts), reports element counts by key category, parameter fill rates, generic walls, in-place families, CAD imports, warnings and unplaced rooms.",
     "examples": [
-      "For named linked models, reports element counts by key ARC category, parameter fill rates, generic walls, in-place families, CAD imports, warnings and unplaced rooms."
+      "check the model quality of the linked models"
     ],
     "discipline": "ALL",
     "category": "Generated",
@@ -14,7 +14,15 @@
     "execution": "Read",
     "linkAware": false,
     "inputs": [],
-    "optionalInputs": [],
+    "optionalInputs": [
+      {
+        "name": "names",
+        "type": "String",
+        "description": "Comma separated texts in the link names; empty checks every loaded link.",
+        "required": false,
+        "default": ""
+      }
+    ],
     "output": {
       "type": "Any",
       "description": "Whatever the stored script returns"
@@ -36,7 +44,7 @@
     "minRevitVersion": 2021,
     "maxRevitVersion": 0,
     "status": "Approved",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "mrafaatFK2S3",
     "source": "AiGenerated",
     "codeReference": "user-library:links.read.link_model_quality_lod_sample",
@@ -45,7 +53,7 @@
   },
   "mode": "Query",
   "transactionMode": "auto",
-  "code": "var names = new[]{\"Building 03 Shell\",\"Building 03 Internal\",\"1BR Type A.rvt\",\"2BR Type A.rvt\",\"Staircase\"};\nvar seen = new HashSet<string>(); var res = new List<object>();\nFunc<Element,string,bool> filled = (e,pn) => { var p = e.LookupParameter(pn); if (p==null || !p.HasValue) { var t = e.Document.GetElement(e.GetTypeId()); if (t==null) return false; p = t.LookupParameter(pn); if (p==null||!p.HasValue) return false; }\n  var v = p.StorageType==StorageType.String ? p.AsString() : p.AsValueString(); return !string.IsNullOrWhiteSpace(v); };\nforeach (var li in new FilteredElementCollector(doc).OfClass(typeof(RevitLinkInstance)).Cast<RevitLinkInstance>()) {\n  var nm = doc.GetElement(li.GetTypeId()).Name;\n  if (!names.Any(n => nm.Contains(n)) || seen.Contains(nm)) continue; seen.Add(nm);\n  var ld = li.GetLinkDocument(); if (ld == null) continue;\n  var cats = new[]{BuiltInCategory.OST_Walls, BuiltInCategory.OST_Doors, BuiltInCategory.OST_Windows, BuiltInCategory.OST_Floors, BuiltInCategory.OST_Ceilings, BuiltInCategory.OST_Stairs, BuiltInCategory.OST_Railings, BuiltInCategory.OST_Rooms, BuiltInCategory.OST_CurtainWallPanels, BuiltInCategory.OST_GenericModel, BuiltInCategory.OST_Furniture, BuiltInCategory.OST_PlumbingFixtures};\n  var counts = cats.ToDictionary(c => c.ToString().Replace(\"OST_\",\"\"), c => new FilteredElementCollector(ld).OfCategory(c).WhereElementIsNotElementType().GetElementCount());\n  var fill = new Dictionary<string,object>();\n  foreach (var c in new[]{BuiltInCategory.OST_Walls, BuiltInCategory.OST_Doors, BuiltInCategory.OST_Windows, BuiltInCategory.OST_Floors}) {\n    var els = new FilteredElementCollector(ld).OfCategory(c).WhereElementIsNotElementType().ToList(); if (els.Count==0) continue;\n    fill[c.ToString().Replace(\"OST_\",\"\")] = new[]{\"Type Mark\",\"Fire Rating\",\"OmniClass Number\",\"Assembly Code\",\"Description\",\"Mark\"}.ToDictionary(pn => pn, pn => Math.Round(100.0*els.Count(e=>filled(e,pn))/els.Count));\n  }\n  var genericWalls = new FilteredElementCollector(ld).OfCategory(BuiltInCategory.OST_Walls).WhereElementIsNotElementType().Count(e => { var t = ld.GetElement(e.GetTypeId()); return t!=null && t.Name.ToLower().Contains(\"generic\"); });\n  var inPlace = new FilteredElementCollector(ld).OfClass(typeof(FamilyInstance)).Cast<FamilyInstance>().Count(f => f.Symbol.Family.IsInPlace);\n  var cad = new FilteredElementCollector(ld).OfClass(typeof(ImportInstance)).Cast<ImportInstance>().Count(i => !i.IsLinked);\n  var cadLinked = new FilteredElementCollector(ld).OfClass(typeof(ImportInstance)).Cast<ImportInstance>().Count(i => i.IsLinked);\n  var warns = ld.GetWarnings();\n  var topWarn = warns.GroupBy(w => w.GetDescriptionText()).OrderByDescending(g=>g.Count()).Take(5).Select(g=>new{w=g.Key.Length>90?g.Key.Substring(0,90):g.Key,n=g.Count()}).ToList();\n  var rooms = new FilteredElementCollector(ld).OfCategory(BuiltInCategory.OST_Rooms).Cast<SpatialElement>().ToList();\n  res.Add(new { nm, counts, genericWalls, fill, inPlace, cadImported = cad, cadLinked, warnings = warns.Count, topWarn, roomsUnplacedOrZero = rooms.Count(r => r.Area <= 0) });\n}\nreturn res;",
+  "code": "var names = Tama.Args.Get(args, \"names\", \"\").Split(',').Select(s => s.Trim()).Where(s => s.Length > 0).ToArray();\nvar seen = new HashSet<string>(); var res = new List<object>();\nFunc<Element,string,bool> filled = (e,pn) => { var p = e.LookupParameter(pn); if (p==null || !p.HasValue) { var t = e.Document.GetElement(e.GetTypeId()); if (t==null) return false; p = t.LookupParameter(pn); if (p==null||!p.HasValue) return false; }\n  var v = p.StorageType==StorageType.String ? p.AsString() : p.AsValueString(); return !string.IsNullOrWhiteSpace(v); };\nforeach (var li in new FilteredElementCollector(doc).OfClass(typeof(RevitLinkInstance)).Cast<RevitLinkInstance>()) {\n  var nm = doc.GetElement(li.GetTypeId()).Name;\n  if ((names.Length > 0 && !names.Any(n => nm.Contains(n))) || seen.Contains(nm)) continue; seen.Add(nm);\n  var ld = li.GetLinkDocument(); if (ld == null) continue;\n  var cats = new[]{BuiltInCategory.OST_Walls, BuiltInCategory.OST_Doors, BuiltInCategory.OST_Windows, BuiltInCategory.OST_Floors, BuiltInCategory.OST_Ceilings, BuiltInCategory.OST_Stairs, BuiltInCategory.OST_Railings, BuiltInCategory.OST_Rooms, BuiltInCategory.OST_CurtainWallPanels, BuiltInCategory.OST_GenericModel, BuiltInCategory.OST_Furniture, BuiltInCategory.OST_PlumbingFixtures};\n  var counts = cats.ToDictionary(c => c.ToString().Replace(\"OST_\",\"\"), c => new FilteredElementCollector(ld).OfCategory(c).WhereElementIsNotElementType().GetElementCount());\n  var fill = new Dictionary<string,object>();\n  foreach (var c in new[]{BuiltInCategory.OST_Walls, BuiltInCategory.OST_Doors, BuiltInCategory.OST_Windows, BuiltInCategory.OST_Floors}) {\n    var els = new FilteredElementCollector(ld).OfCategory(c).WhereElementIsNotElementType().ToList(); if (els.Count==0) continue;\n    fill[c.ToString().Replace(\"OST_\",\"\")] = new[]{\"Type Mark\",\"Fire Rating\",\"OmniClass Number\",\"Assembly Code\",\"Description\",\"Mark\"}.ToDictionary(pn => pn, pn => Math.Round(100.0*els.Count(e=>filled(e,pn))/els.Count));\n  }\n  var genericWalls = new FilteredElementCollector(ld).OfCategory(BuiltInCategory.OST_Walls).WhereElementIsNotElementType().Count(e => { var t = ld.GetElement(e.GetTypeId()); return t!=null && t.Name.ToLower().Contains(\"generic\"); });\n  var inPlace = new FilteredElementCollector(ld).OfClass(typeof(FamilyInstance)).Cast<FamilyInstance>().Count(f => f.Symbol.Family.IsInPlace);\n  var cad = new FilteredElementCollector(ld).OfClass(typeof(ImportInstance)).Cast<ImportInstance>().Count(i => !i.IsLinked);\n  var cadLinked = new FilteredElementCollector(ld).OfClass(typeof(ImportInstance)).Cast<ImportInstance>().Count(i => i.IsLinked);\n  var warns = ld.GetWarnings();\n  var topWarn = warns.GroupBy(w => w.GetDescriptionText()).OrderByDescending(g=>g.Count()).Take(5).Select(g=>new{w=g.Key.Length>90?g.Key.Substring(0,90):g.Key,n=g.Count()}).ToList();\n  var rooms = new FilteredElementCollector(ld).OfCategory(BuiltInCategory.OST_Rooms).Cast<SpatialElement>().ToList();\n  res.Add(new { nm, counts, genericWalls, fill, inPlace, cadImported = cad, cadLinked, warnings = warns.Count, topWarn, roomsUnplacedOrZero = rooms.Count(r => r.Area <= 0) });\n}\nreturn res;",
   "approvedBy": "Axoneer review",
-  "approvedUtc": "2026-11-24T12:28:17.193Z"
+  "approvedUtc": "2026-11-24T12:55:43.645Z"
 }

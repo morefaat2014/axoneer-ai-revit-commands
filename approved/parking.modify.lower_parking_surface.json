@@ -2,10 +2,10 @@
   "definition": {
     "commandId": "parking.modify.lower_parking_surface",
     "name": "Lower Parking Surface",
-    "description": "Set the parking surface to -7300: lower the 261 parking bays by 150 mm, extend the 87 wall bases down 150 mm, lower the base of the Parking and Ramp rooms 150 mm, and extend the Basement 2 plan view range down 200 mm so the bays stay visible. Doors, elevators and stairs stay at -7150.",
-    "aiDescription": "Set the parking surface to -7300: lower the 261 parking bays by 150 mm, extend the 87 wall bases down 150 mm, lower the base of the Parking and Ramp rooms 150 mm, and extend the Basement 2 plan view range down 200 mm so the bays stay visible. Doors, elevators and stairs stay at -7150.",
+    "description": "Sets a height offset (mm) on parking bays picked by Comments prefix, walls picked by type name prefix and rooms picked by name; can lower a plan view range, and stops if doors or specialty equipment would move.",
+    "aiDescription": "Sets a height offset (mm) on parking bays picked by Comments prefix, walls picked by type name prefix and rooms picked by name; can lower a plan view range, and stops if doors or specialty equipment would move.",
     "examples": [
-      "Set the parking surface to -7300: lower the 261 parking bays by 150 mm, extend the 87 wall bases down 150 mm, lower the base of the Parking and Ramp rooms 150 mm, and extend the Basement 2 plan view range down 200 mm so the bays stay visible. Doors, elevators and stairs stay at -7150."
+      "lower the parking surface by 150 mm"
     ],
     "discipline": "ALL",
     "category": "Generated",
@@ -13,8 +13,48 @@
     "type": "Atomic",
     "execution": "Modify",
     "linkAware": false,
-    "inputs": [],
-    "optionalInputs": [],
+    "inputs": [
+      {
+        "name": "bayPrefix",
+        "type": "String",
+        "description": "Start of the Comments of the bays.",
+        "required": true
+      },
+      {
+        "name": "wallTypePrefix",
+        "type": "String",
+        "description": "Start of the wall type names.",
+        "required": true
+      },
+      {
+        "name": "roomNames",
+        "type": "String",
+        "description": "Room names, comma separated.",
+        "required": true
+      },
+      {
+        "name": "offsetMm",
+        "type": "Number",
+        "description": "Offset to set in mm, negative for down.",
+        "required": true
+      }
+    ],
+    "optionalInputs": [
+      {
+        "name": "viewName",
+        "type": "String",
+        "description": "Plan view whose range is lowered; empty changes no view.",
+        "required": false,
+        "default": ""
+      },
+      {
+        "name": "viewBottomMm",
+        "type": "Number",
+        "description": "Bottom and depth offset of that view in mm.",
+        "required": false,
+        "default": 0
+      }
+    ],
     "output": {
       "type": "Any",
       "description": "Whatever the stored script returns"
@@ -36,7 +76,7 @@
     "minRevitVersion": 2021,
     "maxRevitVersion": 0,
     "status": "Approved",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "mrafaatFK2S3",
     "source": "AiGenerated",
     "codeReference": "user-library:parking.modify.lower_parking_surface",
@@ -45,7 +85,7 @@
   },
   "mode": "Action",
   "transactionMode": "auto",
-  "code": "double o=-150/304.8;\nvar others=new FilteredElementCollector(doc).OfClass(typeof(FamilyInstance)).Cast<FamilyInstance>().Where(f=>f.Category!=null&&(f.Category.Id.IntegerValue==(int)BuiltInCategory.OST_Doors||f.Category.Id.IntegerValue==(int)BuiltInCategory.OST_SpecialityEquipment)).ToList();\nvar z0=others.ToDictionary(f=>f.Id.IntegerValue,f=>f.get_BoundingBox(null).Min.Z);\nvar ps=new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Parking).OfClass(typeof(FamilyInstance)).Cast<FamilyInstance>().Where(f=>(f.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS).AsString()??\"\").StartsWith(\"P-\")).ToList();\nvar ws=new FilteredElementCollector(doc).OfClass(typeof(Wall)).Cast<Wall>().Where(w=>w.WallType.Name.StartsWith(\"B2_\")).ToList();\nvar rs=new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Rooms).WhereElementIsNotElementType().Where(r=>{var n=r.get_Parameter(BuiltInParameter.ROOM_NAME).AsString();return n==\"Parking\"||n==\"Ramp\";}).ToList();\nif(ps.Count!=261||ws.Count!=87||rs.Count!=2) throw new Exception(\"Unexpected counts \"+ps.Count+\"/\"+ws.Count+\"/\"+rs.Count);\nforeach(var p in ps)p.get_Parameter(BuiltInParameter.INSTANCE_FREE_HOST_OFFSET_PARAM).Set(o);\nforeach(var w in ws)w.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET).Set(o);\nforeach(var r in rs)r.get_Parameter(BuiltInParameter.ROOM_LOWER_OFFSET).Set(o);\nvar v=(ViewPlan)doc.GetElement(new ElementId(312));\nif(v.ViewTemplateId!=ElementId.InvalidElementId) throw new Exception(\"View has a template\");\nvar vr=v.GetViewRange();vr.SetOffset(PlanViewPlane.ViewDepthPlane,-200/304.8);vr.SetOffset(PlanViewPlane.BottomClipPlane,-200/304.8);v.SetViewRange(vr);\ndoc.Regenerate();\nvar moved=others.Where(f=>Math.Abs(f.get_BoundingBox(null).Min.Z-z0[f.Id.IntegerValue])>0.001).ToList();\nif(moved.Count>0) throw new Exception(\"Doors/lifts moved: \"+moved.Count);\nreturn new{ps=ps.Count,ws=ws.Count,rs=rs.Count,unmoved=others.Count};",
+  "code": "double o=Tama.Args.Get(args,\"offsetMm\",0.0)/304.8;\nstring bayPre=Tama.Args.Get(args,\"bayPrefix\",\"\").Trim(), wallPre=Tama.Args.Get(args,\"wallTypePrefix\",\"\").Trim(), viewName=Tama.Args.Get(args,\"viewName\",\"\").Trim();\nvar roomNames=Tama.Args.Get(args,\"roomNames\",\"\").Split(',').Select(s=>s.Trim()).Where(s=>s.Length>0).ToList();\nif(bayPre.Length==0||wallPre.Length==0) throw new Exception(\"Give bayPrefix and wallTypePrefix.\");\nvar others=new FilteredElementCollector(doc).OfClass(typeof(FamilyInstance)).Cast<FamilyInstance>().Where(f=>f.Category!=null&&(f.Category.Id.IntegerValue==(int)BuiltInCategory.OST_Doors||f.Category.Id.IntegerValue==(int)BuiltInCategory.OST_SpecialityEquipment)).ToList();\nvar z0=others.ToDictionary(f=>f.Id.IntegerValue,f=>f.get_BoundingBox(null).Min.Z);\nvar ps=new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Parking).OfClass(typeof(FamilyInstance)).Cast<FamilyInstance>().Where(f=>(f.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS).AsString()??\"\").StartsWith(bayPre)).ToList();\nvar ws=new FilteredElementCollector(doc).OfClass(typeof(Wall)).Cast<Wall>().Where(w=>w.WallType.Name.StartsWith(wallPre)).ToList();\nvar rs=new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Rooms).WhereElementIsNotElementType().Where(r=>{var n=r.get_Parameter(BuiltInParameter.ROOM_NAME).AsString();return roomNames.Contains(n);}).ToList();\nif(ps.Count==0&&ws.Count==0&&rs.Count==0) throw new Exception(\"Nothing matches.\");\nforeach(var p in ps)p.get_Parameter(BuiltInParameter.INSTANCE_FREE_HOST_OFFSET_PARAM).Set(o);\nforeach(var w in ws)w.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET).Set(o);\nforeach(var r in rs)r.get_Parameter(BuiltInParameter.ROOM_LOWER_OFFSET).Set(o);\nif(viewName.Length>0){\nvar v=new FilteredElementCollector(doc).OfClass(typeof(ViewPlan)).Cast<ViewPlan>().First(x=>!x.IsTemplate&&x.Name==viewName);\ndouble vb=Tama.Args.Get(args,\"viewBottomMm\",0.0)/304.8;\nif(v.ViewTemplateId!=ElementId.InvalidElementId) throw new Exception(\"View has a template\");\nvar vr=v.GetViewRange();vr.SetOffset(PlanViewPlane.ViewDepthPlane,vb);vr.SetOffset(PlanViewPlane.BottomClipPlane,vb);v.SetViewRange(vr);}\ndoc.Regenerate();\nvar moved=others.Where(f=>Math.Abs(f.get_BoundingBox(null).Min.Z-z0[f.Id.IntegerValue])>0.001).ToList();\nif(moved.Count>0) throw new Exception(\"Doors/lifts moved: \"+moved.Count);\nreturn new{ps=ps.Count,ws=ws.Count,rs=rs.Count,unmoved=others.Count};",
   "approvedBy": "Axoneer review",
-  "approvedUtc": "2026-11-24T12:28:17.311Z"
+  "approvedUtc": "2026-11-24T12:55:43.675Z"
 }

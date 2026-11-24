@@ -2,10 +2,10 @@
   "definition": {
     "commandId": "parking.modify.reset_bay_level_offset",
     "name": "Reset Parking Bay Level Offset",
-    "description": "Set the height offset of the 261 parking bays placed today (Comments P-1 to P-261) to 0, so they sit on Basement 2 instead of 7.15 m below it. Plan positions do not change.",
-    "aiDescription": "Set the height offset of the 261 parking bays placed today (Comments P-1 to P-261) to 0, so they sit on Basement 2 instead of 7.15 m below it. Plan positions do not change.",
+    "description": "Sets the height offset of parking bays, picked by Comments prefix, to 0. Plan positions do not change.",
+    "aiDescription": "Sets the height offset of parking bays, picked by Comments prefix, to 0. Plan positions do not change.",
     "examples": [
-      "Set the height offset of the 261 parking bays placed today (Comments P-1 to P-261) to 0, so they sit on Basement 2 instead of 7.15 m below it. Plan positions do not change."
+      "reset the height offset of the parking bays"
     ],
     "discipline": "ALL",
     "category": "Generated",
@@ -13,7 +13,14 @@
     "type": "Atomic",
     "execution": "Modify",
     "linkAware": false,
-    "inputs": [],
+    "inputs": [
+      {
+        "name": "bayPrefix",
+        "type": "String",
+        "description": "Start of the Comments of the bays.",
+        "required": true
+      }
+    ],
     "optionalInputs": [],
     "output": {
       "type": "Any",
@@ -36,7 +43,7 @@
     "minRevitVersion": 2021,
     "maxRevitVersion": 0,
     "status": "Approved",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "mrafaatFK2S3",
     "source": "AiGenerated",
     "codeReference": "user-library:parking.modify.reset_bay_level_offset",
@@ -45,7 +52,7 @@
   },
   "mode": "Action",
   "transactionMode": "auto",
-  "code": "var ps=new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Parking).OfClass(typeof(FamilyInstance)).Cast<FamilyInstance>().Where(f=>{var c=f.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS).AsString();return c!=null&&c.StartsWith(\"P-\");}).ToList();\nif(ps.Count!=261) throw new Exception(\"Expected 261, found \"+ps.Count);\nvar before=ps.ToDictionary(p=>p.Id.IntegerValue,p=>((LocationPoint)p.Location).Point);\nforeach(var p in ps) p.get_Parameter(BuiltInParameter.INSTANCE_FREE_HOST_OFFSET_PARAM).Set(0.0);\ndoc.Regenerate();\ndouble dxy=0; foreach(var p in ps){var a=((LocationPoint)p.Location).Point;var b=before[p.Id.IntegerValue];dxy=Math.Max(dxy,Math.Sqrt((a.X-b.X)*(a.X-b.X)+(a.Y-b.Y)*(a.Y-b.Y))*304.8);}\nreturn new{count=ps.Count,maxXYmoveMm=dxy,z=ps.Select(p=>Math.Round(((LocationPoint)p.Location).Point.Z*304.8)).Distinct().ToList()};",
+  "code": "string bayPre=Tama.Args.Get(args,\"bayPrefix\",\"\").Trim();\nif(bayPre.Length==0) throw new Exception(\"Give bayPrefix.\");\nvar ps=new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Parking).OfClass(typeof(FamilyInstance)).Cast<FamilyInstance>().Where(f=>{var c=f.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS).AsString();return c!=null&&c.StartsWith(bayPre);}).ToList();\nif(ps.Count==0) throw new Exception(\"No bays match.\");\nvar before=ps.ToDictionary(p=>p.Id.IntegerValue,p=>((LocationPoint)p.Location).Point);\nforeach(var p in ps) p.get_Parameter(BuiltInParameter.INSTANCE_FREE_HOST_OFFSET_PARAM).Set(0.0);\ndoc.Regenerate();\ndouble dxy=0; foreach(var p in ps){var a=((LocationPoint)p.Location).Point;var b=before[p.Id.IntegerValue];dxy=Math.Max(dxy,Math.Sqrt((a.X-b.X)*(a.X-b.X)+(a.Y-b.Y)*(a.Y-b.Y))*304.8);}\nreturn new{count=ps.Count,maxXYmoveMm=dxy,z=ps.Select(p=>Math.Round(((LocationPoint)p.Location).Point.Z*304.8)).Distinct().ToList()};",
   "approvedBy": "Axoneer review",
-  "approvedUtc": "2026-11-24T12:28:17.307Z"
+  "approvedUtc": "2026-11-24T12:55:43.678Z"
 }

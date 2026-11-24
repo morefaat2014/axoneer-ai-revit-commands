@@ -2,10 +2,10 @@
   "definition": {
     "commandId": "parking.execute.place_bays_from_table",
     "name": "Place Parking Bays From Table",
-    "description": "Place 261 M_Parking Space (4800 x 2400mm - 90 deg) parking bays on level Basement 2 at the positions in basement2_layout.json, rotated so the open end faces the aisle, with Comments set to each bay id (P-1 to P-261).",
-    "aiDescription": "Place 261 M_Parking Space (4800 x 2400mm - 90 deg) parking bays on level Basement 2 at the positions in basement2_layout.json, rotated so the open end faces the aisle, with Comments set to each bay id (P-1 to P-261).",
+    "description": "Places parking bays of a given type on a level from a table of [id, x, y, angle] in mm and degrees, with the id in Comments.",
+    "aiDescription": "Places parking bays of a given type on a level from a table of [id, x, y, angle] in mm and degrees, with the id in Comments.",
     "examples": [
-      "Place 261 M_Parking Space (4800 x 2400mm - 90 deg) parking bays on level Basement 2 at the positions in basement2_layout.json, rotated so the open end faces the aisle, with Comments set to each bay id (P-1 to P-261)."
+      "place parking bays from this table"
     ],
     "discipline": "ALL",
     "category": "Generated",
@@ -13,15 +13,27 @@
     "type": "Atomic",
     "execution": "Modify",
     "linkAware": false,
-    "inputs": [],
-    "optionalInputs": [
+    "inputs": [
       {
         "name": "bays",
         "type": "Any",
-        "description": "Script argument 'bays'. Example: [[\"P-1\",1365,97682,0],[\"P-2\",3865,97682,0],[\"P-3\",7870,97682,0],[\"P-4\",10370,976....",
-        "required": false
+        "description": "Script argument 'bays'.",
+        "required": true
+      },
+      {
+        "name": "typeId",
+        "type": "Integer",
+        "description": "Element id of the parking family type.",
+        "required": true
+      },
+      {
+        "name": "level",
+        "type": "String",
+        "description": "Level name.",
+        "required": true
       }
     ],
+    "optionalInputs": [],
     "output": {
       "type": "Any",
       "description": "Whatever the stored script returns"
@@ -43,7 +55,7 @@
     "minRevitVersion": 2021,
     "maxRevitVersion": 0,
     "status": "Approved",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "mrafaatFK2S3",
     "source": "AiGenerated",
     "codeReference": "user-library:parking.execute.place_bays_from_table",
@@ -52,7 +64,7 @@
   },
   "mode": "Action",
   "transactionMode": "auto",
-  "code": "var sym=doc.GetElement(new ElementId(12963)) as FamilySymbol;\nif(!sym.IsActive){sym.Activate();doc.Regenerate();}\nvar lvl=doc.GetElement(new ElementId(311)) as Level;\ndouble k=1/304.8;\nvar bays=args[\"bays\"] as object[];\nvar created=new List<int>();\nforeach(var o in bays){\n var a=o as object[];\n string id=Convert.ToString(a[0]);double x=Convert.ToDouble(a[1]),y=Convert.ToDouble(a[2]),t=Convert.ToDouble(a[3]);\n var p=new XYZ(x*k,y*k,lvl.Elevation);\n var fi=doc.Create.NewFamilyInstance(p,sym,lvl,Autodesk.Revit.DB.Structure.StructuralType.NonStructural);\n if(Math.Abs(t)>0.001)ElementTransformUtils.RotateElement(doc,fi.Id,Line.CreateBound(p,p+XYZ.BasisZ),t*Math.PI/180.0);\n fi.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS).Set(id);\n created.Add(fi.Id.IntegerValue);\n}\nreturn new{count=created.Count,first=created.First(),last=created.Last()};",
+  "code": "var sym=doc.GetElement(new ElementId(Tama.Args.Get(args,\"typeId\",0))) as FamilySymbol;\nif(sym==null||sym.Category==null||sym.Category.Id.IntegerValue!=(int)BuiltInCategory.OST_Parking) throw new Exception(\"typeId is not a parking type.\");\nif(!sym.IsActive){sym.Activate();doc.Regenerate();}\nvar lvl=new FilteredElementCollector(doc).OfClass(typeof(Level)).Cast<Level>().First(l=>l.Name==Tama.Args.Get(args,\"level\",\"\"));\ndouble k=1/304.8;\nvar bays=args[\"bays\"] as object[];\nvar created=new List<int>();\nforeach(var o in bays){\n var a=o as object[];\n string id=Convert.ToString(a[0]);double x=Convert.ToDouble(a[1]),y=Convert.ToDouble(a[2]),t=Convert.ToDouble(a[3]);\n var p=new XYZ(x*k,y*k,lvl.Elevation);\n var fi=doc.Create.NewFamilyInstance(p,sym,lvl,Autodesk.Revit.DB.Structure.StructuralType.NonStructural);\n if(Math.Abs(t)>0.001)ElementTransformUtils.RotateElement(doc,fi.Id,Line.CreateBound(p,p+XYZ.BasisZ),t*Math.PI/180.0);\n fi.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS).Set(id);\n created.Add(fi.Id.IntegerValue);\n}\nreturn new{count=created.Count,first=created.First(),last=created.Last()};",
   "approvedBy": "Axoneer review",
-  "approvedUtc": "2026-11-24T12:28:17.299Z"
+  "approvedUtc": "2026-11-24T12:55:43.673Z"
 }

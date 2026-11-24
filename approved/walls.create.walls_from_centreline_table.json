@@ -5,7 +5,7 @@
     "description": "Creates exact-thickness single-layer wall types and places walls from a list of [x1,y1,x2,y2,thicknessMm,kind] centreline rows in mm between two levels.",
     "aiDescription": "Creates exact-thickness single-layer wall types and places walls from a list of [x1,y1,x2,y2,thicknessMm,kind] centreline rows in mm between two levels.",
     "examples": [
-      "Create two single-layer wall types (BC_Concrete 200mm, BC_Partition 100mm) and place 165 Block C walls on Level 2 with top constraint Level 3, bottom-left building corner at the project origin."
+      "create walls from this centreline table"
     ],
     "discipline": "ALL",
     "category": "Generated",
@@ -13,41 +13,45 @@
     "type": "Atomic",
     "execution": "Modify",
     "linkAware": false,
-    "inputs": [],
-    "optionalInputs": [
+    "inputs": [
       {
         "name": "baseLevel",
         "type": "String",
         "description": "Script argument 'baseLevel'.",
-        "required": false,
-        "default": "Level 2"
+        "required": true
       },
       {
         "name": "topLevel",
         "type": "String",
         "description": "Script argument 'topLevel'.",
-        "required": false,
-        "default": "Level 3"
+        "required": true
       },
       {
         "name": "concreteType",
         "type": "String",
         "description": "Script argument 'concreteType'.",
-        "required": false,
-        "default": "BC_Concrete 200mm"
+        "required": true
       },
       {
         "name": "partitionType",
         "type": "String",
         "description": "Script argument 'partitionType'.",
-        "required": false,
-        "default": "BC_Partition 100mm"
+        "required": true
       },
       {
         "name": "walls",
         "type": "Any",
-        "description": "Script argument 'walls'. Example: [[-1000,100,18705,100,200,\"c\"],[100,3605,2400,3605,200,\"c\"],[16605,3605,18705,36....",
-        "required": false
+        "description": "Script argument 'walls'.",
+        "required": true
+      }
+    ],
+    "optionalInputs": [
+      {
+        "name": "comment",
+        "type": "String",
+        "description": "Text for the Comments of new walls.",
+        "required": false,
+        "default": ""
       }
     ],
     "output": {
@@ -71,7 +75,7 @@
     "minRevitVersion": 2021,
     "maxRevitVersion": 0,
     "status": "Approved",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "mrafaatFK2S3",
     "source": "AiGenerated",
     "codeReference": "user-library:walls.create.walls_from_centreline_table",
@@ -80,7 +84,7 @@
   },
   "mode": "Action",
   "transactionMode": "auto",
-  "code": "var walls = (object[])args[\"walls\"];\nstring baseLvl = Tama.Args.Get(args,\"baseLevel\",\"Level 2\");\nstring topLvl = Tama.Args.Get(args,\"topLevel\",\"Level 3\");\nvar levels = new FilteredElementCollector(doc).OfClass(typeof(Level)).Cast<Level>().ToList();\nvar lb = levels.First(l=>l.Name==baseLvl); var lt = levels.First(l=>l.Name==topLvl);\nvar allWT = new FilteredElementCollector(doc).OfClass(typeof(WallType)).Cast<WallType>().ToList();\nvar seed = allWT.First(w=>w.Name==\"Generic - 200mm\");\nFunc<string,double,string,WallType> getType = (name, mm, matName) => {\n  var ex = allWT.FirstOrDefault(w=>w.Name==name); if (ex!=null) return ex;\n  var wt = (WallType)seed.Duplicate(name);\n  var mat = new FilteredElementCollector(doc).OfClass(typeof(Material)).Cast<Material>().FirstOrDefault(m=>m.Name==matName);\n  var layer = new CompoundStructureLayer(mm/304.8, MaterialFunctionAssignment.Structure, mat!=null?mat.Id:ElementId.InvalidElementId);\n  var cs = CompoundStructure.CreateSimpleCompoundStructure(new List<CompoundStructureLayer>{layer});\n  cs.EndCap = EndCapCondition.NoEndCap;\n  wt.SetCompoundStructure(cs); allWT.Add(wt); return wt;\n};\nvar tc = getType(Tama.Args.Get(args,\"concreteType\",\"BC_Concrete 200mm\"),200,\"Concrete, Cast In Situ\");\nvar tp = getType(Tama.Args.Get(args,\"partitionType\",\"BC_Partition 100mm\"),100,\"Gypsum Wall Board\");\nvar made = new List<int>();\nforeach (var o in walls) {\n  var a = (object[])o;\n  double x1=Convert.ToDouble(a[0])/304.8, y1=Convert.ToDouble(a[1])/304.8, x2=Convert.ToDouble(a[2])/304.8, y2=Convert.ToDouble(a[3])/304.8;\n  double th = Convert.ToDouble(a[4]); string k = a[5].ToString();\n  WallType t = k==\"c\"?tc:tp;\n  if (Math.Abs(t.Width*304.8-th)>1) t = getType(\"BC_Wall \"+th+\"mm\",th,\"Concrete, Cast In Situ\");\n  var line = Line.CreateBound(new XYZ(x1,y1,lb.Elevation), new XYZ(x2,y2,lb.Elevation));\n  var w = Wall.Create(doc, line, t.Id, lb.Id, (lt.Elevation-lb.Elevation), 0, false, k==\"c\");\n  w.get_Parameter(BuiltInParameter.WALL_HEIGHT_TYPE).Set(lt.Id);\n  w.get_Parameter(BuiltInParameter.WALL_KEY_REF_PARAM).Set(0);\n  w.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS).Set(\"Block C\");\n  made.Add(w.Id.IntegerValue);\n}\nreturn new{created=made.Count, concreteType=tc.Name, partitionType=tp.Name, firstId=made.FirstOrDefault(), lastId=made.LastOrDefault()};",
+  "code": "var walls = (object[])args[\"walls\"];\nstring baseLvl = Tama.Args.Get(args,\"baseLevel\",\"\");\nstring topLvl = Tama.Args.Get(args,\"topLevel\",\"\");\nvar levels = new FilteredElementCollector(doc).OfClass(typeof(Level)).Cast<Level>().ToList();\nvar lb = levels.First(l=>l.Name==baseLvl); var lt = levels.First(l=>l.Name==topLvl);\nvar allWT = new FilteredElementCollector(doc).OfClass(typeof(WallType)).Cast<WallType>().ToList();\nvar seed = allWT.First(w=>w.Name==\"Generic - 200mm\");\nFunc<string,double,string,WallType> getType = (name, mm, matName) => {\n  var ex = allWT.FirstOrDefault(w=>w.Name==name); if (ex!=null) return ex;\n  var wt = (WallType)seed.Duplicate(name);\n  var mat = new FilteredElementCollector(doc).OfClass(typeof(Material)).Cast<Material>().FirstOrDefault(m=>m.Name==matName);\n  var layer = new CompoundStructureLayer(mm/304.8, MaterialFunctionAssignment.Structure, mat!=null?mat.Id:ElementId.InvalidElementId);\n  var cs = CompoundStructure.CreateSimpleCompoundStructure(new List<CompoundStructureLayer>{layer});\n  cs.EndCap = EndCapCondition.NoEndCap;\n  wt.SetCompoundStructure(cs); allWT.Add(wt); return wt;\n};\nvar tc = getType(Tama.Args.Get(args,\"concreteType\",\"\"),200,\"Concrete, Cast In Situ\");\nvar tp = getType(Tama.Args.Get(args,\"partitionType\",\"\"),100,\"Gypsum Wall Board\");\nvar made = new List<int>();\nforeach (var o in walls) {\n  var a = (object[])o;\n  double x1=Convert.ToDouble(a[0])/304.8, y1=Convert.ToDouble(a[1])/304.8, x2=Convert.ToDouble(a[2])/304.8, y2=Convert.ToDouble(a[3])/304.8;\n  double th = Convert.ToDouble(a[4]); string k = a[5].ToString();\n  WallType t = k==\"c\"?tc:tp;\n  if (Math.Abs(t.Width*304.8-th)>1) t = getType(\"Wall \"+th+\"mm\",th,\"Concrete, Cast In Situ\");\n  var line = Line.CreateBound(new XYZ(x1,y1,lb.Elevation), new XYZ(x2,y2,lb.Elevation));\n  var w = Wall.Create(doc, line, t.Id, lb.Id, (lt.Elevation-lb.Elevation), 0, false, k==\"c\");\n  w.get_Parameter(BuiltInParameter.WALL_HEIGHT_TYPE).Set(lt.Id);\n  w.get_Parameter(BuiltInParameter.WALL_KEY_REF_PARAM).Set(0);\n  w.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS).Set(Tama.Args.Get(args,\"comment\",\"\"));\n  made.Add(w.Id.IntegerValue);\n}\nreturn new{created=made.Count, concreteType=tc.Name, partitionType=tp.Name, firstId=made.FirstOrDefault(), lastId=made.LastOrDefault()};",
   "approvedBy": "Axoneer review",
-  "approvedUtc": "2026-11-24T12:28:17.257Z"
+  "approvedUtc": "2026-11-24T12:55:43.669Z"
 }

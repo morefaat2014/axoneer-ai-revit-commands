@@ -2,10 +2,10 @@
   "definition": {
     "commandId": "doors.read.check_swing_and_hinge_vs_comments",
     "name": "Check Door Swing And Hinge",
-    "description": "Saved automatically from a script that ran successfully.",
-    "aiDescription": "Script kept automatically after it ran successfully. Review its metadata before relying on it.",
+    "description": "Compares the plan swing and hinge side of doors in the active view with the directions written in Comments, as \"prefix | id | swing +X hinge -Y\".",
+    "aiDescription": "Compares the plan swing and hinge side of doors in the active view with the directions written in Comments, as \"prefix | id | swing +X hinge -Y\".",
     "examples": [
-      "run the saved script doors.read.check_swing_and_hinge_vs_comments"
+      "check door swings and hinges against the Comments"
     ],
     "discipline": "ALL",
     "category": "Generated",
@@ -13,7 +13,14 @@
     "type": "Atomic",
     "execution": "Read",
     "linkAware": false,
-    "inputs": [],
+    "inputs": [
+      {
+        "name": "prefix",
+        "type": "String",
+        "description": "Start of the Comments of the doors to check.",
+        "required": true
+      }
+    ],
     "optionalInputs": [],
     "output": {
       "type": "Any",
@@ -36,7 +43,7 @@
     "minRevitVersion": 2021,
     "maxRevitVersion": 0,
     "status": "Approved",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "mrafaatFK2S3",
     "source": "AiGenerated",
     "codeReference": "user-library:doors.read.check_swing_and_hinge_vs_comments",
@@ -45,7 +52,7 @@
   },
   "mode": "Query",
   "transactionMode": "auto",
-  "code": "var view=doc.ActiveView; var opt=new Options{View=view};\nvar res=new List<object>();\nforeach(var fi in new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Doors).WhereElementIsNotElementType().Cast<FamilyInstance>()){\n  var c=fi.LookupParameter(\"Comments\")?.AsString()??\"\"; if(!c.StartsWith(\"Block C\")) continue;\n  var parts=c.Split('|'); string id=parts[1].Trim(); string sw=\"\",hg=\"\";\n  if(parts.Length>2){ var t=parts[2].Trim().Split(' '); if(t.Length>=4){sw=t[1];hg=t[3];} }\n  if(sw==\"\"||hg.Contains(\"/\")) continue;\n  var lp=((LocationPoint)fi.Location).Point; XYZ hinge=null; XYZ mid=null;\n  foreach(var go in fi.get_Geometry(opt)){ var gi=go as GeometryInstance; if(gi==null) continue;\n    foreach(var g in gi.GetInstanceGeometry()){ var a=g as Arc; if(a!=null && a.Radius>1.5){ hinge=a.Center; mid=a.Evaluate(0.5,true); break;} } if(hinge!=null) break; }\n  if(hinge==null){ res.Add(new{id,ok=\"noarc\"}); continue; }\n  var h=hinge-lp; var m=mid-lp;\n  Func<string,XYZ> v=s=>s==\"+X\"?XYZ.BasisX:s==\"-X\"?-XYZ.BasisX:s==\"+Y\"?XYZ.BasisY:-XYZ.BasisY;\n  bool swingOk=m.DotProduct(v(sw))>0; bool hingeOk=h.DotProduct(v(hg))>0;\n  res.Add(new{id,el=fi.Id.IntegerValue,swingOk,hingeOk});\n}\nreturn new{total=res.Count,badSwing=res.Where(r=>r.GetType().GetProperty(\"swingOk\")!=null && !(bool)r.GetType().GetProperty(\"swingOk\").GetValue(r)).Count(), list=res};",
+  "code": "var prefix=Tama.Args.Get(args,\"prefix\",\"\"); var view=doc.ActiveView; var opt=new Options{View=view};\nvar res=new List<object>();\nforeach(var fi in new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Doors).WhereElementIsNotElementType().Cast<FamilyInstance>()){\n  var c=fi.LookupParameter(\"Comments\")?.AsString()??\"\"; if(!c.StartsWith(prefix)||c.IndexOf('|')<0) continue;\n  var parts=c.Split('|'); string id=parts[1].Trim(); string sw=\"\",hg=\"\";\n  if(parts.Length>2){ var t=parts[2].Trim().Split(' '); if(t.Length>=4){sw=t[1];hg=t[3];} }\n  if(sw==\"\"||hg.Contains(\"/\")) continue;\n  var lp=((LocationPoint)fi.Location).Point; XYZ hinge=null; XYZ mid=null;\n  foreach(var go in fi.get_Geometry(opt)){ var gi=go as GeometryInstance; if(gi==null) continue;\n    foreach(var g in gi.GetInstanceGeometry()){ var a=g as Arc; if(a!=null && a.Radius>1.5){ hinge=a.Center; mid=a.Evaluate(0.5,true); break;} } if(hinge!=null) break; }\n  if(hinge==null){ res.Add(new{id,ok=\"noarc\"}); continue; }\n  var h=hinge-lp; var m=mid-lp;\n  Func<string,XYZ> v=s=>s==\"+X\"?XYZ.BasisX:s==\"-X\"?-XYZ.BasisX:s==\"+Y\"?XYZ.BasisY:-XYZ.BasisY;\n  bool swingOk=m.DotProduct(v(sw))>0; bool hingeOk=h.DotProduct(v(hg))>0;\n  res.Add(new{id,el=fi.Id.IntegerValue,swingOk,hingeOk});\n}\nreturn new{total=res.Count,badSwing=res.Where(r=>r.GetType().GetProperty(\"swingOk\")!=null && !(bool)r.GetType().GetProperty(\"swingOk\").GetValue(r)).Count(), list=res};",
   "approvedBy": "Axoneer review",
-  "approvedUtc": "2026-11-24T12:28:17.265Z"
+  "approvedUtc": "2026-11-24T12:55:43.642Z"
 }

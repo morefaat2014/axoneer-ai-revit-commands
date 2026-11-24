@@ -2,10 +2,10 @@
   "definition": {
     "commandId": "lines.execute.draw_pavement_edges",
     "name": "Draw Pavement Edges",
-    "description": "Create a sketch plane \"B2_Pavement\" at absolute Z -7150 mm, a line style \"B2_Pavement Edge\" (weight 3, grey 128/128/128), and draw 623 model lines and arcs for the 69 Basement 2 pavement edge items from basement2_pavement.json. Nothing existing is changed.",
-    "aiDescription": "Create a sketch plane \"B2_Pavement\" at absolute Z -7150 mm, a line style \"B2_Pavement Edge\" (weight 3, grey 128/128/128), and draw 623 model lines and arcs for the 69 Basement 2 pavement edge items from basement2_pavement.json. Nothing existing is changed.",
+    "description": "Draws model lines and arcs from a mm table at a given elevation, with a line style that is created (grey, weight 3) when missing.",
+    "aiDescription": "Draws model lines and arcs from a mm table at a given elevation, with a line style that is created (grey, weight 3) when missing.",
     "examples": [
-      "Create a sketch plane \"B2_Pavement\" at absolute Z -7150 mm, a line style \"B2_Pavement Edge\" (weight 3, grey 128/128/128), and draw 623 model lines and arcs for the 69 Basement 2 pavement edge items from basement2_pavement.json. Nothing existing is changed."
+      "draw these pavement edges as model lines"
     ],
     "discipline": "ALL",
     "category": "Generated",
@@ -13,13 +13,33 @@
     "type": "Atomic",
     "execution": "Modify",
     "linkAware": false,
-    "inputs": [],
-    "optionalInputs": [
+    "inputs": [
       {
         "name": "segs",
         "type": "Any",
-        "description": "Script argument 'segs'. Example: [[\"PV-N01\",\"line\",200,92558,637,92558],[\"PV-N01\",\"arc\",637,92558,732,92598,772,9....",
-        "required": false
+        "description": "Script argument 'segs'.",
+        "required": true
+      },
+      {
+        "name": "elevationMm",
+        "type": "Number",
+        "description": "Elevation of the lines in mm.",
+        "required": true
+      },
+      {
+        "name": "lineStyle",
+        "type": "String",
+        "description": "Line style name.",
+        "required": true
+      }
+    ],
+    "optionalInputs": [
+      {
+        "name": "sketchPlane",
+        "type": "String",
+        "description": "Name for the new sketch plane; empty keeps the default.",
+        "required": false,
+        "default": ""
       }
     ],
     "output": {
@@ -43,7 +63,7 @@
     "minRevitVersion": 2021,
     "maxRevitVersion": 0,
     "status": "Approved",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "mrafaatFK2S3",
     "source": "AiGenerated",
     "codeReference": "user-library:lines.execute.draw_pavement_edges",
@@ -52,7 +72,7 @@
   },
   "mode": "Action",
   "transactionMode": "auto",
-  "code": "double k=1/304.8; double z=-7150.0/304.8;\nvar linesCat=Category.GetCategory(doc,BuiltInCategory.OST_Lines);\nCategory sub=null;\nforeach(Category c in linesCat.SubCategories)if(c.Name==\"B2_Pavement Edge\")sub=c;\nif(sub==null)sub=doc.Settings.Categories.NewSubcategory(linesCat,\"B2_Pavement Edge\");\nsub.LineColor=new Color(128,128,128);\nsub.SetLineWeight(3,GraphicsStyleType.Projection);\nvar gs=sub.GetGraphicsStyle(GraphicsStyleType.Projection);\nvar sp=SketchPlane.Create(doc,Plane.CreateByNormalAndOrigin(XYZ.BasisZ,new XYZ(0,0,z)));\nsp.Name=\"B2_Pavement\";\nFunc<object,double> d=o=>Convert.ToDouble(o);\nint nl=0,na=0;var ids=new List<int>();\nforeach(var o in args[\"segs\"] as object[]){\n var a=o as object[];\n string t=Convert.ToString(a[1]);\n Curve c;\n if(t==\"line\"){c=Line.CreateBound(new XYZ(d(a[2])*k,d(a[3])*k,z),new XYZ(d(a[4])*k,d(a[5])*k,z));nl++;}\n else{c=Arc.Create(new XYZ(d(a[2])*k,d(a[3])*k,z),new XYZ(d(a[6])*k,d(a[7])*k,z),new XYZ(d(a[4])*k,d(a[5])*k,z));na++;}\n var mc=doc.Create.NewModelCurve(c,sp);\n mc.LineStyle=gs;\n ids.Add(mc.Id.IntegerValue);\n}\nreturn new{lines=nl,arcs=na,total=ids.Count,subId=sub.Id.IntegerValue,styleId=gs.Id.IntegerValue,spId=sp.Id.IntegerValue};",
+  "code": "double k=1/304.8; double z=Tama.Args.Get(args,\"elevationMm\",0.0)/304.8;\nstring style=Tama.Args.Get(args,\"lineStyle\",\"\").Trim(), planeName=Tama.Args.Get(args,\"sketchPlane\",\"\").Trim();\nif(style.Length==0) throw new Exception(\"Give the line style name (lineStyle).\");\nvar linesCat=Category.GetCategory(doc,BuiltInCategory.OST_Lines);\nCategory sub=null;\nforeach(Category c in linesCat.SubCategories)if(c.Name==style)sub=c;\nif(sub==null){sub=doc.Settings.Categories.NewSubcategory(linesCat,style);\nsub.LineColor=new Color(128,128,128);\nsub.SetLineWeight(3,GraphicsStyleType.Projection);}\nvar gs=sub.GetGraphicsStyle(GraphicsStyleType.Projection);\nvar sp=SketchPlane.Create(doc,Plane.CreateByNormalAndOrigin(XYZ.BasisZ,new XYZ(0,0,z)));\nif(planeName.Length>0) sp.Name=planeName;\nFunc<object,double> d=o=>Convert.ToDouble(o);\nint nl=0,na=0;var ids=new List<int>();\nforeach(var o in args[\"segs\"] as object[]){\n var a=o as object[];\n string t=Convert.ToString(a[1]);\n Curve c;\n if(t==\"line\"){c=Line.CreateBound(new XYZ(d(a[2])*k,d(a[3])*k,z),new XYZ(d(a[4])*k,d(a[5])*k,z));nl++;}\n else{c=Arc.Create(new XYZ(d(a[2])*k,d(a[3])*k,z),new XYZ(d(a[6])*k,d(a[7])*k,z),new XYZ(d(a[4])*k,d(a[5])*k,z));na++;}\n var mc=doc.Create.NewModelCurve(c,sp);\n mc.LineStyle=gs;\n ids.Add(mc.Id.IntegerValue);\n}\nreturn new{lines=nl,arcs=na,total=ids.Count,subId=sub.Id.IntegerValue,styleId=gs.Id.IntegerValue,spId=sp.Id.IntegerValue};",
   "approvedBy": "Axoneer review",
-  "approvedUtc": "2026-11-24T12:28:17.316Z"
+  "approvedUtc": "2026-11-24T12:55:43.671Z"
 }

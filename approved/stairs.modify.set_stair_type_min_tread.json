@@ -2,10 +2,10 @@
   "definition": {
     "commandId": "stairs.modify.set_stair_type_min_tread",
     "name": "Set Stair Type Min Tread",
-    "description": "Set the BC_Stair 215 max riser type's minimum tread depth to 245 mm to clear the rounding warning on Stair 6.",
-    "aiDescription": "Set the BC_Stair 215 max riser type's minimum tread depth to 245 mm to clear the rounding warning on Stair 6.",
+    "description": "Sets the minimum tread depth (mm) of a stair type and lists the model warnings.",
+    "aiDescription": "Sets the minimum tread depth (mm) of a stair type and lists the model warnings.",
     "examples": [
-      "Set the BC_Stair 215 max riser type's minimum tread depth to 245 mm to clear the rounding warning on Stair 6."
+      "set the minimum tread of this stair type to 245 mm"
     ],
     "discipline": "ALL",
     "category": "Generated",
@@ -13,23 +13,21 @@
     "type": "Atomic",
     "execution": "Modify",
     "linkAware": false,
-    "inputs": [],
-    "optionalInputs": [
+    "inputs": [
       {
         "name": "typeName",
         "type": "String",
-        "description": "Script argument 'typeName'. Example: \"BC_Stair 215 max riser\".",
-        "required": false,
-        "default": "BC_Stair 215 max riser"
+        "description": "Script argument 'typeName'.",
+        "required": true
       },
       {
         "name": "minTreadMm",
         "type": "Number",
-        "description": "Script argument 'minTreadMm'. Example: 245.",
-        "required": false,
-        "default": 245
+        "description": "Script argument 'minTreadMm'.",
+        "required": true
       }
     ],
+    "optionalInputs": [],
     "output": {
       "type": "Any",
       "description": "Whatever the stored script returns"
@@ -51,7 +49,7 @@
     "minRevitVersion": 2021,
     "maxRevitVersion": 0,
     "status": "Approved",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "mrafaatFK2S3",
     "source": "AiGenerated",
     "codeReference": "user-library:stairs.modify.set_stair_type_min_tread",
@@ -60,7 +58,7 @@
   },
   "mode": "Action",
   "transactionMode": "auto",
-  "code": "var st=new FilteredElementCollector(doc).OfClass(typeof(Autodesk.Revit.DB.Architecture.StairsType)).Cast<Autodesk.Revit.DB.Architecture.StairsType>().First(x=>x.Name==Tama.Args.Get(args,\"typeName\",\"BC_Stair 215 max riser\"));\nst.MinTreadDepth=Tama.Args.Get(args,\"minTreadMm\",245.0)/304.8; doc.Regenerate();\nreturn new{warnings=doc.GetWarnings().Select(w=>w.GetDescriptionText()).GroupBy(t=>t).Select(g=>g.Key+\" x\"+g.Count()).ToList()};",
+  "code": "var st=new FilteredElementCollector(doc).OfClass(typeof(Autodesk.Revit.DB.Architecture.StairsType)).Cast<Autodesk.Revit.DB.Architecture.StairsType>().First(x=>x.Name==Tama.Args.Get(args,\"typeName\",\"\"));\nst.MinTreadDepth=Tama.Args.Get(args,\"minTreadMm\",245.0)/304.8; doc.Regenerate();\nreturn new{warnings=doc.GetWarnings().Select(w=>w.GetDescriptionText()).GroupBy(t=>t).Select(g=>g.Key+\" x\"+g.Count()).ToList()};",
   "approvedBy": "Axoneer review",
-  "approvedUtc": "2026-11-24T12:28:17.274Z"
+  "approvedUtc": "2026-11-24T12:55:43.666Z"
 }

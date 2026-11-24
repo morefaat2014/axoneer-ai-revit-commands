@@ -2,10 +2,10 @@
   "definition": {
     "commandId": "schedules.read.list_open_docs_selection_and_schedules",
     "name": "List Open Docs, Selection and Matching Schedules",
-    "description": "Saved automatically from a script that ran successfully.",
-    "aiDescription": "Script kept automatically after it ran successfully. Review its metadata before relying on it.",
+    "description": "Lists the open documents, the current selection, and the schedules whose name contains a keyword.",
+    "aiDescription": "Lists the open documents, the current selection, and the schedules whose name contains a keyword.",
     "examples": [
-      "run the saved script schedules.read.list_open_docs_selection_and_schedules"
+      "list the open models, the selection and the schedules"
     ],
     "discipline": "ALL",
     "category": "Generated",
@@ -18,9 +18,9 @@
       {
         "name": "keyword",
         "type": "String",
-        "description": "Script argument 'keyword'. Example: \"UNIT MATRIX\".",
+        "description": "Script argument 'keyword'.",
         "required": false,
-        "default": "UNIT MATRIX"
+        "default": ""
       }
     ],
     "output": {
@@ -44,7 +44,7 @@
     "minRevitVersion": 2021,
     "maxRevitVersion": 0,
     "status": "Approved",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "mrafaatFK2S3",
     "source": "AiGenerated",
     "codeReference": "user-library:schedules.read.list_open_docs_selection_and_schedules",
@@ -53,7 +53,7 @@
   },
   "mode": "Query",
   "transactionMode": "auto",
-  "code": "var docs = new List<object>();\nforeach (Document d in app.Documents) docs.Add(new { d.Title, d.PathName, d.IsLinked, d.IsFamilyDocument });\nvar sel = uidoc.Selection.GetElementIds().Select(id => { var e = doc.GetElement(id); return new { id = id.IntegerValue, cat = e?.Category?.Name, name = e?.Name, cls = e?.GetType().Name }; }).ToList();\nvar kw = Tama.Args.Get(args, \"keyword\", \"UNIT MATRIX\").ToUpper();\nvar schedules = new FilteredElementCollector(doc).OfClass(typeof(ViewSchedule)).Cast<ViewSchedule>()\n  .Where(v => !v.IsTemplate && !v.IsTitleblockRevisionSchedule && !v.IsInternalKeynoteSchedule)\n  .Where(v => v.Name.ToUpper().Contains(kw))\n  .Select(v => new { id = v.Id.IntegerValue, v.Name, cat = v.Definition.CategoryId.IntegerValue, isKey = v.Definition.IsKeySchedule }).ToList();\nreturn new { docs, sel, schedules };",
+  "code": "var docs = new List<object>();\nforeach (Document d in app.Documents) docs.Add(new { d.Title, d.PathName, d.IsLinked, d.IsFamilyDocument });\nvar sel = uidoc.Selection.GetElementIds().Select(id => { var e = doc.GetElement(id); return new { id = id.IntegerValue, cat = e?.Category?.Name, name = e?.Name, cls = e?.GetType().Name }; }).ToList();\nvar kw = Tama.Args.Get(args, \"keyword\", \"\").ToUpper();\nvar schedules = new FilteredElementCollector(doc).OfClass(typeof(ViewSchedule)).Cast<ViewSchedule>()\n  .Where(v => !v.IsTemplate && !v.IsTitleblockRevisionSchedule && !v.IsInternalKeynoteSchedule)\n  .Where(v => v.Name.ToUpper().Contains(kw))\n  .Select(v => new { id = v.Id.IntegerValue, v.Name, cat = v.Definition.CategoryId.IntegerValue, isKey = v.Definition.IsKeySchedule }).ToList();\nreturn new { docs, sel, schedules };",
   "approvedBy": "Axoneer review",
-  "approvedUtc": "2026-11-24T12:28:17.153Z"
+  "approvedUtc": "2026-11-24T12:55:43.659Z"
 }

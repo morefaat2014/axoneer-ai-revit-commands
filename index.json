@@ -1,7 +1,7 @@
 {
   "format": 1,
-  "catalogVersion": "20261124-124720",
-  "generatedUtc": "2026-11-24T12:47:20.502Z",
+  "catalogVersion": "20261124-125545",
+  "generatedUtc": "2026-11-24T12:55:45.314Z",
   "commands": [
     {
       "commandId": "annotations.modify.delete_dimension_by_id",
@@ -41,9 +41,9 @@
     {
       "commandId": "doors.read.check_swing_and_hinge_vs_comments",
       "file": "approved/doors.read.check_swing_and_hinge_vs_comments.json",
-      "sha256": "00a58d55c02800654f2eb42620f2ae310e8366cfe45c981afce8b2c6c9b15f7c",
-      "sizeBytes": 2959,
-      "version": "1.0.0"
+      "sha256": "03182b1828c4c64aae347a586241faae949a0b927f16dd633e4f73bdba6e68a6",
+      "sizeBytes": 3317,
+      "version": "1.0.1"
     },
     {
       "commandId": "doors.read.opening_size_and_wall_face_edges",
@@ -160,9 +160,9 @@
     {
       "commandId": "lines.execute.draw_pavement_edges",
       "file": "approved/lines.execute.draw_pavement_edges.json",
-      "sha256": "1260bb733f99434515f6116585ced2e1018d296fcb2b4d8f090fc03625989e35",
-      "sizeBytes": 3557,
-      "version": "1.0.0"
+      "sha256": "c8f26a748a02960b4d6c5c0764d31a6d7760f59cdf02f9bd87b24f0e9721b7da",
+      "sizeBytes": 3702,
+      "version": "1.0.1"
     },
     {
       "commandId": "lines.execute.rename_sketch_plane",
@@ -286,9 +286,9 @@
     {
       "commandId": "links.read.link_model_quality_lod_sample",
       "file": "approved/links.read.link_model_quality_lod_sample.json",
-      "sha256": "69cef753b02bdc40bcb37882987d072dc1daa67eaa361bf54032e71e74123e42",
-      "sizeBytes": 4999,
-      "version": "1.0.0"
+      "sha256": "7317e9c5c82c396edaa2a6f9dd5ad41aa8f337549120af1e62033af2f3a4eb99",
+      "sizeBytes": 5214,
+      "version": "1.0.1"
     },
     {
       "commandId": "links.read.link_wall_extents_shared",
@@ -328,37 +328,37 @@
     {
       "commandId": "openings.create.doors_windows_from_table",
       "file": "approved/openings.create.doors_windows_from_table.json",
-      "sha256": "b6f3aae049357eb2494dd45ee670695635684e16e4f0ee5f0e587236fdd41570",
-      "sizeBytes": 9131,
-      "version": "1.0.0"
+      "sha256": "33c7077c77780af9634212f96fe6439688e738deb87d2c906111957ffe3081ab",
+      "sizeBytes": 9201,
+      "version": "1.0.1"
     },
     {
       "commandId": "openings.modify.fix_swings_and_add_infill_openings",
       "file": "approved/openings.modify.fix_swings_and_add_infill_openings.json",
-      "sha256": "42bf747b4f3a719adf0fb4ac9459e357e4cfc71c03c8a0d382578f8519ccbdc6",
-      "sizeBytes": 7175,
-      "version": "1.0.0"
+      "sha256": "11f3150f420c8ee120b97ac35c6ce2e989090e777c471d3f27a40e286ce0bfd2",
+      "sizeBytes": 7361,
+      "version": "1.0.1"
     },
     {
       "commandId": "parking.execute.place_bays_from_table",
       "file": "approved/parking.execute.place_bays_from_table.json",
-      "sha256": "fbd005473cd7300dc27c8ec705d7474ffb1e6b9d3f4f472dbd51386436659470",
-      "sizeBytes": 3101,
-      "version": "1.0.0"
+      "sha256": "cad4bd854d1df64031478244963173c27745f785c6e4c1b05b44209622da855e",
+      "sizeBytes": 3185,
+      "version": "1.0.1"
     },
     {
       "commandId": "parking.modify.lower_parking_surface",
       "file": "approved/parking.modify.lower_parking_surface.json",
-      "sha256": "741c90c1c727e06ee4d17e29f89b47c343a0e8881dce7ad652e9e110c61ceb50",
-      "sizeBytes": 4136,
-      "version": "1.0.0"
+      "sha256": "7ff03c6e4c74ff8e69064a7c8651a145dd98e8d8bfc188cc62ecd8f5acff1ccf",
+      "sizeBytes": 5289,
+      "version": "1.0.1"
     },
     {
       "commandId": "parking.modify.reset_bay_level_offset",
       "file": "approved/parking.modify.reset_bay_level_offset.json",
-      "sha256": "a1356eda0958b306f58229c53a97de4ccae9b40ce6f287b30a94383e7b155dba",
-      "sizeBytes": 2722,
-      "version": "1.0.0"
+      "sha256": "03b734ee6cd7964d404c52230fc6329e157cc382ea7965a41860453cafdb6f6b",
+      "sizeBytes": 2724,
+      "version": "1.0.1"
     },
     {
       "commandId": "parking.read.bay_centres",
@@ -412,9 +412,9 @@
     {
       "commandId": "project.action.set_mirrored_site_angle",
       "file": "approved/project.action.set_mirrored_site_angle.json",
-      "sha256": "f50eba9c6785c418a050dd843019f3e05dc7aec165fb54ce71a12a55bb244b88",
-      "sizeBytes": 4263,
-      "version": "1.0.0"
+      "sha256": "019f100ac079bf941dafa408904a7c77fd1c75727ed4c03bff2592739672e007",
+      "sizeBytes": 4196,
+      "version": "1.0.1"
     },
     {
       "commandId": "project.action.set_secondary_site_position",
@@ -587,16 +587,16 @@
     {
       "commandId": "rooms.create.rooms_and_balustrades_from_table",
       "file": "approved/rooms.create.rooms_and_balustrades_from_table.json",
-      "sha256": "a4155534d134054bbb273e73c52e91940e2f0fd9d8619fafda166236fda4258b",
-      "sizeBytes": 5899,
-      "version": "1.0.0"
+      "sha256": "90cff22d1c905122d5959abe156ecc3d5ad4e7b6ded33c1d4c9aa5e5267aa756",
+      "sizeBytes": 6264,
+      "version": "1.0.1"
     },
     {
       "commandId": "rooms.execute.place_rooms_and_separators",
       "file": "approved/rooms.execute.place_rooms_and_separators.json",
-      "sha256": "76b6d4715f7a7a42e5de868c83b1ed9432aeca30bb4c820d80e096d73398b85b",
-      "sizeBytes": 4579,
-      "version": "1.0.0"
+      "sha256": "011e04e451ef6f6d779a21ac3fc3c2b33b95efac05982047aa8082031debb3df",
+      "sizeBytes": 4136,
+      "version": "1.0.1"
     },
     {
       "commandId": "rooms.read.boundary_segments_with_coords",
@@ -629,9 +629,9 @@
     {
       "commandId": "schedules.read.list_open_docs_selection_and_schedules",
       "file": "approved/schedules.read.list_open_docs_selection_and_schedules.json",
-      "sha256": "5516c8c7922130b89e7af15c74bf460cc43859041a532b1c47f08ea00874a9f9",
-      "sizeBytes": 2659,
-      "version": "1.0.0"
+      "sha256": "628458a4140c836addfdb0be773bfe3e6381e2e1a3ed696dd7187003f601ed1a",
+      "sizeBytes": 2634,
+      "version": "1.0.1"
     },
     {
       "commandId": "site.read.plot_floors_vs_target_coordinates",
@@ -657,16 +657,16 @@
     {
       "commandId": "stairs.create.u_stairs_from_runs",
       "file": "approved/stairs.create.u_stairs_from_runs.json",
-      "sha256": "570481be78aba877ce912ec64cc4ea873c571a08f0e1d2df7a901b282963badd",
-      "sizeBytes": 5434,
-      "version": "1.0.0"
+      "sha256": "387e1bafa66fe7656023d16d64864525d77027fc5290124e1e71d130025499e6",
+      "sizeBytes": 6697,
+      "version": "1.0.1"
     },
     {
       "commandId": "stairs.modify.set_stair_type_min_tread",
       "file": "approved/stairs.modify.set_stair_type_min_tread.json",
-      "sha256": "4b67b3ab07d22cb279cf64f7163f0e3d26e035ec4662e62247cb4e9b3b9fb1a7",
-      "sizeBytes": 2528,
-      "version": "1.0.0"
+      "sha256": "28de3813bcac667578c1fcc5e6d022cf60c1e5198c0fe043173b373d041a9422",
+      "sizeBytes": 2265,
+      "version": "1.0.1"
     },
     {
       "commandId": "tests.read.review_route_check",
@@ -706,9 +706,9 @@
     {
       "commandId": "walls.create.walls_from_centreline_table",
       "file": "approved/walls.create.walls_from_centreline_table.json",
-      "sha256": "13dc9888220e8b6d6c5376f59780f9d4ca8b3efea03e24a83c78c68d5a9157b3",
-      "sizeBytes": 5227,
-      "version": "1.0.0"
+      "sha256": "eaf0db838485097a2e65fdc09f5f7d51ed0d745fd641c6d1054b4cce25d05ef4",
+      "sizeBytes": 4987,
+      "version": "1.0.1"
     },
     {
       "commandId": "walls.read.level_walls_arcs_summary",
